@@ -31,8 +31,8 @@ jobs:
           cleaned = blocked.sub('', text)
 
           # 같은 리소스가 여러 번 삽입되는 것을 막습니다.
-          cleaned = re.sub(r'\n?<link[^>]+assets/ui-v038\\.css[^>]*>', '', cleaned)
-          cleaned = re.sub(r'\n?<script[^>]+assets/ui-v038\\.js[^>]*></script>', '', cleaned)
+          cleaned = re.sub(r'\n?<link[^>]+assets/ui-v038\.css[^>]*>', '', cleaned)
+          cleaned = re.sub(r'\n?<script[^>]+assets/ui-v038\.js[^>]*></script>', '', cleaned)
 
           css_tag = '<link rel="stylesheet" href="assets/ui-v038.css?v=0.00.38">'
           js_tag = '<script defer src="assets/ui-v038.js?v=0.00.38"></script>'
@@ -48,8 +48,8 @@ jobs:
               cleaned += '\n' + js_tag
 
           # 버전 표시를 0.00.38로 통일합니다.
-          cleaned = re.sub(r'(<meta[^>]+name=["\']app-version["\'][^>]+content=["\'])[^"\']+(["\'])', r'\\g<1>0.00.38\\g<2>', cleaned)
-          cleaned = re.sub(r'(<meta[^>]+content=["\'])[^"\']+(["\'][^>]+name=["\']app-version["\'])', r'\\g<1>0.00.38\\g<2>', cleaned)
+          cleaned = re.sub(r'(<meta[^>]*name=["\']app-version["\'][^>]*content=["\'])[^"\']+(["\'])', r'\g<1>0.00.38\g<2>', cleaned)
+          cleaned = re.sub(r'(<meta[^>]*content=["\'])[^"\']+(["\'][^>]*name=["\']app-version["\'])', r'\g<1>0.00.38\g<2>', cleaned)
 
           if cleaned != text:
               index.write_text(cleaned, encoding='utf-8')
