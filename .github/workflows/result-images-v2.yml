@@ -1,0 +1,117 @@
+name: Generate consistent result artwork
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  result-art:
+    # 생성 커밋에서 다시 실행되어 무한 커밋 루프가 생기지 않도록 막습니다.
+    if: "!contains(github.event.head_commit.message, '[result-images-v2]')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate 24 square SVG artworks
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import math
+
+          out = Path('assets/results')
+          out.mkdir(parents=True, exist_ok=True)
+
+          palettes = {
+              'love': ('#24142f', '#ff5fa2', '#ffb3d1'),
+              'personality': ('#181632', '#9b7cff', '#c8bbff'),
+              'stress': ('#102a32', '#49d6d0', '#a8f3ee'),
+              'soulmate': ('#2b172d', '#d66bff', '#ffc4ea'),
+              'leadership': ('#2b2112', '#f2b84b', '#ffe1a0'),
+              'first': ('#182039', '#79a9ff', '#c8dcff'),
+          }
+
+          def esc(s):
+              return s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+          def artwork(cat, n):
+              bg, a, b = palettes[cat]
+              # 모든 결과 이미지는 동일한 800x800 캔버스를 사용해 기존 카드의 크롭 문제를 없앱니다.
+              base = f'''<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+                <defs>
+                  <radialGradient id="g" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="{a}" stop-opacity=".30"/><stop offset="1" stop-color="{bg}" stop-opacity="0"/></radialGradient>
+                  <linearGradient id="l" x1="0" y1="0" x2="1" y2="1"><stop stop-color="{a}"/><stop offset="1" stop-color="{b}"/></linearGradient>
+                  <filter id="glow"><feGaussianBlur stdDeviation="18"/></filter>
+                </defs>
+                <rect width="800" height="800" rx="64" fill="{bg}"/>
+                <circle cx="400" cy="330" r="300" fill="url(#g)"/>
+                <circle cx="400" cy="330" r="210" fill="{a}" opacity=".10" filter="url(#glow)"/>
+              '''
+
+              if cat == 'love':
+                  shapes = [
+                    '<path d="M400 555 C330 505 225 438 225 335 C225 260 320 230 400 305 C480 230 575 260 575 335 C575 438 470 505 400 555Z" fill="none" stroke="url(#l)" stroke-width="24"/>',
+                    '<circle cx="285" cy="310" r="24" fill="{a}"/><circle cx="515" cy="310" r="24" fill="{b}"/>'.format(a=a,b=b),
+                    '<path d="M285 310 C340 250 460 250 515 310" fill="none" stroke="{b}" stroke-width="10" opacity=".75"/>'.format(b=b),
+                  ][n-1]
+              elif cat == 'personality':
+                  shapes = [
+                    '<circle cx="400" cy="330" r="145" fill="none" stroke="url(#l)" stroke-width="22"/><path d="M330 610 C350 500 450 500 470 610" fill="none" stroke="{b}" stroke-width="22" stroke-linecap="round"/>'.format(b=b),
+                    '<path d="M270 300 L400 180 L530 300 L400 430Z" fill="none" stroke="url(#l)" stroke-width="20"/><circle cx="400" cy="305" r="48" fill="{a}" opacity=".25"/>'.format(a=a),
+                    '<path d="M250 430 Q400 180 550 430 Q400 560 250 430Z" fill="none" stroke="url(#l)" stroke-width="20"/><circle cx="400" cy="390" r="48" fill="{b}" opacity=".7"/>'.format(b=b),
+                    '<rect x="265" y="225" width="270" height="270" rx="55" fill="none" stroke="url(#l)" stroke-width="20" transform="rotate(45 400 360)"/><circle cx="400" cy="360" r="40" fill="{a}"/>'.format(a=a),
+                  ][n-1]
+              elif cat == 'stress':
+                  shapes = [
+                    '<path d="M190 410 Q290 270 400 410 T610 410" fill="none" stroke="url(#l)" stroke-width="28" stroke-linecap="round"/><path d="M230 510 Q320 390 400 510 T570 510" fill="none" stroke="{b}" stroke-width="14" opacity=".8"/>'.format(b=b),
+                    '<circle cx="400" cy="365" r="130" fill="none" stroke="url(#l)" stroke-width="22"/><circle cx="400" cy="365" r="75" fill="none" stroke="{b}" stroke-width="12"/>'.format(b=b),
+                    '<path d="M205 470 C300 220 500 220 595 470" fill="none" stroke="url(#l)" stroke-width="25" stroke-linecap="round"/><path d="M275 520 C330 410 470 410 525 520" fill="none" stroke="{b}" stroke-width="13"/>'.format(b=b),
+                    '<circle cx="400" cy="370" r="170" fill="none" stroke="{a}" stroke-width="18" stroke-dasharray="20 28"/><circle cx="400" cy="370" r="90" fill="none" stroke="{b}" stroke-width="12"/>'.format(a=a,b=b),
+                  ][n-1]
+              elif cat == 'soulmate':
+                  shapes = [
+                    '<circle cx="335" cy="390" r="105" fill="none" stroke="url(#l)" stroke-width="22"/><circle cx="465" cy="390" r="105" fill="none" stroke="{b}" stroke-width="22"/>'.format(b=b),
+                    '<path d="M400 220 C500 300 520 430 400 535 C280 430 300 300 400 220Z" fill="none" stroke="url(#l)" stroke-width="22"/>',
+                    '<circle cx="300" cy="350" r="52" fill="{a}" opacity=".75"/><circle cx="500" cy="350" r="52" fill="{b}" opacity=".75"/><path d="M300 350 Q400 470 500 350" fill="none" stroke="white" stroke-opacity=".55" stroke-width="10"/>'.format(a=a,b=b),
+                    '<path d="M220 400 A180 180 0 0 1 580 400 A180 180 0 0 1 220 400Z" fill="none" stroke="url(#l)" stroke-width="18"/><circle cx="400" cy="400" r="55" fill="{b}" opacity=".7"/>'.format(b=b),
+                  ][n-1]
+              elif cat == 'leadership':
+                  shapes = [
+                    '<path d="M205 535 L400 225 L595 535Z" fill="none" stroke="url(#l)" stroke-width="24" stroke-linejoin="round"/><path d="M300 535 L400 360 L500 535" fill="none" stroke="{b}" stroke-width="14"/>'.format(b=b),
+                    '<path d="M260 470 L320 290 L400 400 L480 290 L540 470Z" fill="none" stroke="url(#l)" stroke-width="22" stroke-linejoin="round"/>',
+                    '<circle cx="400" cy="360" r="145" fill="none" stroke="url(#l)" stroke-width="20"/><path d="M400 250 L430 335 L520 335 L447 385 L475 470 L400 420 L325 470 L353 385 L280 335 L370 335Z" fill="{b}" opacity=".75"/>'.format(b=b),
+                    '<path d="M260 560 L400 250 L540 560" fill="none" stroke="url(#l)" stroke-width="24"/><circle cx="400" cy="250" r="34" fill="{b}"/>'.format(b=b),
+                  ][n-1]
+              else:  # first
+                  shapes = [
+                    '<path d="M400 205 L435 340 L575 375 L435 410 L400 555 L365 410 L225 375 L365 340Z" fill="none" stroke="url(#l)" stroke-width="22"/>',
+                    '<circle cx="400" cy="370" r="155" fill="none" stroke="url(#l)" stroke-width="22"/><circle cx="400" cy="370" r="55" fill="{b}" opacity=".75"/>'.format(b=b),
+                    '<path d="M275 540 V350 Q400 230 525 350 V540" fill="none" stroke="url(#l)" stroke-width="22"/><path d="M350 540 V410 H450 V540" fill="{a}" opacity=".35"/>'.format(a=a),
+                    '<path d="M220 450 Q400 250 580 450" fill="none" stroke="url(#l)" stroke-width="22"/><circle cx="260" cy="410" r="18" fill="{b}"/><circle cx="540" cy="410" r="18" fill="{b}"/>'.format(b=b),
+                  ][n-1]
+
+              # 번호를 아주 작게 넣어 파일별 결과가 확실히 구분되도록 합니다.
+              return base + shapes + f'<circle cx="400" cy="650" r="4" fill="{b}" opacity=".55"/></svg>'
+
+          for cat in palettes:
+              for n in range(1, 5):
+                  (out / f'{cat}-{n}.jpg.svg').write_text(artwork(cat, n), encoding='utf-8')
+
+          # 기존 HTML은 *.jpg를 그대로 사용하므로, 요청을 새 SVG로 투명하게 연결합니다.
+          Path('_redirects').write_text('/assets/results/*.jpg /assets/results/:splat.jpg.svg 200\n', encoding='utf-8')
+          PY
+
+      - name: Commit generated artwork
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/results/*.jpg.svg _redirects
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "feat: replace result artwork [result-images-v2]"
+            git push
+          fi
