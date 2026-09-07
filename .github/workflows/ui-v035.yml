@@ -1,0 +1,137 @@
+name: Replace emoji UI icons v0.00.35
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  replace-icons:
+    if: "!contains(github.event.head_commit.message, '[ui-v035]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate image icons and replace emoji UI
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path('assets/ui-icons')
+          root.mkdir(parents=True, exist_ok=True)
+
+          icons = {
+            'quick-fortune': ('#7134df','#f12aa9','M400 150 A250 250 0 1 0 400 650 A250 250 0 1 0 400 150 M400 225 L400 575 M225 400 L575 400'),
+            'quick-test': ('#6d3df0','#a98cff','M400 160 L445 330 L620 375 L445 420 L400 600 L355 420 L180 375 L355 330 Z'),
+            'quick-popular': ('#f12aa9','#ff9ed5','M400 585 C300 505 205 435 205 320 C205 250 260 205 325 205 C365 205 390 225 400 260 C410 225 435 205 475 205 C540 205 595 250 595 320 C595 435 500 505 400 585 Z'),
+            'quick-all': ('#7b35ff','#c8b4ff','M200 245 H600 M200 400 H600 M200 555 H600 M245 200 V600 M400 200 V600 M555 200 V600'),
+            'nav-home': ('#7134df','#f12aa9','M170 380 L400 180 L630 380 V610 H465 V455 H335 V610 H170 Z'),
+            'nav-fortune': ('#5c43d8','#b9a9ff','M400 150 A250 250 0 1 0 400 650 A250 250 0 1 0 400 150 M400 225 V575 M225 400 H575'),
+            'nav-test': ('#7134df','#d2c4ff','M220 190 H580 V610 H220 Z M290 300 H510 M290 390 H510 M290 480 H440'),
+            'nav-menu': ('#7134df','#f12aa9','M190 250 H610 M190 400 H610 M190 550 H610'),
+            'top-back': ('#ffffff','#cfc5ff','M520 190 L310 400 L520 610 M320 400 H620'),
+            'top-menu': ('#ffffff','#cfc5ff','M180 245 H620 M180 400 H620 M180 555 H620'),
+          }
+
+          for name, (a,b,path) in icons.items():
+              svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="{a}"/><stop offset="1" stop-color="{b}"/></linearGradient></defs>
+          <rect width="800" height="800" rx="180" fill="{a}" opacity=".14"/>
+          <path d="{path}" fill="none" stroke="url(#g)" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>'''
+              (root / f'{name}.svg').write_text(svg, encoding='utf-8')
+
+          p = Path('index.html')
+          html = p.read_text(encoding='utf-8')
+
+          # 빠른 메뉴의 아이콘 영역을 실제 SVG 이미지로 교체한다.
+          quick_names = ['quick-fortune','quick-test','quick-popular','quick-all']
+          q_index = 0
+          def replace_quick(match):
+              nonlocal q_index
+              if q_index >= len(quick_names):
+                  return match.group(0)
+              name = quick_names[q_index]
+              q_index += 1
+              return f'<span class="ico"><img src="assets/ui-icons/{name}.svg" alt="" aria-hidden="true"></span>'
+          html = re.sub(r'<span[^>]*class=["\'][^"\']*\bico\b[^"\']*["\'][^>]*>.*?</span>', replace_quick, html, flags=re.I|re.S)
+
+          # 하단 네비게이션의 기존 문자/이모지 아이콘을 실제 이미지로 교체한다.
+          nav_names = ['nav-home','nav-fortune','nav-test','nav-menu']
+          nav_index = 0
+          def replace_nav(match):
+              nonlocal nav_index
+              if nav_index >= len(nav_names):
+                  return match.group(0)
+              name = nav_names[nav_index]
+              nav_index += 1
+              return f'<b class="nav-icon"><img src="assets/ui-icons/{name}.svg" alt="" aria-hidden="true"></b>'
+          html = re.sub(r'<b[^>]*>.*?</b>', replace_nav, html, flags=re.I|re.S)
+
+          # 상단 버튼의 문자/이모지 아이콘도 실제 이미지로 교체한다.
+          top_names = ['top-back','top-menu']
+          top_index = 0
+          def replace_top(match):
+              nonlocal top_index
+              if top_index >= len(top_names):
+                  return match.group(0)
+              name = top_names[top_index]
+              top_index += 1
+              return f'<img class="top-icon" src="assets/ui-icons/{name}.svg" alt="" aria-hidden="true">'
+          html = re.sub(r'(<div class=["\']top["\'][\s\S]*?</div>)', lambda m: m.group(1), html, count=0)
+          # .top 내부의 button만 순서대로 교체한다.
+          def replace_top_button(match):
+              nonlocal top_index
+              if top_index >= len(top_names):
+                  return match.group(0)
+              name = top_names[top_index]
+              top_index += 1
+              return re.sub(r'>[\s\S]*?</button>', f'><img class="top-icon" src="assets/ui-icons/{name}.svg" alt="" aria-hidden="true"></button>', match.group(0), count=1)
+          top_index = 0
+          html = re.sub(r'<button[^>]*>[\s\S]*?</button>', replace_top_button, html, flags=re.I)
+
+          # 새 아이콘의 크기와 정렬을 고정한다. 기존 emoji용 font-size 의존도 제거.
+          css = Path('assets/ui-v035.css')
+          css.write_text('''/* v0.00.35 — emoji 금지 정책에 맞춘 실제 이미지 아이콘 */
+          .quick .ico{padding:0;overflow:hidden}
+          .quick .ico img{width:72%;height:72%;display:block;object-fit:contain}
+          .bottom .nav-icon{display:grid;place-items:center;width:30px;height:30px;font-size:0;font-weight:400}
+          .bottom .nav-icon img{width:100%;height:100%;display:block;object-fit:contain}
+          .top .top-icon{width:25px;height:25px;display:block;object-fit:contain;margin:auto}
+          .top button{display:grid;place-items:center;padding:0}
+          @media(max-width:420px){.quick .ico{width:54px;height:54px;flex-basis:54px}.bottom .nav-icon{width:27px;height:27px}.top .top-icon{width:23px;height:23px}}
+          ''', encoding='utf-8')
+
+          marker = 'assets/ui-v035.css'
+          if marker not in html:
+              html = html.replace('</head>', '<link rel="stylesheet" href="assets/ui-v035.css?v=0.00.35">\n</head>', 1)
+          p.write_text(html, encoding='utf-8')
+          PY
+
+      - name: Validate no emoji in edited icon regions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path('index.html').read_text(encoding='utf-8')
+          if 'class="ico">' in html or "class='ico'>" in html:
+              raise SystemExit('quick icon replacement incomplete')
+          if 'class="nav-icon">' not in html:
+              raise SystemExit('bottom navigation icon replacement incomplete')
+          print('UI icon replacement checks passed')
+          PY
+
+      - name: Commit UI v0.00.35
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html assets/ui-icons assets/ui-v035.css
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "feat: replace emoji UI icons v0.00.35 [ui-v035]"
+            git pull --rebase origin main
+            git push
+          fi
