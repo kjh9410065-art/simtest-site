@@ -1,0 +1,46 @@
+/* 0.00.39 퀵메뉴 이미지 표시 보정
+   - inline background를 덮어쓰던 background:none!important 문제 수정
+   - 모든 퀵메뉴 아이콘을 실제 이미지 파일로 강제
+   - 기존 CSS 도형과 pseudo-element 제거
+*/
+
+#home .quick .ico{
+  font-size:0!important;
+  overflow:hidden!important;
+  background-repeat:no-repeat!important;
+  background-position:center!important;
+  background-size:cover!important;
+}
+
+/* 12띠와 별자리 이미지는 CSS에서 직접 지정해 로딩을 보장 */
+#home .quick button:nth-child(1) .quick-img{
+  background-image:url('fortune/zodiac05.jpg')!important;
+}
+#home .quick button:nth-child(2) .quick-img{
+  background-image:url('fortune/star01.jpg')!important;
+}
+
+/* 심리 테스트와 행운 아이템은 실제 SVG 이미지만 표시 */
+#home .quick button:nth-child(3) .quick-heart{
+  background-image:url('ui/quick-heart.svg')!important;
+}
+#home .quick button:nth-child(4) .quick-clover{
+  background-image:url('ui/quick-lucky.svg')!important;
+}
+
+#home .quick .quick-heart::before,
+#home .quick .quick-heart::after,
+#home .quick .quick-clover::before,
+#home .quick .quick-clover::after{
+  content:none!important;
+  display:none!important;
+}
+#home .quick .quick-clover i{display:none!important;}
+
+@media(max-width:420px){
+  #home .quick .ico{
+    width:54px!important;
+    height:54px!important;
+    flex-basis:54px!important;
+  }
+}
