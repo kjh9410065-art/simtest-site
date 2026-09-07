@@ -26,11 +26,15 @@ jobs:
 
           # 소스에 남아 있는 이모지와 장식용 유니코드 기호를 제거합니다.
           blocked = re.compile(
-              r'[\U0001F000-\U0001FFFF\u2190-\u21FF\u2200-\u22FF\u2300-\u23FF\u25A0-\u25FF\u2600-\u27BF\u2900-\u297F\u2B00-\u2BFF]'
+              r'[\U0001F000-\U0001FFFF\u00D7\u203A\u2190-\u21FF\u2200-\u22FF\u2300-\u23FF\u25A0-\u25FF\u2600-\u27BF\u2900-\u297F\u2B00-\u2BFF]'
           )
           cleaned = blocked.sub('', text)
 
-          # 같은 리소스가 여러 번 삽입되는 것을 막습니다.
+          # 이전 패치에서 잘못 기록된 정규식 치환 문자열을 실제 버전 문자열로 복구합니다.
+          cleaned = cleaned.replace('\\g<1>0.00.38\\g<2>/>', '0.00.38/>')
+          cleaned = cleaned.replace('\\g<1>0.00.38\\g<2>', '0.00.38')
+
+          # 중복 리소스를 제거한 뒤 최신 UI 리소스를 한 번만 연결합니다.
           cleaned = re.sub(r'\n?<link[^>]+assets/ui-v038\.css[^>]*>', '', cleaned)
           cleaned = re.sub(r'\n?<script[^>]+assets/ui-v038\.js[^>]*></script>', '', cleaned)
 
@@ -47,10 +51,6 @@ jobs:
           else:
               cleaned += '\n' + js_tag
 
-          # 버전 표시를 0.00.38로 통일합니다.
-          cleaned = re.sub(r'(<meta[^>]*name=["\']app-version["\'][^>]*content=["\'])[^"\']+(["\'])', r'\g<1>0.00.38\g<2>', cleaned)
-          cleaned = re.sub(r'(<meta[^>]*content=["\'])[^"\']+(["\'][^>]*name=["\']app-version["\'])', r'\g<1>0.00.38\g<2>', cleaned)
-
           if cleaned != text:
               index.write_text(cleaned, encoding='utf-8')
 
@@ -64,5 +64,5 @@ jobs:
             echo "No source changes needed"
             exit 0
           fi
-          git commit -m "chore: apply v0.00.38 source cleanup [skip ci]"
+          git commit -m "chore: finish v0.00.38 source cleanup [skip ci]"
           git push
