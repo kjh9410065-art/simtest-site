@@ -1,0 +1,53 @@
+/* 0.00.40 퀵메뉴 이미지 강제 표시
+   - 기존 background 방식의 CSS 충돌을 제거
+   - 실제 img 요소가 항상 보이도록 처리
+   - 장식용 CSS 도형은 완전히 숨김
+*/
+
+#home .quick .ico{
+  position:relative!important;
+  width:58px!important;
+  height:58px!important;
+  min-width:58px!important;
+  flex:0 0 58px!important;
+  border-radius:18px!important;
+  overflow:hidden!important;
+  display:block!important;
+  background:none!important;
+  font-size:0!important;
+  box-shadow:0 8px 18px rgba(0,0,0,.18)!important;
+}
+
+/* 퀵메뉴 안의 실제 img만 표시 */
+#home .quick .quick-art{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  border-radius:inherit!important;
+}
+
+/* 기존 background와 CSS 도형은 화면에 영향을 주지 않도록 제거 */
+#home .quick .quick-img,
+#home .quick .quick-heart,
+#home .quick .quick-clover{
+  background:none!important;
+}
+#home .quick .quick-heart::before,
+#home .quick .quick-heart::after,
+#home .quick .quick-clover::before,
+#home .quick .quick-clover::after,
+#home .quick .quick-clover i{
+  display:none!important;
+  content:none!important;
+}
+
+@media(max-width:420px){
+  #home .quick .ico{
+    width:54px!important;
+    height:54px!important;
+    min-width:54px!important;
+    flex-basis:54px!important;
+  }
+}
