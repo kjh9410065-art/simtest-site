@@ -1126,7 +1126,7 @@ html,body{background:#080b34!important}
 <style id="soulmate-equal-card-v49">
 @media (min-width:901px){body .app #tests #test-list{grid-auto-rows:500px!important;}body .app #tests #test-list .list-card{height:500px!important;min-height:500px!important;max-height:500px!important;}body .app #tests #test-list .list-art{height:285px!important;min-height:285px!important;max-height:285px!important;overflow:hidden!important;}body .app #tests #test-list .list-art img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important;}}</style>
 
-\g<1>0.00.38\g<2>/>
+0.00.38/>
 
 <style id="result-layout-clean-v20">
 /* 0.00.20 결과 페이지 최종 정리
@@ -1151,7 +1151,7 @@ html,body{background:#080b34!important}
   margin:14px 0 18px!important;
 }
 
-/* 결과 일러스트는 파일 자체와 동일한 1:1 비율로 정확히 180×180px 고정 */
+/* 결과 일러스트는 파일 자체와 동일한 1:1 비율로 정확히 180180px 고정 */
 #result .result-art-frame{
   position:relative!important;
   width:180px!important;
@@ -1247,7 +1247,7 @@ html,body{background:#080b34!important}
   box-sizing:border-box!important;
 }
 
-/* 모바일에서도 이미지 크기는 줄이지 않고 180×180px을 유지합니다. */
+/* 모바일에서도 이미지 크기는 줄이지 않고 180180px을 유지합니다. */
 @media(max-width:700px){
   #result .result{
     max-width:none!important;
@@ -1311,7 +1311,7 @@ html,body{background:#080b34!important}
 </header>
 <div class="side-menu" id="side-menu" onclick="closeMenu(event)">
 <aside class="side-menu-panel" onclick="event.stopPropagation()">
-<div class="menu-head"><div><img alt="" class="menu-head-illus" src="assets/menu/menu-orb.png"/><strong>메뉴</strong></div><button class="menu-close" onclick="closeMenu()">×</button></div>
+<div class="menu-head"><div><img alt="" class="menu-head-illus" src="assets/menu/menu-orb.png"/><strong>메뉴</strong></div><button class="menu-close" onclick="closeMenu()"></button></div>
 <div class="menu-list menu-illustrated">
 <button onclick="closeMenu();goHome()"><img alt="" class="menu-illus" src="assets/menu/home.png"/><span>홈</span></button>
 <button onclick="closeMenu();openFortune()"><img alt="" class="menu-illus" src="assets/menu/fortune.png"/><span>오늘의 운세</span></button>
@@ -1324,7 +1324,7 @@ html,body{background:#080b34!important}
 </div>
 <div class="search-modal" id="search-modal" onclick="closeSearch(event)">
 <div class="search-box" onclick="event.stopPropagation()">
-<div class="search-head"><strong>무엇을 찾고 있나요?</strong><button onclick="closeSearch()">×</button></div>
+<div class="search-head"><strong>무엇을 찾고 있나요?</strong><button onclick="closeSearch()"></button></div>
 <div class="search-input-wrap"><span class="search-mini"></span><input id="site-search" onkeydown="if(event.key==='Enter')doSearch()" placeholder="예: 연애, 성격, 스트레스" type="search"/><button onclick="doSearch()">검색</button></div>
 <div class="search-results" id="search-results"><p>심리테스트 이름이나 카테고리를 검색해보세요.</p></div>
 </div>
@@ -1348,7 +1348,7 @@ html,body{background:#080b34!important}
 </section>
 <div class="birth-modal" id="birth-modal" onclick="closeBirthModal(event)">
 <div class="birth-modal-box" onclick="event.stopPropagation()">
-<button class="birth-close" onclick="closeBirthModal()">×</button>
+<button class="birth-close" onclick="closeBirthModal()"></button>
 <div class="birth-kicker">오늘의 운세</div>
 <h2>나의 운세를 확인해보세요</h2>
 <p>생년월일을 입력하면 오늘의 운세를 계산해드려요.</p>
@@ -1403,7 +1403,7 @@ function toggleMenu(){const menu=document.getElementById('side-menu');if(menu)me
 function closeMenu(e){if(e&&e.target!==e.currentTarget)return;const menu=document.getElementById('side-menu');if(menu)menu.classList.remove('show')}
 function showSearch(){const modal=document.getElementById('search-modal');if(!modal)return;modal.classList.add('show');setTimeout(()=>document.getElementById('site-search')?.focus(),80)}
 function closeSearch(e){if(e&&e.target!==e.currentTarget)return;const modal=document.getElementById('search-modal');if(modal)modal.classList.remove('show')}
-function doSearch(){const input=document.getElementById('site-search'),results=document.getElementById('search-results');const q=(input?.value||'').trim().toLowerCase();if(!results)return;if(!q){results.innerHTML='<p>검색어를 입력해주세요.</p>';return}const found=TESTS.map((t,i)=>({t,i})).filter(({t})=>[t.title,t.desc,t.cat].some(v=>v.toLowerCase().includes(q)));if(!found.length){results.innerHTML='<p>검색 결과가 없어요.<br>다른 단어로 검색해보세요.</p>';return}results.innerHTML=found.map(({t,i})=>`<button class="search-result" onclick="closeSearch();startTest(${i})"><img src="${t.img}" alt=""><span><strong>${t.title}</strong><small>${t.cat} · ${t.desc}</small></span><b>›</b></button>`).join('')}
+function doSearch(){const input=document.getElementById('site-search'),results=document.getElementById('search-results');const q=(input?.value||'').trim().toLowerCase();if(!results)return;if(!q){results.innerHTML='<p>검색어를 입력해주세요.</p>';return}const found=TESTS.map((t,i)=>({t,i})).filter(({t})=>[t.title,t.desc,t.cat].some(v=>v.toLowerCase().includes(q)));if(!found.length){results.innerHTML='<p>검색 결과가 없어요.<br>다른 단어로 검색해보세요.</p>';return}results.innerHTML=found.map(({t,i})=>`<button class="search-result" onclick="closeSearch();startTest(${i})"><img src="${t.img}" alt=""><span><strong>${t.title}</strong><small>${t.cat} · ${t.desc}</small></span><b></b></button>`).join('')}
 function showLucky(){
   const modal=document.getElementById('lucky-modal');
   if(modal) modal.classList.add('show');
@@ -1938,7 +1938,7 @@ function closePersonalLoveDetail(){
 </script>
 <div class="lucky-modal" id="lucky-modal" onclick="closeLucky(event)">
 <div class="lucky-modal-box" onclick="event.stopPropagation()">
-<button class="lucky-close" onclick="closeLucky()">×</button>
+<button class="lucky-close" onclick="closeLucky()"></button>
 <div class="lucky-visual">
 <div class="lucky-clover"><i></i><i></i><i></i><i></i></div>
 </div>
@@ -2043,7 +2043,7 @@ nav.bottom button{
 }
 </style>
 <style id="v57-unified-test-grid-final">
-/* PC: 6개 테스트 카드를 동일한 크기로 3열 × 2행 정렬 */
+/* PC: 6개 테스트 카드를 동일한 크기로 3열  2행 정렬 */
 @media (min-width:901px){
   body .app #tests #test-list{
     display:grid!important;
