@@ -1,4 +1,4 @@
-name: Emoji guard
+name: Symbol guard
 
 on:
   push:
@@ -16,15 +16,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Scan text files for emoji characters
+      - name: Scan text files for emoji and pictogram symbols
         shell: python
         run: |
           from pathlib import Path
           import re
 
-          # UI 소스에 이모지가 다시 들어오는 것을 막는다.
-          emoji_re = re.compile(
-              r"[\U0001F000-\U0001FAFF\U00002600-\U000027BF\U0001FC00-\U0001FFFF]"
+          # UI 소스에 이모지와 이모지처럼 보이는 장식용 유니코드 기호가 다시 들어오는 것을 막는다.
+          symbol_re = re.compile(
+              r"[\U0001F000-\U0001FFFF\u2600-\u27BF\u2190-\u21FF\u2200-\u22FF\u2300-\u23FF\u25A0-\u25FF\u2900-\u297F\u2B00-\u2BFF]"
           )
           skip = {".git", ".github/cache", "node_modules"}
           allowed = {".html", ".css", ".js", ".json", ".jsonc", ".md", ".yml", ".yaml", ".svg", ".txt"}
@@ -40,12 +40,12 @@ jobs:
               except UnicodeDecodeError:
                   continue
               for line_no, line in enumerate(text.splitlines(), 1):
-                  if emoji_re.search(line):
+                  if symbol_re.search(line):
                       hits.append(f"{path}:{line_no}")
 
           if hits:
-              print("Emoji detected:")
+              print("Emoji or emoji-like symbol detected:")
               print("\n".join(hits))
               raise SystemExit(1)
 
-          print("Emoji guard passed: no emoji characters found in text/UI source files.")
+          print("Symbol guard passed: no blocked emoji or emoji-like symbols found in text/UI source files.")
