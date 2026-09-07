@@ -1,0 +1,60 @@
+name: Apply v0.00.40 quick menu image fix
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inject v0.00.40 assets
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          index = Path('index.html')
+          text = index.read_text(encoding='utf-8')
+
+          # 이전 퀵메뉴 보정 CSS/JS 연결을 제거해 오래된 규칙이 다시 적용되지 않게 한다.
+          text = re.sub(r'\n?<link[^>]*assets/ui-v0\.00\.39\.css[^>]*>', '', text)
+          text = re.sub(r'\n?<link[^>]*assets/ui-v039\.css[^>]*>', '', text)
+          text = re.sub(r'\n?<link[^>]*assets/ui-v040\.css[^>]*>', '', text)
+          text = re.sub(r'\n?<script[^>]*assets/ui-v040\.js[^>]*></script>', '', text)
+
+          # 최신 CSS와 JS를 head/body에 각각 한 번만 연결한다.
+          css = '<link rel="stylesheet" href="assets/ui-v040.css?v=0.00.40">'
+          js = '<script defer src="assets/ui-v040.js?v=0.00.40"></script>'
+
+          if '</head>' in text:
+              text = text.replace('</head>', css + '\n</head>', 1)
+          else:
+              text += '\n' + css
+
+          if '</body>' in text:
+              text = text.replace('</body>', js + '\n</body>', 1)
+          else:
+              text += '\n' + js
+
+          index.write_text(text, encoding='utf-8')
+
+      - name: Commit patch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No source changes needed"
+            exit 0
+          fi
+          git commit -m "fix: force quick menu images v0.00.40 [skip ci]"
+          git push
