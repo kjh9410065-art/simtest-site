@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#3a2024"/><stop offset="1" stop-color="#090b22"/></linearGradient>
+  <filter id="shadow"><feGaussianBlur stdDeviation="18"/></filter>
+</defs>
+<rect width="800" height="800" rx="64" fill="url(#bg)"/>
+<ellipse cx="400" cy="650" rx="245" ry="55" fill="#000" opacity=".25" filter="url(#shadow)"/>
+<rect width="800" height="800" rx="64" fill="#3a2024"/>
+    <circle cx="400" cy="340" r="300" fill="#ff9caa" opacity=".10"/>
+    <circle cx="120" cy="130" r="6" fill="#ff9caa" opacity=".8"/>
+    <circle cx="670" cy="180" r="4" fill="#ff9caa" opacity=".65"/>
+    <circle cx="610" cy="650" r="7" fill="#ff9caa" opacity=".55"/><path d="M400 580 V400" stroke="#8be0a0" stroke-width="24" stroke-linecap="round"/><path d="M400 500 Q330 445 275 480 Q330 535 400 520 M400 465 Q475 420 525 460 Q480 515 400 505" fill="none" stroke="#8be0a0" stroke-width="24" stroke-linecap="round"/><circle cx="400" cy="320" r="70" fill="#ff9caa"/><circle cx="320" cy="350" r="65" fill="#ff9caa" opacity=".8"/><circle cx="480" cy="350" r="65" fill="#ff9caa" opacity=".8"/><circle cx="400" cy="245" r="65" fill="#ff9caa" opacity=".8"/>
+<circle cx="400" cy="400" r="325" fill="none" stroke="#ff9caa" stroke-width="3" opacity=".18"/>
+</svg>

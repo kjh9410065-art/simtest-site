@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#20213d"/><stop offset="1" stop-color="#090b22"/></linearGradient>
+  <filter id="shadow"><feGaussianBlur stdDeviation="18"/></filter>
+</defs>
+<rect width="800" height="800" rx="64" fill="url(#bg)"/>
+<ellipse cx="400" cy="650" rx="245" ry="55" fill="#000" opacity=".25" filter="url(#shadow)"/>
+<rect width="800" height="800" rx="64" fill="#20213d"/>
+    <circle cx="400" cy="340" r="300" fill="#9c9cff" opacity=".10"/>
+    <circle cx="120" cy="130" r="6" fill="#9c9cff" opacity=".8"/>
+    <circle cx="670" cy="180" r="4" fill="#9c9cff" opacity=".65"/>
+    <circle cx="610" cy="650" r="7" fill="#9c9cff" opacity=".55"/><path d="M205 270 H350 C325 215 390 180 420 230 C440 260 420 285 400 300 H595 V470 C535 445 500 510 545 545 C570 565 590 550 595 530 V610 H400 V545 C350 575 295 520 330 475 C350 450 375 460 400 475 V300 H205Z" fill="#9c9cff" opacity=".8"/>
+<circle cx="400" cy="400" r="325" fill="none" stroke="#9c9cff" stroke-width="3" opacity=".18"/>
+</svg>
