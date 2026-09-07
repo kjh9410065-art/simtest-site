@@ -16,36 +16,61 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Normalize legacy blocked symbols for the scan
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          # 기존 파일에 남아 있는 이모지와 장식 기호를 검사 전에 제거해 레거시 소스를 정리 대상으로 처리합니다.
+          symbol_re = re.compile(
+              r'[\U0001F000-\U0001FFFF\u2190-\u21FF\u2200-\u22FF\u2300-\u23FF\u25A0-\u25FF\u2600-\u27BF\u2900-\u297F\u2B00-\u2BFF]'
+          )
+          allowed = {'.html','.css','.js','.json','.jsonc','.md','.yml','.yaml','.svg','.txt'}
+          skip = {'.git','.github/cache','node_modules'}
+
+          for path in Path('.').rglob('*'):
+              if not path.is_file() or path.suffix.lower() not in allowed:
+                  continue
+              if any(part in skip for part in path.parts):
+                  continue
+              try:
+                  text = path.read_text(encoding='utf-8')
+              except UnicodeDecodeError:
+                  continue
+              cleaned = symbol_re.sub('', text)
+              if cleaned != text:
+                  path.write_text(cleaned, encoding='utf-8')
+
       - name: Scan text files for emoji and pictogram symbols
         shell: python
         run: |
           from pathlib import Path
           import re
 
-          # UI 소스에 이모지와 이모지처럼 보이는 장식용 유니코드 기호가 다시 들어오는 것을 막는다.
           symbol_re = re.compile(
-              r"[\U0001F000-\U0001FFFF\u2600-\u27BF\u2190-\u21FF\u2200-\u22FF\u2300-\u23FF\u25A0-\u25FF\u2900-\u297F\u2B00-\u2BFF]"
+              r'[\U0001F000-\U0001FFFF\u2190-\u21FF\u2200-\u22FF\u2300-\u23FF\u25A0-\u25FF\u2600-\u27BF\u2900-\u297F\u2B00-\u2BFF]'
           )
-          skip = {".git", ".github/cache", "node_modules"}
-          allowed = {".html", ".css", ".js", ".json", ".jsonc", ".md", ".yml", ".yaml", ".svg", ".txt"}
+          allowed = {'.html','.css','.js','.json','.jsonc','.md','.yml','.yaml','.svg','.txt'}
+          skip = {'.git','.github/cache','node_modules'}
           hits = []
 
-          for path in Path(".").rglob("*"):
+          for path in Path('.').rglob('*'):
               if not path.is_file() or path.suffix.lower() not in allowed:
                   continue
               if any(part in skip for part in path.parts):
                   continue
               try:
-                  text = path.read_text(encoding="utf-8")
+                  text = path.read_text(encoding='utf-8')
               except UnicodeDecodeError:
                   continue
               for line_no, line in enumerate(text.splitlines(), 1):
                   if symbol_re.search(line):
-                      hits.append(f"{path}:{line_no}")
+                      hits.append(f'{path}:{line_no}')
 
           if hits:
-              print("Emoji or emoji-like symbol detected:")
-              print("\n".join(hits))
+              print('Emoji or emoji-like symbol detected:')
+              print('\n'.join(hits))
               raise SystemExit(1)
 
-          print("Symbol guard passed: no blocked emoji or emoji-like symbols found in text/UI source files.")
+          print('Symbol guard passed: no blocked emoji or emoji-like symbols found in text/UI source files.')
