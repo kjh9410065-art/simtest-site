@@ -1,0 +1,130 @@
+name: Apply UI polish v0.00.34
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  ui-polish:
+    if: "!contains(github.event.head_commit.message, '[ui-v034]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply mobile UI polish
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          p = Path('index.html')
+          html = p.read_text(encoding='utf-8')
+
+          marker = 'assets/ui-v034.css'
+          css = r'''/* v0.00.34 — 모바일 UI 정리 */
+          :root{--ui-purple:#7134df;--ui-pink:#f12aa9;--ui-soft:#f5f1ff}
+
+          /* 메인 히어로: 작은 화면에서 과하게 길어지지 않도록 비율 조정 */
+          .hero{min-height:440px}
+          .hero-content{min-height:440px;padding:26px 20px 22px}
+          .hero-character{height:350px;width:54%;right:-8px;top:12px}
+          .hero h1{font-size:32px;line-height:1.2;margin-bottom:14px}
+          .hero p{font-size:14px;line-height:1.6;margin-bottom:18px}
+          .cta{height:54px;font-size:17px}
+
+          /* 빠른 메뉴: 아이콘/텍스트 비율을 안정적으로 고정 */
+          .quick{gap:9px;padding:10px}
+          .quick button{min-height:92px;border-radius:18px;padding:11px;gap:9px}
+          .quick .ico{width:52px;height:52px;flex-basis:52px;border-radius:15px;font-size:29px}
+          .quick span:last-child{font-size:14px}
+
+          /* 테스트 카드: 이미지 높이를 통일하고 텍스트 영역도 일정하게 */
+          .test-grid{gap:11px}
+          .test-card{border-radius:17px;box-shadow:0 5px 16px rgba(27,20,70,.07)}
+          .art{height:auto;aspect-ratio:1/1;}
+          .art img{object-fit:cover;aspect-ratio:1/1}
+          .test-body{padding:11px}
+          .test-body h3{font-size:15px;margin-bottom:4px}
+          .test-body p{font-size:11px;min-height:32px;margin-bottom:7px}
+
+          /* 목록 카드: 좌우 비율과 이미지 크기 통일 */
+          .list-card{grid-template-columns:132px 1fr;min-height:132px;border-radius:18px}
+          .list-art{aspect-ratio:1/1}
+          .list-art img{aspect-ratio:1/1;object-fit:cover}
+          .list-body{padding:14px 13px}
+          .list-body h2{font-size:17px;margin-bottom:6px}
+          .list-body p{font-size:11px;line-height:1.45;margin-bottom:8px}
+          .badge{padding:6px 8px;font-size:10px}
+          .list-start{margin-top:7px;font-size:13px}
+
+          /* 문제 화면: 이미지가 잘리지 않고 정사각형 중심으로 보이게 */
+          .question-art{height:auto;aspect-ratio:1/1;border-radius:18px;margin:11px 0}
+          .question-art img{object-fit:cover}
+          .qcard{border-radius:20px;padding:18px 15px}
+          .qcard h2{font-size:20px;line-height:1.42}
+          .ans{padding:14px;border-radius:13px;line-height:1.45}
+
+          /* 결과 화면: 결과 이미지/텍스트/액션을 하나의 카드 흐름으로 정리 */
+          .result{padding:14px 14px 30px}
+          .result-art{height:auto;aspect-ratio:1/1;border-radius:22px;background:#15144d;box-shadow:0 10px 26px rgba(31,20,78,.12)}
+          .result-art img{object-fit:cover;aspect-ratio:1/1}
+          .result h1{font-size:27px;margin:16px 2px 6px}
+          .tagrow{gap:6px}
+          .tag{padding:6px 9px;font-size:10px}
+          .result-section{border-radius:17px;padding:15px;margin-top:9px}
+          .result-section h3{font-size:16px;margin-bottom:7px}
+          .result-section p{font-size:13px;line-height:1.72}
+          .result-actions{gap:8px;margin-top:12px}
+          .result-actions button{height:48px;border-radius:14px}
+
+          /* 하단 네비게이션이 콘텐츠를 가리지 않도록 여백 확보 */
+          .page{padding-bottom:94px}
+          .bottom{height:72px}
+
+          /* 터치 디바이스에서 버튼 피드백 */
+          button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+          button:active{transform:translateY(1px)}
+
+          @media(max-width:390px){
+            .hero{min-height:420px}
+            .hero-content{min-height:420px;padding:22px 16px 18px}
+            .hero h1{font-size:29px}
+            .hero-character{height:325px;width:57%}
+            .quick button{min-height:86px;padding:9px}
+            .quick .ico{width:48px;height:48px;flex-basis:48px;font-size:26px}
+            .quick span:last-child{font-size:13px}
+            .section{padding:18px 12px}
+            .list-card{grid-template-columns:116px 1fr;min-height:116px}
+            .list-body{padding:11px 10px}
+            .list-body h2{font-size:15px}
+            .result h1{font-size:25px}
+          }
+
+          @media(min-width:700px){
+            .hero{min-height:460px}
+            .hero-content{min-height:460px}
+          }
+          '''
+
+          css_path = Path('assets/ui-v034.css')
+          css_path.write_text(css, encoding='utf-8')
+
+          if marker not in html:
+              tag = '<link rel="stylesheet" href="assets/ui-v034.css?v=0.00.34">\n'
+              html = html.replace('</head>', tag + '</head>', 1)
+              p.write_text(html, encoding='utf-8')
+          PY
+
+      - name: Commit UI polish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html assets/ui-v034.css
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "feat: apply UI polish v0.00.34 [ui-v034]"
+            git push
+          fi
