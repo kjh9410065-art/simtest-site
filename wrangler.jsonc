@@ -1,9 +1,9 @@
 {
   "$schema": "https://developers.cloudflare.com/workers/wrangler/config-schema.json",
-  "name": "polished-unit-06f1",
+  "name": "simtest-test-stt",
   "compatibility_date": "2026-09-08",
   "assets": {
     "directory": "."
   }
-  // Cloudflare Workers Builds 자동 배포 연결 확인용 커밋
+  // Cloudflare Workers Builds 자동 배포 연결용 설정
 }
