@@ -47,55 +47,49 @@ jobs:
           p = Path('index.html')
           html = p.read_text(encoding='utf-8')
 
-          # 빠른 메뉴의 아이콘 영역을 실제 SVG 이미지로 교체한다.
+          # 빠른 메뉴 아이콘을 실제 SVG 이미지로 교체한다.
           quick_names = ['quick-fortune','quick-test','quick-popular','quick-all']
-          q_index = 0
+          q_index = [0]
           def replace_quick(match):
-              nonlocal q_index
-              if q_index >= len(quick_names):
+              i = q_index[0]
+              if i >= len(quick_names):
                   return match.group(0)
-              name = quick_names[q_index]
-              q_index += 1
-              return f'<span class="ico"><img src="assets/ui-icons/{name}.svg" alt="" aria-hidden="true"></span>'
+              q_index[0] += 1
+              return f'<span class="ico"><img src="assets/ui-icons/{quick_names[i]}.svg" alt="" aria-hidden="true"></span>'
           html = re.sub(r'<span[^>]*class=["\'][^"\']*\bico\b[^"\']*["\'][^>]*>.*?</span>', replace_quick, html, flags=re.I|re.S)
 
-          # 하단 네비게이션의 기존 문자/이모지 아이콘을 실제 이미지로 교체한다.
+          # 하단 네비게이션 내부의 아이콘만 교체한다.
           nav_names = ['nav-home','nav-fortune','nav-test','nav-menu']
-          nav_index = 0
-          def replace_nav(match):
-              nonlocal nav_index
-              if nav_index >= len(nav_names):
-                  return match.group(0)
-              name = nav_names[nav_index]
-              nav_index += 1
-              return f'<b class="nav-icon"><img src="assets/ui-icons/{name}.svg" alt="" aria-hidden="true"></b>'
-          html = re.sub(r'<b[^>]*>.*?</b>', replace_nav, html, flags=re.I|re.S)
+          bottom_match = re.search(r'(<div[^>]*class=["\']bottom["\'][^>]*>)(.*?)(</div>)', html, flags=re.I|re.S)
+          if bottom_match:
+              block = bottom_match.group(2)
+              n_index = [0]
+              def replace_nav(match):
+                  i = n_index[0]
+                  if i >= len(nav_names):
+                      return match.group(0)
+                  n_index[0] += 1
+                  return f'<b class="nav-icon"><img src="assets/ui-icons/{nav_names[i]}.svg" alt="" aria-hidden="true"></b>'
+              block = re.sub(r'<b[^>]*>.*?</b>', replace_nav, block, flags=re.I|re.S)
+              html = html[:bottom_match.start(2)] + block + html[bottom_match.end(2):]
 
-          # 상단 버튼의 문자/이모지 아이콘도 실제 이미지로 교체한다.
+          # 상단 영역의 버튼 아이콘만 교체한다.
           top_names = ['top-back','top-menu']
-          top_index = 0
-          def replace_top(match):
-              nonlocal top_index
-              if top_index >= len(top_names):
-                  return match.group(0)
-              name = top_names[top_index]
-              top_index += 1
-              return f'<img class="top-icon" src="assets/ui-icons/{name}.svg" alt="" aria-hidden="true">'
-          html = re.sub(r'(<div class=["\']top["\'][\s\S]*?</div>)', lambda m: m.group(1), html, count=0)
-          # .top 내부의 button만 순서대로 교체한다.
-          def replace_top_button(match):
-              nonlocal top_index
-              if top_index >= len(top_names):
-                  return match.group(0)
-              name = top_names[top_index]
-              top_index += 1
-              return re.sub(r'>[\s\S]*?</button>', f'><img class="top-icon" src="assets/ui-icons/{name}.svg" alt="" aria-hidden="true"></button>', match.group(0), count=1)
-          top_index = 0
-          html = re.sub(r'<button[^>]*>[\s\S]*?</button>', replace_top_button, html, flags=re.I)
+          top_match = re.search(r'(<div[^>]*class=["\']top["\'][^>]*>)(.*?)(</div>)', html, flags=re.I|re.S)
+          if top_match:
+              block = top_match.group(2)
+              t_index = [0]
+              def replace_top_button(match):
+                  i = t_index[0]
+                  if i >= len(top_names):
+                      return match.group(0)
+                  t_index[0] += 1
+                  return re.sub(r'>[\s\S]*?</button>', f'><img class="top-icon" src="assets/ui-icons/{top_names[i]}.svg" alt="" aria-hidden="true"></button>', match.group(0), count=1)
+              block = re.sub(r'<button[^>]*>[\s\S]*?</button>', replace_top_button, block, flags=re.I)
+              html = html[:top_match.start(2)] + block + html[top_match.end(2):]
 
-          # 새 아이콘의 크기와 정렬을 고정한다. 기존 emoji용 font-size 의존도 제거.
           css = Path('assets/ui-v035.css')
-          css.write_text('''/* v0.00.35 — emoji 금지 정책에 맞춘 실제 이미지 아이콘 */
+          css.write_text('''/* v0.00.35 — 실제 이미지 아이콘으로 교체 */
           .quick .ico{padding:0;overflow:hidden}
           .quick .ico img{width:72%;height:72%;display:block;object-fit:contain}
           .bottom .nav-icon{display:grid;place-items:center;width:30px;height:30px;font-size:0;font-weight:400}
@@ -111,14 +105,15 @@ jobs:
           p.write_text(html, encoding='utf-8')
           PY
 
-      - name: Validate no emoji in edited icon regions
+      - name: Validate icon replacement
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
           html = Path('index.html').read_text(encoding='utf-8')
-          if 'class="ico">' in html or "class='ico'>" in html:
+          if html.count('assets/ui-icons/quick-') < 4:
               raise SystemExit('quick icon replacement incomplete')
-          if 'class="nav-icon">' not in html:
+          if html.count('assets/ui-icons/nav-') < 4:
               raise SystemExit('bottom navigation icon replacement incomplete')
           print('UI icon replacement checks passed')
           PY
