@@ -1,0 +1,49 @@
+name: Generate consistent result artwork v3
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  result-art:
+    if: "!contains(github.event.head_commit.message, '[result-images-v3]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate 24 square SVG artworks
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          out = Path('assets/results')
+          out.mkdir(parents=True, exist_ok=True)
+          palettes = {
+            'love': ('#24142f','#ff5fa2','#ffb3d1'),
+            'personality': ('#181632','#9b7cff','#c8bbff'),
+            'stress': ('#102a32','#49d6d0','#a8f3ee'),
+            'soulmate': ('#2b172d','#d66bff','#ffc4ea'),
+            'leadership': ('#2b2112','#f2b84b','#ffe1a0'),
+            'first': ('#182039','#79a9ff','#c8dcff')
+          }
+          shapes = [
+            '<circle cx="400" cy="390" r="155" fill="none" stroke="url(#l)" stroke-width="26"/><circle cx="400" cy="390" r="55" fill="{b}" opacity=".75"/>',
+            '<path d="M400 180 L455 335 L620 390 L455 445 L400 600 L345 445 L180 390 L345 335Z" fill="none" stroke="url(#l)" stroke-width="24"/>',
+            '<path d="M210 470 Q300 250 400 470 T590 470" fill="none" stroke="url(#l)" stroke-width="28" stroke-linecap="round"/><circle cx="400" cy="360" r="48" fill="{b}" opacity=".65"/>',
+            '<circle cx="330" cy="390" r="105" fill="none" stroke="url(#l)" stroke-width="22"/><circle cx="470" cy="390" r="105" fill="none" stroke="{b}" stroke-width="22"/>'
+          ]
+          for cat,(bg,a,b) in palettes.items():
+            for n,shape in enumerate(shapes,1):
+              svg=f'''<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800"><defs><radialGradient id="g"><stop stop-color="{a}" stop-opacity=".35"/><stop offset="1" stop-color="{bg}" stop-opacity="0"/></radialGradient><linearGradient id="l" x1="0" y1="0" x2="1" y2="1"><stop stop-color="{a}"/><stop offset="1" stop-color="{b}"/></linearGradient></defs><rect width="800" height="800" rx="64" fill="{bg}"/><circle cx="400" cy="350" r="310" fill="url(#g)"/>{shape.format(a=a,b=b)}<circle cx="400" cy="665" r="5" fill="{b}" opacity=".55"/></svg>'''
+              (out/f'{cat}-{n}.jpg.svg').write_text(svg,encoding='utf-8')
+          Path('_redirects').write_text('/assets/results/*.jpg /assets/results/:splat.jpg.svg 200\n',encoding='utf-8')
+          PY
+      - name: Commit generated artwork
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/results/*.jpg.svg _redirects
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "feat: replace result artwork [result-images-v3]"
+          git push
