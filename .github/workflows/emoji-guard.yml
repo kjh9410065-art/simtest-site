@@ -1,0 +1,51 @@
+name: Emoji guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Scan text files for emoji characters
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          # UI 소스에 이모지가 다시 들어오는 것을 막는다.
+          emoji_re = re.compile(
+              r"[\U0001F000-\U0001FAFF\U00002600-\U000027BF\U0001FC00-\U0001FFFF]"
+          )
+          skip = {".git", ".github/cache", "node_modules"}
+          allowed = {".html", ".css", ".js", ".json", ".jsonc", ".md", ".yml", ".yaml", ".svg", ".txt"}
+          hits = []
+
+          for path in Path(".").rglob("*"):
+              if not path.is_file() or path.suffix.lower() not in allowed:
+                  continue
+              if any(part in skip for part in path.parts):
+                  continue
+              try:
+                  text = path.read_text(encoding="utf-8")
+              except UnicodeDecodeError:
+                  continue
+              for line_no, line in enumerate(text.splitlines(), 1):
+                  if emoji_re.search(line):
+                      hits.append(f"{path}:{line_no}")
+
+          if hits:
+              print("Emoji detected:")
+              print("\n".join(hits))
+              raise SystemExit(1)
+
+          print("Emoji guard passed: no emoji characters found in text/UI source files.")
