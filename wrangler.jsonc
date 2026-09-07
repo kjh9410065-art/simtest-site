@@ -5,4 +5,5 @@
   "assets": {
     "directory": "."
   }
+  // Cloudflare Workers Builds 자동 배포 연결 확인용 커밋
 }
