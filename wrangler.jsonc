@@ -6,4 +6,5 @@
     "directory": "."
   }
   // Cloudflare Workers Builds 자동 배포 연결용 설정
+  // GitHub main 연결 확인용 배포 트리거
 }
