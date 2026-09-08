@@ -8,7 +8,7 @@
   }).format(new Date());
 
   // 코드가 바뀔 때마다 URL 버전을 올려 이전 응답과 완전히 분리합니다.
-  const imageVersion = "ai-20260909-v5";
+  const imageVersion = "ai-20260909-v6";
 
   // AI 이미지가 늦게 생성되어도 레이아웃이 갑자기 커지거나 줄어들지 않도록 크기를 고정합니다.
   const style = document.createElement("style");
@@ -32,9 +32,25 @@
   const images = [...document.querySelectorAll("[data-ai-image]")];
   if (!images.length) return;
 
-  // 한 번에 5개의 AI 생성 요청을 동시에 보내지 않습니다.
-  // 순차 처리로 Workers AI의 순간적인 용량 오류와 동시 요청 실패를 줄입니다.
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  async function checkAIHealth() {
+    // 이미지 생성 전에 Workers AI 바인딩이 실제 배포에 연결되어 있는지 먼저 확인합니다.
+    // 바인딩이 없으면 5개의 실패 요청을 보내지 않고 즉시 중단합니다.
+    try {
+      const response = await fetch(`/api/image-health?v=${imageVersion}`, {
+        method: "GET",
+        cache: "no-store"
+      });
+      if (!response.ok) throw new Error(`AI health HTTP ${response.status}`);
+      const data = await response.json();
+      if (!data.aiBinding) throw new Error("Workers AI binding is unavailable");
+      return true;
+    } catch (error) {
+      console.error("Workers AI preflight failed", error);
+      return false;
+    }
+  }
 
   async function loadImage(image, type) {
     const url = `/api/image?type=${encodeURIComponent(type)}&date=${encodeURIComponent(date)}&v=${imageVersion}`;
@@ -80,7 +96,7 @@
     }
 
     // 실패 시 정적 이미지로 대체하지 않습니다.
-    // 빈 영역을 유지해 깨진 이미지 아이콘이나 오래된 fallback 이미지가 나타나는 것을 막습니다.
+    // src 자체를 넣지 않으므로 깨진 이미지 아이콘이나 오래된 fallback 이미지가 나타나지 않습니다.
     image.removeAttribute("src");
     image.setAttribute("aria-busy", "false");
     return false;
@@ -89,6 +105,8 @@
   // 위에서부터 순서대로 하나씩 생성하고 검증합니다.
   // hero가 먼저 표시되고, 이후 네 개의 메뉴 카드 이미지가 차례대로 표시됩니다.
   (async () => {
+    if (!(await checkAIHealth())) return;
+
     for (const image of images) {
       const type = image.dataset.aiImage;
       if (!type) continue;
