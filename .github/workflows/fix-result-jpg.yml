@@ -37,8 +37,8 @@ jobs:
           )
 
           # 현재 결과 런타임 버전을 index.html에 연결해 브라우저 캐시를 갱신한다.
-          fixed = re.sub(r'assets/ui-v052\.css\?v=[0-9.]+', 'assets/ui-v052.css?v=0.00.64', fixed)
-          fixed = re.sub(r'assets/ui-v052\.js\?v=[0-9.]+', 'assets/ui-v052.js?v=0.00.64', fixed)
+          fixed = re.sub(r'assets/ui-v052\.css\?v=[0-9.]+', 'assets/ui-v052.css?v=0.00.65', fixed)
+          fixed = re.sub(r'assets/ui-v052\.js\?v=[0-9.]+', 'assets/ui-v052.js?v=0.00.65', fixed)
 
           path.write_text(fixed, encoding='utf-8')
 
