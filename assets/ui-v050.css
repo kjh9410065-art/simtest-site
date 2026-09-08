@@ -1,0 +1,103 @@
+/* v0.00.50
+   실제 화면에서 확인된 가로 넘침과 과도한 세로 크기를 기준으로 홈 화면을 다시 압축한다.
+   모든 요소의 box-sizing을 통일하고 홈 콘텐츠가 브라우저 폭을 절대 넘지 않게 한다.
+*/
+
+/* 모든 요소가 padding과 border를 포함한 크기로 계산되도록 해 가로 넘침을 방지한다. */
+html{box-sizing:border-box!important;width:100%!important;max-width:100%!important;overflow-x:hidden!important}
+*,*::before,*::after{box-sizing:border-box!important}
+body{width:100%!important;max-width:100%!important;margin:0!important;overflow-x:hidden!important}
+
+/* 앱과 홈은 현재 브라우저 폭 안에서만 렌더링한다. */
+.app,#home{width:100%!important;max-width:100%!important;min-width:0!important;margin-left:auto!important;margin-right:auto!important;overflow-x:hidden!important}
+#home>*{max-width:100%!important;min-width:0!important}
+
+/* PC에서도 시작 화면이 지나치게 커지지 않도록 히어로를 압축한다. */
+#home .hero{height:300px!important;min-height:300px!important;max-height:300px!important;overflow:hidden!important}
+#home .hero-content{height:300px!important;min-height:300px!important;max-height:300px!important;padding:18px 34px!important;min-width:0!important}
+#home .hero-character{width:36%!important;height:280px!important;max-height:280px!important;right:0!important;top:8px!important}
+#home .hero h1{font-size:29px!important;line-height:1.16!important;margin:0 0 7px!important}
+#home .hero p{font-size:10px!important;line-height:1.35!important;margin:0 0 9px!important}
+#home .cta{height:34px!important;min-height:34px!important;max-height:34px!important;font-size:11px!important}
+
+/* 빠른 메뉴는 화면 안에 정확히 네 칸이 들어가도록 폭 계산을 강제한다. */
+#home .quick{display:grid!important;width:100%!important;max-width:100%!important;min-width:0!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;padding:8px 12px!important;margin:0!important;overflow:hidden!important}
+#home .quick button{width:100%!important;max-width:100%!important;min-width:0!important;height:78px!important;min-height:78px!important;max-height:78px!important;padding:6px!important;margin:0!important;overflow:hidden!important}
+#home .quick .ico{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;max-width:42px!important;max-height:42px!important;flex:0 0 42px!important}
+#home .quick button>span:last-child{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;font-size:9px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+
+/* 인기 테스트 영역도 좌우 폭을 넘지 않게 하고 카드 높이를 줄인다. */
+#home .section{width:100%!important;max-width:100%!important;min-width:0!important;padding:12px 14px!important;overflow:hidden!important}
+#home .section-head{width:100%!important;min-width:0!important}
+#home .test-grid{width:100%!important;max-width:100%!important;min-width:0!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+#home .compact-test-card{width:100%!important;max-width:100%!important;min-width:0!important;height:86px!important;min-height:86px!important;max-height:86px!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#home .compact-test-card .compact-icon{width:60px!important;height:60px!important;min-width:60px!important;min-height:60px!important;max-width:60px!important;max-height:60px!important;flex:0 0 60px!important;margin-left:6px!important;border-radius:12px!important;overflow:hidden!important}
+#home .compact-test-card .compact-icon img{width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;object-fit:cover!important;display:block!important}
+#home .compact-test-card .test-body{min-width:0!important;width:auto!important;max-width:calc(100% - 66px)!important;padding:7px!important;overflow:hidden!important}
+#home .compact-test-card .test-body h3,#home .compact-test-card .test-body p{max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important}
+
+/* 광고 영역이 홈 폭을 넘지 않게 한다. */
+#home .ad{width:calc(100% - 28px)!important;max-width:calc(100% - 28px)!important;margin:6px 14px!important;box-sizing:border-box!important}
+
+/* Fold 세로는 PC보다 더 작고 밀도 있게 표시한다. */
+@media(min-width:600px) and (max-width:899px) and (orientation:portrait){
+  #home .hero{height:240px!important;min-height:240px!important;max-height:240px!important}
+  #home .hero-content{height:240px!important;min-height:240px!important;max-height:240px!important;padding:14px 22px!important}
+  #home .hero-character{width:38%!important;height:225px!important;max-height:225px!important}
+  #home .hero h1{font-size:23px!important}
+  #home .hero p{font-size:9px!important}
+  #home .cta{height:31px!important;min-height:31px!important;max-height:31px!important}
+  #home .quick{gap:6px!important;padding:6px 10px!important}
+  #home .quick button{height:68px!important;min-height:68px!important;max-height:68px!important}
+  #home .quick .ico{width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;max-width:36px!important;max-height:36px!important;flex-basis:36px!important}
+  #home .section{padding:10px 12px!important}
+  #home .compact-test-card{height:78px!important;min-height:78px!important;max-height:78px!important}
+  #home .compact-test-card .compact-icon{width:54px!important;height:54px!important;min-width:54px!important;min-height:54px!important;max-width:54px!important;max-height:54px!important;flex-basis:54px!important}
+}
+
+/* Flip와 일반폰 세로에서는 한 열 카드로 전환해 글자가 눌리지 않게 한다. */
+@media(max-width:599px) and (orientation:portrait){
+  #home .hero{height:245px!important;min-height:245px!important;max-height:245px!important}
+  #home .hero-content{height:245px!important;min-height:245px!important;max-height:245px!important;padding:13px 16px!important}
+  #home .hero-character{width:43%!important;height:225px!important;max-height:225px!important}
+  #home .hero h1{font-size:21px!important}
+  #home .hero p{font-size:9px!important}
+  #home .quick{gap:5px!important;padding:6px 8px!important}
+  #home .quick button{height:66px!important;min-height:66px!important;max-height:66px!important}
+  #home .quick .ico{width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;max-width:34px!important;max-height:34px!important;flex-basis:34px!important}
+  #home .test-grid{grid-template-columns:1fr!important}
+}
+
+/* 가로모드는 화면 높이를 우선해 시작 화면을 더 짧게 만든다. */
+@media(max-width:1199px) and (orientation:landscape){
+  #home .hero{height:210px!important;min-height:210px!important;max-height:210px!important}
+  #home .hero-content{height:210px!important;min-height:210px!important;max-height:210px!important;padding:10px 18px!important}
+  #home .hero-character{width:34%!important;height:198px!important;max-height:198px!important}
+  #home .hero h1{font-size:19px!important}
+  #home .hero p{font-size:8px!important;margin-bottom:5px!important}
+  #home .cta{height:28px!important;min-height:28px!important;max-height:28px!important;font-size:10px!important}
+  #home .quick{padding:6px 12px!important;gap:6px!important}
+  #home .quick button{height:62px!important;min-height:62px!important;max-height:62px!important}
+  #home .quick .ico{width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;max-width:32px!important;max-height:32px!important;flex-basis:32px!important}
+}
+
+/* 큰 PC에서는 콘텐츠 폭을 제한하되 화면 오른쪽으로 넘치지 않게 한다. */
+@media(min-width:1200px){
+  .app{width:min(1180px,100%)!important;max-width:1180px!important}
+  #home{width:100%!important;max-width:1180px!important;margin:0 auto!important}
+  #home .hero{height:300px!important;min-height:300px!important;max-height:300px!important}
+  #home .hero-content{height:300px!important;min-height:300px!important;max-height:300px!important;padding:18px 42px!important}
+  #home .hero-character{height:275px!important;max-height:275px!important;width:35%!important}
+  #home .hero h1{font-size:30px!important}
+  #home .quick{padding:8px 14px!important;gap:8px!important}
+  #home .quick button{height:76px!important;min-height:76px!important;max-height:76px!important}
+}
+
+/* 매우 큰 Fold 또는 태블릿 폭에서도 내부 요소가 강제로 늘어나지 않게 한다. */
+@media(min-width:900px) and (max-width:1199px){
+  .app{width:100%!important;max-width:100%!important}
+  #home{width:100%!important;max-width:100%!important}
+}
+
+/* 메뉴 패널은 화면 폭을 넘지 않도록 한다. */
+.side-menu-panel{box-sizing:border-box!important;width:min(360px,86vw)!important;max-width:360px!important;height:100dvh!important;max-height:100dvh!important;overflow-x:hidden!important;overflow-y:auto!important}
