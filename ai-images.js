@@ -2,8 +2,8 @@
 (() => {
   const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 
-  // 시안과 비교한 뒤 이미지 구도를 다시 생성하도록 버전을 갱신합니다.
-  const imageVersion = "ai-20260909-v13";
+  // 시안 비교 후 새 이미지와 최종 카드 비율을 함께 적용합니다.
+  const imageVersion = "ai-20260909-v14";
 
   const style = document.createElement("style");
   style.textContent = `
@@ -13,14 +13,18 @@
     .home-hero p{max-width:470px!important;font-size:13px!important;line-height:1.75!important;margin:0 0 23px!important}
     .home-hero .hero-actions{display:flex!important;gap:9px!important;flex-wrap:wrap!important}
     .hero-art{min-width:0!important;min-height:0!important}
-    .hero-art img{display:block!important;width:100%!important;height:330px!important;min-height:330px!important;aspect-ratio:16/10!important;object-fit:cover!important;background:#171d50!important}
-    .quick{margin-top:-16px!important}
-    .quick-card img{display:block!important;width:100%!important;height:128px!important;min-height:128px!important;object-fit:cover!important;background:#171d50!important}
+    .hero-art img{display:block!important;width:100%!important;height:350px!important;min-height:350px!important;aspect-ratio:16/10!important;object-fit:cover!important;background:#171d50!important}
+    .quick{margin-top:-24px!important}
+    .quick-card img{display:block!important;width:100%!important;height:205px!important;min-height:205px!important;object-fit:cover!important;background:#171d50!important}
+    .quick-copy{padding:18px!important}
+    .quick-copy strong{font-size:16px!important}
+    .quick-copy span{font-size:12px!important}
+    .quick-copy .card-action{height:40px!important;font-size:11px!important}
     .fortune-card .date-art{display:block!important;width:130px!important;height:92px!important;min-height:92px!important;object-fit:cover!important;background:#171d50!important}
     .lucky-banner img{display:block!important;width:100%!important;height:100%!important;min-height:170px!important;object-fit:cover!important;background:#171d50!important}
-    @media (min-width:1400px){.hero-inner{min-height:0!important;padding:48px 28px 54px!important}.hero-art img{height:360px!important;min-height:360px!important}.quick-card img{height:138px!important;min-height:138px!important}}
-    @media (max-width:1180px){.hero-inner{grid-template-columns:minmax(250px,.9fr) minmax(320px,1.1fr)!important;gap:28px!important;padding-left:22px!important;padding-right:22px!important}.hero-art img{height:300px!important;min-height:300px!important}}
-    @media (max-width:720px){.home-hero{min-height:0!important}.hero-inner{min-height:0!important;padding:34px 18px 40px!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:22px!important}.hero-copy{width:100%!important}.hero-art{order:2!important;width:100%!important}.hero-art img{height:230px!important;min-height:230px!important;border-radius:24px!important}.quick{margin-top:-10px!important}.quick-card img{height:105px!important;min-height:105px!important}}
+    @media (min-width:1400px){.hero-inner{padding:48px 28px 54px!important}.hero-art img{height:370px!important;min-height:370px!important}.quick-card img{height:220px!important;min-height:220px!important}}
+    @media (max-width:1180px) and (min-width:721px){.hero-inner{grid-template-columns:minmax(250px,.9fr) minmax(320px,1.1fr)!important;gap:28px!important;padding-left:22px!important;padding-right:22px!important}.hero-art img{height:300px!important;min-height:300px!important}.quick-card img{height:160px!important;min-height:160px!important}}
+    @media (max-width:720px){.home-hero{min-height:0!important}.hero-inner{min-height:0!important;padding:34px 18px 40px!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:22px!important}.hero-copy{width:100%!important}.hero-art{order:2!important;width:100%!important}.hero-art img{height:230px!important;min-height:230px!important;border-radius:24px!important}.quick{margin-top:-10px!important}.quick-card img{height:105px!important;min-height:105px!important}.quick-copy{padding:15px!important}}
     @media (max-width:900px) and (orientation:landscape) and (max-height:600px){.hero-inner{min-height:0!important;padding:24px 30px 28px!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:24px!important}.hero-art{order:0!important}.hero-art img{height:260px!important;min-height:260px!important}.quick-card img{height:92px!important;min-height:92px!important}}
     @media (max-width:390px){.hero-art img{height:205px!important;min-height:205px!important}.quick-card img{height:120px!important;min-height:120px!important}}
   `;
