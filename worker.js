@@ -1,12 +1,14 @@
 // Cloudflare Worker가 사이트의 동적 AI 이미지만 생성합니다.
 const IMAGE_MODEL = "@cf/black-forest-labs/flux-1-schnell";
 
+// 모든 이미지가 같은 그림처럼 보이지 않도록 각 메뉴의 역할과 구도를 구체적으로 지정합니다.
+// 특히 이미지 모델이 글자나 동양 문자처럼 보이는 요소를 만들어내지 않도록 강하게 제한합니다.
 const PROMPTS = {
-  hero: "A premium editorial illustration for a Korean daily fortune website, dreamy midnight indigo and violet atmosphere, elegant celestial landscape, subtle moonlight, refined modern Korean web design, sophisticated flat-meets-painterly illustration, no text, no letters, no numbers, no logo, no watermark, clean composition",
-  zodiac: "A premium editorial illustration representing zodiac fortune and the twelve Chinese zodiac animals, sophisticated Korean lifestyle web design, mystical midnight indigo and violet palette, elegant celestial atmosphere, refined modern illustration, balanced composition, no text, no letters, no numbers, no logo, no watermark",
-  stars: "A premium editorial illustration representing zodiac constellations and astrology, elegant constellation lines, stars, moon and subtle cosmic glow, sophisticated Korean lifestyle web design, indigo violet lavender palette, refined modern illustration, no text, no letters, no numbers, no logo, no watermark",
-  test: "A premium editorial illustration representing a personality psychology test, thoughtful human silhouette with abstract shapes, gentle cosmic atmosphere, sophisticated Korean lifestyle web design, lavender violet and muted pink palette, refined modern illustration, no text, no letters, no numbers, no logo, no watermark",
-  lucky: "A premium editorial illustration representing a lucky item and good fortune, elegant mysterious treasure object with subtle celestial details, sophisticated Korean lifestyle web design, deep indigo violet and warm gold palette, refined modern illustration, no text, no letters, no numbers, no logo, no watermark"
+  hero: "Premium Korean lifestyle web editorial illustration, cinematic moonlit night over a calm indigo lake, distant layered mountains, one elegant small human silhouette standing beside a glowing lantern, soft lavender mist, deep navy and violet palette, sophisticated contemporary digital painting, subtle grain, atmospheric depth, refined luxury magazine art direction, generous negative space, beautiful lighting, polished professional illustration, no typography, no writing, no letters, no numbers, no Chinese characters, no Korean characters, no Japanese characters, no symbols, no logo, no watermark, no border, no frame",
+  zodiac: "Premium editorial illustration for a modern Korean fortune website, twelve Chinese zodiac animals represented as elegant small animal silhouettes arranged naturally around a luminous moon, ram, ox, tiger, rabbit, dragon, snake, horse, goat, monkey, rooster, dog and pig, rich indigo and plum night palette, sophisticated painterly digital illustration, layered depth, soft celestial glow, premium magazine art direction, balanced composition, animals clearly recognizable but tasteful, no circular chart, no calligraphy, no typography, no writing, no letters, no numbers, no Chinese characters, no Korean characters, no Japanese characters, no zodiac glyphs, no logo, no watermark",
+  stars: "Premium editorial astrology illustration for a modern Korean lifestyle website, a deep midnight sky with a large luminous crescent moon, elegant connected points of light forming subtle constellation patterns, drifting clouds, a few glowing stars, soft lavender and indigo atmosphere, sophisticated cinematic digital painting, minimal luxurious composition, realistic light bloom, refined magazine cover art direction, no human face, no circular zodiac wheel, no astrology symbols, no glyphs, no typography, no writing, no letters, no numbers, no Chinese characters, no Korean characters, no Japanese characters, no logo, no watermark",
+  test: "Premium editorial illustration for a psychological personality test, elegant side-profile silhouette of a thoughtful young adult surrounded by translucent layered shapes, flowing ribbons of lavender, violet and muted rose, subtle moonlight, abstract reflections suggesting thoughts and emotions, sophisticated contemporary Korean magazine illustration, tasteful human proportions, clean composition, premium digital painting, soft cinematic lighting, calm intelligent mood, no text, no typography, no letters, no numbers, no symbols, no logo, no watermark, no frame",
+  lucky: "Premium editorial illustration for a modern Korean fortune website, one beautiful mysterious lucky object centered on a dark indigo velvet surface, elegant glass crystal orb with a small warm golden glow inside, subtle moonlit reflections, tiny floating particles, rich navy violet and restrained gold palette, sophisticated luxury product editorial photography mixed with painterly illustration, cinematic lighting, premium composition, clean background, no Chinese lantern, no coins, no characters, no calligraphy, no typography, no writing, no letters, no numbers, no symbols, no logo, no watermark"
 };
 
 function getDateKey(request) {
@@ -44,7 +46,6 @@ export default {
     }
 
     // 배포와 바인딩 상태를 확인할 수 있는 진단용 엔드포인트입니다.
-    // 실제 AI 생성은 수행하지 않으므로 진단 때문에 AI 사용량이 발생하지 않습니다.
     if (url.pathname === "/api/image-health") {
       return json({
         ok: Boolean(env.AI && env.ASSETS),
@@ -63,19 +64,16 @@ export default {
     const date = getDateKey(request);
 
     try {
-      // Workers AI의 공식 FLUX.1 schnell 모델을 호출합니다.
-      // 모델 문서에서 안내하는 prompt와 4-step 설정만 사용해 요청 형식을 단순하게 유지합니다.
+      // FLUX.1 schnell은 최대 8 step을 지원하므로 8 step으로 품질을 우선합니다.
       const result = await env.AI.run(IMAGE_MODEL, {
         prompt,
-        steps: 4
+        steps: 8
       });
 
       if (!result || typeof result.image !== "string" || !result.image) {
         throw new Error("Workers AI returned no image");
       }
 
-      // URL에 날짜와 버전이 들어가므로 같은 날짜에는 같은 URL을 재사용할 수 있습니다.
-      // Wrangler의 Worker Cache가 이 응답을 캐시해 반복적인 AI 생성을 막습니다.
       return new Response(base64ToBytes(result.image), {
         status: 200,
         headers: {
@@ -88,7 +86,6 @@ export default {
       });
     } catch (error) {
       // 정적 이미지 fallback은 절대 사용하지 않습니다.
-      // 오류를 숨기지 않고 서버 로그에 남겨 실제 원인을 확인할 수 있게 합니다.
       console.error("Workers AI image generation failed", error);
       return new Response("Workers AI image generation failed", {
         status: 502,
