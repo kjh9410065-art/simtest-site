@@ -24,13 +24,6 @@ function base64ToBytes(base64) {
   return bytes;
 }
 
-function cacheKey(request, type, date) {
-  // 날짜와 이미지 종류가 같은 요청은 같은 AI 결과를 재사용합니다.
-  // URL의 v 값까지 포함되므로 새 버전 배포 시 이전 결과와 확실히 분리됩니다.
-  const url = new URL(request.url);
-  return new Request(`${url.origin}/__ai-cache/${encodeURIComponent(type)}/${encodeURIComponent(date)}?v=${encodeURIComponent(url.searchParams.get("v") || "1")}`);
-}
-
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -42,7 +35,7 @@ function json(data, status = 200) {
 }
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, env) {
     const url = new URL(request.url);
 
     // 실제 AI 이미지 API가 아닌 요청은 Cloudflare Assets에서 정적 사이트를 제공합니다.
@@ -68,16 +61,10 @@ export default {
     if (!prompt) return new Response("Unknown image type", { status: 400 });
 
     const date = getDateKey(request);
-    const key = cacheKey(request, type, date);
 
     try {
-      // 먼저 Workers의 엣지 캐시를 확인합니다.
-      // 같은 날짜/종류 이미지를 매번 새로 생성하지 않도록 하여 AI 호출 실패 가능성과 사용량을 줄입니다.
-      const cached = await caches.default.match(key);
-      if (cached) return cached;
-
-      // Cloudflare Workers AI의 공식 FLUX.1 schnell 모델을 호출합니다.
-      // 모델 문서에서 안내하는 필수 prompt와 안정적인 4-step 설정만 사용합니다.
+      // Workers AI의 공식 FLUX.1 schnell 모델을 호출합니다.
+      // 모델 문서에서 안내하는 prompt와 4-step 설정만 사용해 요청 형식을 단순하게 유지합니다.
       const result = await env.AI.run(IMAGE_MODEL, {
         prompt,
         steps: 4
@@ -87,24 +74,21 @@ export default {
         throw new Error("Workers AI returned no image");
       }
 
-      const response = new Response(base64ToBytes(result.image), {
+      // URL에 날짜와 버전이 들어가므로 같은 날짜에는 같은 URL을 재사용할 수 있습니다.
+      // Wrangler의 Worker Cache가 이 응답을 캐시해 반복적인 AI 생성을 막습니다.
+      return new Response(base64ToBytes(result.image), {
         status: 200,
         headers: {
           "Content-Type": "image/jpeg",
-          // URL에 날짜와 버전이 포함되어 있으므로 이 결과는 장기간 재사용해도 안전합니다.
-          "Cache-Control": "public, max-age=31536000, immutable",
+          "Cache-Control": "public, max-age=86400, s-maxage=86400",
           "X-AI-Image-Type": type,
           "X-AI-Image-Date": date,
           "X-AI-Image-Source": "cloudflare-workers-ai"
         }
       });
-
-      // 응답을 반환하는 동안 엣지 캐시에 저장해 다음 요청에서 AI를 다시 호출하지 않게 합니다.
-      ctx.waitUntil(caches.default.put(key, response.clone()));
-      return response;
     } catch (error) {
       // 정적 이미지 fallback은 절대 사용하지 않습니다.
-      // 오류를 숨기지 않고 상태 코드와 원인을 서버 로그에 남깁니다.
+      // 오류를 숨기지 않고 서버 로그에 남겨 실제 원인을 확인할 수 있게 합니다.
       console.error("Workers AI image generation failed", error);
       return new Response("Workers AI image generation failed", {
         status: 502,
