@@ -2,8 +2,8 @@
 (() => {
   const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 
-  // 애니메이션풍 프롬프트를 적용했으므로 새 이미지를 강제로 요청합니다.
-  const imageVersion = "ai-20260909-v10";
+  // 일본 애니메이션 스타일 프롬프트를 적용했으므로 새 이미지를 요청합니다.
+  const imageVersion = "ai-20260909-v11";
 
   const style = document.createElement("style");
   style.textContent = `
@@ -47,7 +47,7 @@
     const url = `/api/image?type=${encodeURIComponent(type)}&date=${encodeURIComponent(date)}&v=${imageVersion}`;
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       try {
-        // API가 실제 이미지 데이터를 반환하는지 검증합니다.
+        // 실제 이미지 응답인지 검증합니다.
         const response = await fetch(url, { method: "GET", cache: "force-cache" });
         if (!response.ok) throw new Error(`AI image HTTP ${response.status}`);
         const contentType = response.headers.get("content-type") || "";
