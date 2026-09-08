@@ -1,0 +1,106 @@
+/* v0.00.46
+   인기 심리테스트의 주제 일러스트는 원형이나 타원형으로 강제하지 않는다.
+   원본 일러스트 비율을 유지하면서 카드 안에서 안정적으로 표시한다.
+*/
+
+/* 메인 인기 테스트 카드의 이미지가 타원으로 찌그러지지 않도록 정사각형 영역으로 고정한다. */
+#home .compact-test-card .compact-icon{
+  width:78px!important;
+  height:78px!important;
+  min-width:78px!important;
+  min-height:78px!important;
+  flex:0 0 78px!important;
+  border-radius:18px!important;
+  overflow:hidden!important;
+  aspect-ratio:1/1!important;
+}
+#home .compact-test-card .compact-icon img{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  display:block!important;
+  border-radius:inherit!important;
+}
+
+/* 인기 테스트 카드 자체는 이미지와 글 영역이 서로 눌리지 않게 한다. */
+#home .compact-test-card{
+  display:flex!important;
+  align-items:center!important;
+  min-width:0!important;
+  overflow:hidden!important;
+}
+#home .compact-test-card .test-body{
+  flex:1 1 auto!important;
+  min-width:0!important;
+  width:auto!important;
+  overflow:hidden!important;
+}
+
+/* 일반 스마트폰 세로에서는 한 줄 카드로 안정적으로 표시한다. */
+@media(max-width:620px){
+  #home .test-grid{
+    grid-template-columns:1fr!important;
+    gap:10px!important;
+  }
+  #home .compact-test-card{
+    width:100%!important;
+    height:118px!important;
+    min-height:118px!important;
+    max-height:118px!important;
+    padding:12px!important;
+  }
+  #home .compact-test-card .compact-icon{
+    width:86px!important;
+    height:86px!important;
+    min-width:86px!important;
+    min-height:86px!important;
+    flex-basis:86px!important;
+  }
+}
+
+/* 아주 좁은 일반폰도 이미지가 텍스트 영역을 밀어내지 않게 한다. */
+@media(max-width:390px){
+  #home .compact-test-card{
+    height:112px!important;
+    min-height:112px!important;
+    max-height:112px!important;
+  }
+  #home .compact-test-card .compact-icon{
+    width:76px!important;
+    height:76px!important;
+    min-width:76px!important;
+    min-height:76px!important;
+    flex-basis:76px!important;
+  }
+}
+
+/* 일반폰 가로에서는 카드 2열을 유지하되 각 카드 내부를 압축한다. */
+@media(max-height:520px) and (orientation:landscape) and (max-width:899px){
+  #home .test-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;}
+  #home .compact-test-card{height:112px!important;min-height:112px!important;max-height:112px!important;padding:10px!important;}
+  #home .compact-test-card .compact-icon{width:72px!important;height:72px!important;min-width:72px!important;min-height:72px!important;flex-basis:72px!important;}
+}
+
+/* Fold 세로에서는 넓은 폭을 활용해 2열 카드로 정돈한다. */
+@media(min-width:600px) and (max-width:899px) and (orientation:portrait){
+  #home .test-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important;}
+  #home .compact-test-card{height:150px!important;min-height:150px!important;max-height:150px!important;padding:14px!important;}
+  #home .compact-test-card .compact-icon{width:96px!important;height:96px!important;min-width:96px!important;min-height:96px!important;flex-basis:96px!important;}
+}
+
+/* Fold 가로와 PC에서는 카드 수를 늘리고 이미지 크기도 단계적으로 키운다. */
+@media(min-width:700px) and (orientation:landscape){
+  #home .test-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important;}
+  #home .compact-test-card{display:block!important;height:260px!important;min-height:260px!important;max-height:260px!important;padding:0!important;}
+  #home .compact-test-card .compact-icon{width:100%!important;height:155px!important;min-width:0!important;min-height:155px!important;flex:none!important;border-radius:18px 18px 0 0!important;}
+  #home .compact-test-card .test-body{height:105px!important;padding:12px!important;}
+}
+
+@media(min-width:1200px){
+  #home .compact-test-card{height:330px!important;min-height:330px!important;max-height:330px!important;}
+  #home .compact-test-card .compact-icon{height:205px!important;min-height:205px!important;border-radius:20px 20px 0 0!important;}
+  #home .compact-test-card .test-body{height:125px!important;padding:16px!important;}
+}
