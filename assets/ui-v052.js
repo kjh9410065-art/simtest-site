@@ -1,10 +1,10 @@
-/* v0.00.65
+/* v0.00.66
    결과 이미지 경로를 실제 JPG로 고정하고,
    모바일, 폴드, 플립, 가로모드, PC에서 화면이 깨지지 않도록 보정한다.
    이모지와 장식용 문자에 의존하지 않는 UI를 유지한다.
 */
 (function(){
-  const VERSION='0.00.65';
+  const VERSION='0.00.66';
   const RESULT_FALLBACK='assets/result.jpg?v='+VERSION;
 
   /* 결과 유형에 연결된 실제 JPG만 허용한다. */
@@ -80,15 +80,15 @@
     if(input) input.value='';
   }
 
-  /* 이전 패치에서 들어온 잘못된 문자만 텍스트에서 제거한다. */
+  /* 이전 패치에서 들어온 장식 문자를 코드 포인트로 찾아 제거한다. */
   function cleanLegacyDecorations(){
     const replacements=[
-      ['🌙',''],
-      ['→',''],
-      ['←',''],
-      ['➡',''],
-      ['➜',''],
-      ['➤','']
+      [String.fromCodePoint(0x1F319),''],
+      [String.fromCodePoint(0x2192),''],
+      [String.fromCodePoint(0x2190),''],
+      [String.fromCodePoint(0x27A1),''],
+      [String.fromCodePoint(0x279C),''],
+      [String.fromCodePoint(0x27A4),'']
     ];
     const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
     const nodes=[];
@@ -100,12 +100,13 @@
       if(value!==textNode.nodeValue) textNode.nodeValue=value;
     });
 
-    /* 아이콘처럼 쓰이던 단일 문자 닫기 버튼은 의미 있는 텍스트로 바꾼다. */
+    /* 아이콘처럼 쓰이던 단일 닫기 문자는 의미 있는 텍스트로 바꾼다. */
+    const closeMark=String.fromCodePoint(0x00D7);
     document.querySelectorAll('.birth-close').forEach(function(button){
-      if(button.textContent.trim()==='×') button.textContent='닫기';
+      if(button.textContent.trim()===closeMark) button.textContent='닫기';
     });
     document.querySelectorAll('.search-head button').forEach(function(button){
-      if(button.textContent.trim()==='×') button.textContent='닫기';
+      if(button.textContent.trim()===closeMark) button.textContent='닫기';
     });
   }
 
@@ -136,9 +137,9 @@
 
   /* 모든 화면 크기에서 가로 넘침과 결과 레이아웃 붕괴를 방지한다. */
   function installResponsivePatch(){
-    if(document.getElementById('ui-v065-responsive')) return;
+    if(document.getElementById('ui-v066-responsive')) return;
     const style=document.createElement('style');
-    style.id='ui-v065-responsive';
+    style.id='ui-v066-responsive';
     style.textContent='\
       html,body{width:100%;max-width:100%;overflow-x:hidden}\
       .app{width:100%;max-width:720px;min-height:100dvh}\
