@@ -1,14 +1,9 @@
 // Cloudflare Workers AI에서 생성된 이미지만 화면에 넣는 이미지 로더입니다.
 (() => {
-  const date = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).format(new Date());
+  const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 
-  // 프롬프트를 교체했으므로 이전 생성 이미지를 재사용하지 않고 새 이미지를 받습니다.
-  const imageVersion = "ai-20260909-v9";
+  // 애니메이션풍 프롬프트를 적용했으므로 새 이미지를 강제로 요청합니다.
+  const imageVersion = "ai-20260909-v10";
 
   const style = document.createElement("style");
   style.textContent = `
@@ -33,7 +28,6 @@
 
   const images = [...document.querySelectorAll("[data-ai-image]")];
   if (!images.length) return;
-
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   async function checkAIHealth() {
@@ -51,9 +45,7 @@
 
   async function requestAIImage(type) {
     const url = `/api/image?type=${encodeURIComponent(type)}&date=${encodeURIComponent(date)}&v=${imageVersion}`;
-    const maxAttempts = 3;
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
       try {
         // API가 실제 이미지 데이터를 반환하는지 검증합니다.
         const response = await fetch(url, { method: "GET", cache: "force-cache" });
@@ -65,7 +57,7 @@
         return URL.createObjectURL(blob);
       } catch (error) {
         console.error(`AI image request failed: ${type}, attempt ${attempt}`, error);
-        if (attempt < maxAttempts) await wait(700 * attempt);
+        if (attempt < 3) await wait(700 * attempt);
       }
     }
     return null;
@@ -73,16 +65,10 @@
 
   (async () => {
     if (!(await checkAIHealth())) return;
-
-    // 같은 종류의 이미지는 한 번만 생성하고 모든 영역에서 공유합니다.
-    const cache = new Map();
     const types = [...new Set(images.map((image) => image.dataset.aiImage).filter(Boolean))];
-
     for (const type of types) {
       const objectUrl = await requestAIImage(type);
       if (!objectUrl) continue;
-      cache.set(type, objectUrl);
-
       images.filter((image) => image.dataset.aiImage === type).forEach((image) => {
         image.src = objectUrl;
         image.removeAttribute("aria-busy");
