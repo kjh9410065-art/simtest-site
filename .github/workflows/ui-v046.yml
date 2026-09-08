@@ -1,0 +1,65 @@
+name: Apply v0.00.46 final home fixes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/ui-v046.css'
+      - 'assets/ui-v046.js'
+      - '.github/workflows/ui-v046.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Inject final CSS and JS
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+
+          css = '<link rel="stylesheet" href="assets/ui-v046.css?v=0.00.46">'
+          js = '<script src="assets/ui-v046.js?v=0.00.46"></script>'
+
+          if css not in text:
+              text = text.replace('</head>', css + '\n</head>', 1)
+          if js not in text:
+              text = text.replace('</body>', js + '\n</body>', 1)
+
+          path.write_text(text, encoding='utf-8')
+
+      - name: Validate
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          html = Path('index.html').read_text(encoding='utf-8')
+          css = Path('assets/ui-v046.css').read_text(encoding='utf-8')
+          js = Path('assets/ui-v046.js').read_text(encoding='utf-8')
+
+          assert 'assets/ui-v046.css?v=0.00.46' in html
+          assert 'assets/ui-v046.js?v=0.00.46' in html
+          assert 'getDailyIndex' in js
+          assert 'object-fit:cover' in css
+          assert 'aspect-ratio:1/1' in css
+
+          forbidden = re.compile(r'[\U0001F000-\U0001FFFF\u2190-\u21FF\u2200-\u22FF\u2300-\u23FF\u25A0-\u25FF\u2600-\u27BF\u2900-\u297F\u2B00-\u2BFF]')
+          assert not forbidden.search(css)
+          assert not forbidden.search(js)
+
+      - name: Commit index injection
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'feat: apply final home fixes v0.00.46 [skip ci]'
+          git push
