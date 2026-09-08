@@ -1,14 +1,22 @@
-// Cloudflare Worker가 사이트의 동적 AI 이미지만 생성합니다.
+// Cloudflare Workers AI에서 생성된 이미지만 화면에 넣는 이미지 로더입니다.
 const IMAGE_MODEL = "@cf/black-forest-labs/flux-1-schnell";
 
-// 승인된 홈페이지 시안과 같은 미술 방향을 유지합니다.
-// 각 메뉴가 한눈에 구분되도록 주제와 구도를 강하게 지정하고 불필요한 문자 생성을 차단합니다.
+// 사이트 전체의 그림 톤을 통일하면서 각 카드의 역할이 명확하게 보이도록 구성합니다.
 const PROMPTS = {
-  hero: "Premium cinematic Korean lifestyle editorial artwork for a sophisticated fortune website, a serene midnight lake surrounded by layered blue mountains, a traditional wooden lakeside pavilion on the right edge with warm paper lantern light, delicate pale pink cherry blossom branches framing the upper right corner, one small black cat silhouette sitting beside the lantern on the wooden deck, a luminous full moon reflected across the water, deep indigo navy and muted violet night palette, subtle mist, realistic atmospheric depth, elegant luxury magazine art direction, cinematic photography quality blended with refined digital painting, rich natural lighting, highly polished, calm mysterious premium mood, clean composition, no people, no text, no typography, no letters, no numbers, no Korean characters, no Chinese characters, no Japanese characters, no symbols, no logo, no watermark, no border, no frame",
-  zodiac: "Premium close-up editorial fantasy portrait for a modern Korean fortune website, the head and face of ONE magnificent East Asian dragon filling most of the frame, detailed silver-white scales, elegant long horns, expressive amber eye, fine whiskers, refined powerful features, soft moonlight illuminating the dragon from the side, a luminous full moon softly blurred in the background, deep indigo and plum night atmosphere, cinematic shallow depth of field, sophisticated luxury magazine art direction, highly detailed realistic digital painting, dramatic but elegant, intimate close-up composition, the dragon head is the unmistakable focal point, no other animals, no group of animals, no poster layout, no circular chart, no Chinese painting lettering, no typography, no writing, no letters, no numbers, no Korean characters, no Chinese characters, no Japanese characters, no zodiac glyphs, no logo, no watermark, no border",
-  stars: "Premium cinematic Milky Way landscape for a modern Korean astrology website, a spectacular bright Milky Way galaxy sweeping diagonally across a deep midnight sky above a quiet dark mountain lake, dense field of natural stars, luminous galactic core with blue violet and soft pink nebulae, subtle moonlit mountains and water reflection below, sophisticated long-exposure astrophotography aesthetic blended with refined digital painting, rich depth, elegant composition, luxurious magazine art direction, realistic natural star field, dreamy but believable, no zodiac wheel, no constellation diagram, no astrology symbols, no glyphs, no text, no typography, no writing, no letters, no numbers, no Korean characters, no Chinese characters, no Japanese characters, no logo, no watermark, no border",
-  test: "Premium editorial silhouette portrait for a modern Korean psychological personality test, a single human side profile facing left, shown only as a dark elegant silhouette with no facial details, soft lavender rim light around the head and shoulders, translucent flowing layers of muted rose, violet and pale lavender behind and around the silhouette, delicate blurred cherry blossom atmosphere, cinematic backlighting, sophisticated contemporary Korean magazine art direction, tasteful minimal composition, calm introspective mood, premium digital painting, beautiful soft depth and texture, unmistakably a side-profile silhouette, no visible face details, no text, no typography, no letters, no numbers, no symbols, no logo, no watermark, no border",
-  lucky: "Premium luxury editorial product photograph for a modern Korean fortune website, one elegant glass crystal orb centered on dark indigo velvet fabric, a small warm golden glowing object suspended inside the transparent orb, refined metallic base, subtle tiny golden reflections around it, dramatic soft studio lighting, deep navy background, rich material detail, realistic glass and velvet texture, sophisticated luxury product campaign, clean minimal composition, cinematic depth, polished professional photography, mysterious but tasteful, no lantern, no Chinese ornament, no coins, no characters, no calligraphy, no text, no typography, no letters, no numbers, no symbols, no logo, no watermark, no border"
+  // 메인은 단순한 풍경이 아니라 바람, 빛, 움직임이 느껴지는 장면으로 구성합니다.
+  hero: "Premium Korean lifestyle web editorial key visual, dynamic cinematic fantasy night scene, a graceful traveler walking across a wooden lakeside pavilion while holding a glowing lantern, long coat and hair gently flowing in the wind, cherry blossom petals visibly sweeping across the scene, luminous firefly-like particles trailing through the air, large moon behind layered mountains, deep indigo lake with bright moving reflections, subtle lavender mist, elegant traditional pavilion framing the right side, strong foreground-midground-background depth, dramatic but calm sense of motion, sophisticated contemporary Korean digital illustration, polished luxury magazine art direction, cinematic lighting, painterly realism with a refined animated-film atmosphere, visually rich but uncluttered, no typography, no writing, no letters, no numbers, no Chinese characters, no Korean characters, no Japanese characters, no symbols, no logo, no watermark, no border, no frame",
+
+  // 띠 운세는 무서운 실사 용이 아니라 매력적인 애니메이션 영화풍 용의 얼굴 클로즈업으로 변경합니다.
+  zodiac: "Premium animated fantasy film illustration, close-up portrait of a beautiful friendly Eastern dragon head, elegant youthful dragon design, expressive warm eyes, smooth stylized scales, refined flowing whiskers and mane, slightly playful confident expression, soft moonlight along the face, luminous blue and violet atmosphere, subtle warm highlights, dramatic close-up composition, dragon filling most of the frame, sophisticated Japanese animation film aesthetic blended with modern Korean web editorial art direction, highly polished character illustration, magical but not scary, charming rather than monstrous, clean refined shapes, cinematic depth, no gore, no horror, no aggressive teeth, no frightening expression, no typography, no writing, no letters, no numbers, no Chinese characters, no Korean characters, no Japanese characters, no zodiac glyphs, no logo, no watermark",
+
+  // 별자리는 현재 은하수 이미지의 방향을 유지하되 조금 더 깊고 풍부하게 만듭니다.
+  stars: "Premium cinematic astronomy illustration for a modern Korean lifestyle website, vast luminous Milky Way stretching diagonally across a deep midnight sky, dense layers of tiny stars and colorful cosmic dust, subtle violet blue and rose nebula clouds, distant mountain ridge and calm dark lake at the bottom, gentle atmospheric glow, realistic astronomical depth combined with refined digital painting, sophisticated luxury magazine art direction, immersive wide composition, elegant and peaceful, no zodiac wheel, no astrology symbols, no glyphs, no typography, no writing, no letters, no numbers, no Chinese characters, no Korean characters, no Japanese characters, no logo, no watermark",
+
+  // 심리테스트는 현재 방향을 유지합니다.
+  test: "Premium editorial illustration for a psychological personality test, elegant side-profile silhouette of a thoughtful young adult surrounded by translucent layered shapes, flowing ribbons of lavender, violet and muted rose, subtle moonlight, abstract reflections suggesting thoughts and emotions, sophisticated contemporary Korean magazine illustration, tasteful human proportions, clean composition, premium digital painting, soft cinematic lighting, calm intelligent mood, no text, no typography, no letters, no numbers, no symbols, no logo, no watermark, no frame",
+
+  // 행운의 아이템은 현재 이미지 방향을 유지합니다.
+  lucky: "Premium editorial illustration for a modern Korean fortune website, one beautiful mysterious lucky object centered on a dark indigo velvet surface, elegant glass crystal orb with a small warm golden glow inside, subtle moonlit reflections, tiny floating particles, rich navy violet and restrained gold palette, sophisticated luxury product editorial photography mixed with painterly illustration, cinematic lighting, premium composition, clean background, no Chinese lantern, no coins, no characters, no calligraphy, no typography, no writing, no letters, no numbers, no symbols, no logo, no watermark"
 };
 
 function getDateKey(request) {
@@ -64,7 +72,7 @@ export default {
     const date = getDateKey(request);
 
     try {
-      // FLUX.1 schnell은 최대 8 step을 지원하므로 품질을 우선해 8 step으로 생성합니다.
+      // FLUX.1 schnell은 최대 8 step을 지원하므로 8 step으로 품질을 우선합니다.
       const result = await env.AI.run(IMAGE_MODEL, {
         prompt,
         steps: 8
@@ -85,7 +93,7 @@ export default {
         }
       });
     } catch (error) {
-      // 정적 이미지 fallback은 사용하지 않습니다. AI 생성에 실패하면 해당 영역을 비워 둡니다.
+      // 정적 이미지 fallback은 절대 사용하지 않습니다.
       console.error("Workers AI image generation failed", error);
       return new Response("Workers AI image generation failed", {
         status: 502,
