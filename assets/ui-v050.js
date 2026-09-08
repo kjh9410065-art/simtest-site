@@ -1,74 +1,74 @@
-/* v0.00.50
-   기존 index.html에 오래된 스타일이 문서 뒤쪽에 남아 있어도 마지막에 새 CSS가 적용되도록 한다.
-   동시에 빠른 메뉴의 실제 이미지 경로를 직접 보정한다.
+/* v0.00.51
+   빠른 메뉴의 실제 이미지 자산을 직접 연결하고 기존 문자 아이콘을 제거한다.
+   이미지가 없는 경우에도 깨진 이미지 아이콘이 화면에 남지 않도록 img 요소를 정리한다.
 */
 (function(){
-  /* 빠른 메뉴 네 개의 실제 이미지 파일을 직접 연결한다. */
-  function applyQuickImages(){
+  const sources=[
+    'assets/fortune/zodiac05.jpg?v=0.00.51',
+    'assets/fortune/star01.jpg?v=0.00.51',
+    'assets/tests_nonhuman/love-art.jpg?v=0.00.51',
+    'assets/ui/quick-lucky.svg?v=0.00.51'
+  ];
+
+  function fixQuick(){
     const quick=document.querySelector('#home .quick');
     if(!quick) return;
-
-    const sources=[
-      'assets/fortune/zodiac05.jpg?v=0.00.50',
-      'assets/fortune/star01.jpg?v=0.00.50',
-      'assets/tests_nonhuman/love-art.jpg?v=0.00.50',
-      'assets/ui/quick-lucky.svg?v=0.00.50'
-    ];
 
     quick.querySelectorAll('button').forEach(function(button,index){
       const source=sources[index];
       if(!source) return;
 
-      /* .ico가 있는 기존 카드 구조를 실제 이미지 배경으로 교체한다. */
-      const ico=button.querySelector('.ico');
-      if(ico){
-        ico.textContent='';
-        ico.style.backgroundImage='url("'+source+'")';
-        ico.style.backgroundSize='cover';
-        ico.style.backgroundPosition='center';
-        ico.style.backgroundRepeat='no-repeat';
+      let ico=button.querySelector('.ico');
+      if(!ico){
+        ico=document.createElement('span');
+        ico.className='ico';
+        button.insertBefore(ico,button.firstChild);
       }
 
-      /* .ico 밖에 남아 있는 기존 img도 실제 파일로 교체한다. */
-      button.querySelectorAll('img').forEach(function(img){
-        img.src=source;
-        img.alt='';
-        img.style.display='block';
-        img.style.width='100%';
-        img.style.height='100%';
-        img.style.objectFit='cover';
-      });
+      /* 기존 문자 아이콘을 제거하고 실제 이미지로 교체한다. */
+      ico.textContent='';
+      ico.style.backgroundImage='url("'+source+'")';
+      ico.style.backgroundSize='cover';
+      ico.style.backgroundPosition='center';
+      ico.style.backgroundRepeat='no-repeat';
+
+      /* 기존 img가 있으면 동일한 실제 파일을 사용한다. */
+      let img=ico.querySelector('img');
+      if(!img){
+        img=document.createElement('img');
+        ico.appendChild(img);
+      }
+      img.src=source;
+      img.alt='';
+      img.style.width='100%';
+      img.style.height='100%';
+      img.style.objectFit='cover';
+      img.style.display='block';
+      img.onerror=function(){this.style.display='none';};
     });
   }
 
-  /* 오래된 CSS보다 마지막에 적용되도록 CSS 링크를 문서의 가장 뒤에 추가한다. */
-  function applyFinalCss(){
+  /* 완성된 홈 CSS를 문서의 가장 늦은 시점에 다시 연결한다. */
+  function loadFinalCss(){
     if(document.getElementById('ui-v050-final-link')) return;
-
     const link=document.createElement('link');
     link.id='ui-v050-final-link';
     link.rel='stylesheet';
-    link.href='assets/ui-v050.css?v=0.00.50-final';
-
-    /* body 끝에 붙여 문서 뒤쪽에 남아 있는 레거시 스타일보다 우선 적용되게 한다. */
-    (document.body || document.documentElement).appendChild(link);
+    link.href='assets/ui-v050.css?v=0.00.51';
+    document.head.appendChild(link);
   }
 
-  /* 페이지가 완전히 로드된 뒤 한 번 더 적용해 이미지와 CSS를 확실히 보정한다. */
   function apply(){
-    applyFinalCss();
-    applyQuickImages();
-    setTimeout(applyQuickImages,100);
+    loadFinalCss();
+    fixQuick();
   }
 
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',apply);
-  }else{
-    apply();
-  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply);
+  else apply();
 
+  /* 모든 레거시 스타일이 파싱된 뒤 마지막으로 한 번 더 적용한다. */
   window.addEventListener('load',function(){
-    applyFinalCss();
-    applyQuickImages();
+    apply();
+    setTimeout(fixQuick,150);
   });
 })();
