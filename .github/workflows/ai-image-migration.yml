@@ -5,83 +5,9 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write
-
 jobs:
   migrate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Replace image references
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-
-          path = Path("index.html")
-          html = path.read_text(encoding="utf-8")
-
-          replacements = {
-              "hero-night.svg": "hero",
-              "art-zodiac.svg": "zodiac",
-              "art-stars.svg": "stars",
-              "art-test.svg": "test",
-              "art-lucky.svg": "lucky",
-          }
-
-          for filename, image_type in replacements.items():
-              # 따옴표 종류와 상관없이 기존 img src를 AI 이미지 표시자로 바꿉니다.
-              pattern = r'src=([' + '"' + r"'])(?:assets/" + re.escape(filename) + r')\1'
-              html = re.sub(pattern, f'data-ai-image="{image_type}"', html)
-
-              # 다른 코드에 남아 있는 정적 경로도 제거합니다.
-              html = html.replace(f"assets/{filename}", f"/api/image?type={image_type}")
-
-          # 브라우저가 페이지를 그린 뒤 오늘 날짜를 붙여 Workers AI 이미지를 요청합니다.
-          loader = '''<script>
-  // 정적 이미지 파일 대신 Cloudflare Workers AI에서 오늘의 이미지를 가져옵니다.
-  (() => {
-    const date = new Date().toISOString().slice(0, 10);
-    document.querySelectorAll("[data-ai-image]").forEach((image) => {
-      const type = image.dataset.aiImage;
-      if (!type) return;
-      image.loading = type === "hero" ? "eager" : "lazy";
-      image.decoding = "async";
-      image.src = `/api/image?type=${encodeURIComponent(type)}&date=${date}`;
-    });
-  })();
-  </script>'''
-
-          if "[data-ai-image]" not in html:
-              html = html.replace("</body>", loader + "\n</body>")
-
-          path.write_text(html, encoding="utf-8")
-          PY
-
-      - name: Remove static image files
-        run: rm -f assets/art-zodiac.svg assets/art-stars.svg assets/art-test.svg assets/art-lucky.svg assets/hero-night.svg
-
-      - name: Verify migration
-        shell: bash
-        run: |
-          if grep -n "assets/.*\.svg" index.html; then
-            echo "Static SVG image reference remains in index.html"
-            exit 1
-          fi
-
-      - name: Commit migration
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html assets
-          if git diff --cached --quiet; then
-            echo "No migration changes needed"
-            exit 0
-          fi
-          git commit -m "Use Workers AI for site illustrations"
-          git push
+      - name: Test workflow
+        run: echo "workflow is valid"
