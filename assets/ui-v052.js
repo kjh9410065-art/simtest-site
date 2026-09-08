@@ -1,17 +1,19 @@
-/* v0.00.53
-   결과 화면에서 삭제된 이전 SVG 일러스트가 잠깐 나타나지 않도록
-   기존 결과 이미지 경로를 안정적인 JPG 자산으로 즉시 교체한다.
-   생년월일 입력값도 새로고침 후 남지 않도록 초기화한다.
+/* v0.00.55
+   결과 화면의 기존 JPG 일러스트가 항상 최신 표시 스타일을 사용하도록
+   CSS 캐시 버전을 갱신하고, 삭제된 SVG 경로가 남아 있을 경우에만 JPG로 교체한다.
+   생년월일 입력값은 새로고침이나 재진입 후 복원하지 않는다.
 */
 (function(){
+  const VERSION='0.00.55';
+
   const quickItems=[
-    {label:'12띠 운세',image:'assets/fortune/zodiac05.jpg?v=0.00.53',action:'openFortune()'},
-    {label:'별자리 운세',image:'assets/fortune/star01.jpg?v=0.00.53',action:'openStars()'},
-    {label:'심리 테스트',image:'assets/tests/love-icon.jpg?v=0.00.53',action:'openTests()'},
-    {label:'행운 아이템',image:'assets/ui/quick-lucky.svg?v=0.00.53',action:'showLucky()'}
+    {label:'12띠 운세',image:'assets/fortune/zodiac05.jpg?v='+VERSION,action:'openFortune()'},
+    {label:'별자리 운세',image:'assets/fortune/star01.jpg?v='+VERSION,action:'openStars()'},
+    {label:'심리 테스트',image:'assets/tests/love-icon.jpg?v='+VERSION,action:'openTests()'},
+    {label:'행운 아이템',image:'assets/ui/quick-lucky.svg?v='+VERSION,action:'showLucky()'}
   ];
 
-  /* 생년월일과 개인 운세 결과는 브라우저 저장소에 남기지 않는다. */
+  /* 생년월일과 개인 운세 결과를 브라우저 저장소에 남기지 않는다. */
   function clearTemporaryPersonalInfo(){
     try{ localStorage.removeItem('fortuneBirthDate'); }catch(error){}
     const input=document.getElementById('birth-date');
@@ -27,7 +29,7 @@
     }
   }
 
-  /* 홈 빠른 메뉴는 기존 이미지 자산만 사용하고 내부 중복 구조를 제거한다. */
+  /* 홈 빠른 메뉴를 이미지와 텍스트가 겹치지 않는 구조로 다시 만든다. */
   function rebuildQuickMenu(){
     const quick=document.querySelector('#home .quick');
     if(!quick) return;
@@ -51,31 +53,27 @@
     });
   }
 
-  /* 삭제된 SVG 결과 이미지를 대응하는 기존 JPG로 바꾼다. */
+  /* 삭제된 SVG 결과 경로가 소스에 남아 있는 경우에만 같은 이름의 JPG로 바꾼다. */
   function stableResultImagePath(src){
     if(!src || src.indexOf('assets/results/')===-1) return null;
     const clean=src.split('?')[0];
     const file=clean.split('/').pop();
     if(!/\.svg$/i.test(file)) return null;
-
-    /* love-1.svg -> love-1.jpg 같은 1:1 대응을 사용한다. */
     const base=file.replace(/\.svg$/i,'');
-    return 'assets/results/'+base+'.jpg?v=0.00.53';
+    return 'assets/results/'+base+'.jpg?v='+VERSION;
   }
 
+  /* 결과 이미지가 동적으로 생성되는 경우에도 삭제된 SVG만 JPG로 치환한다. */
   function normalizeResultImages(root){
     const scope=root || document;
     scope.querySelectorAll('img[src*="assets/results/"]').forEach(function(img){
       const target=stableResultImagePath(img.getAttribute('src'));
       if(!target) return;
-      img.style.visibility='hidden';
-      img.onload=function(){ this.style.visibility='visible'; };
-      img.onerror=function(){ this.style.visibility='hidden'; };
       img.src=target;
     });
   }
 
-  /* 결과가 테스트 완료 시 동적으로 생성되므로 src 변경도 감시한다. */
+  /* 테스트 완료 후 결과 영역에 새 이미지가 추가되거나 src가 바뀌는 경우를 감시한다. */
   function watchDynamicResultImages(){
     if(!document.body || window.__resultJpgObserver) return;
     const observer=new MutationObserver(function(records){
@@ -83,11 +81,7 @@
         if(record.type==='attributes' && record.attributeName==='src' && record.target.matches && record.target.matches('img[src*="assets/results/"]')){
           const img=record.target;
           const target=stableResultImagePath(img.getAttribute('src'));
-          if(target && img.getAttribute('src')!==target){
-            img.style.visibility='hidden';
-            img.onload=function(){ this.style.visibility='visible'; };
-            img.src=target;
-          }
+          if(target && img.getAttribute('src')!==target) img.src=target;
         }
         record.addedNodes.forEach(function(node){
           if(node.nodeType===1) normalizeResultImages(node);
@@ -99,12 +93,13 @@
     normalizeResultImages(document);
   }
 
+  /* 최신 결과 이미지 표시용 CSS를 강제로 다시 읽게 한다. */
   function loadFinalCss(){
     if(document.getElementById('ui-v052-final-link')) return;
     const link=document.createElement('link');
     link.id='ui-v052-final-link';
     link.rel='stylesheet';
-    link.href='assets/ui-v052.css?v=0.00.53';
+    link.href='assets/ui-v052.css?v='+VERSION;
     document.head.appendChild(link);
   }
 
