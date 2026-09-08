@@ -44,8 +44,9 @@ jobs:
           script = '<script src="assets/ui-v052.js?v=0.00.66"></script>'
           fixed = re.sub(r'(?:\s*<script src="assets/ui-v052\.js\?v=[0-9.]+"></script>){2,}', '\n' + script, fixed)
 
-          # 소스에 남아 있던 문자 그대로의 백슬래시 n을 제거한다.
+          # 소스에 남아 있던 문자 그대로의 백슬래시 n과 뒤의 줄바꿈을 제거한다.
           fixed = fixed.replace('</html>' + chr(92) + 'n', '</html>')
+          fixed = fixed.replace('</script>' + chr(92) + 'n</body>', '</script></body>')
 
           path.write_text(fixed, encoding='utf-8')
 
