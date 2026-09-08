@@ -1,0 +1,66 @@
+name: Apply v0.00.43 overall Fold UI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/ui-v043.css'
+      - 'assets/ui-v043.js'
+      - '.github/workflows/ui-v043.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Inject v0.00.43 assets into index
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+
+          css = '<link rel="stylesheet" href="assets/ui-v043.css?v=0.00.43">'
+          js = '<script src="assets/ui-v043.js?v=0.00.43"></script>'
+
+          if css not in text:
+              text = text.replace('</head>', css + '\n</head>', 1)
+
+          if js not in text:
+              text = text.replace('</body>', js + '\n</body>', 1)
+
+          path.write_text(text, encoding='utf-8')
+
+      - name: Validate files
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          html = Path('index.html').read_text(encoding='utf-8')
+          assert 'assets/ui-v043.css?v=0.00.43' in html
+          assert 'assets/ui-v043.js?v=0.00.43' in html
+          assert Path('assets/results/love-1.jpg').exists()
+          assert Path('assets/tests_nonhuman/love-art.jpg').exists()
+          assert Path('assets/tests_nonhuman/personality-art.jpg').exists()
+          assert Path('assets/tests_nonhuman/stress-art.jpg').exists()
+          assert Path('assets/tests_nonhuman/soulmate-art.jpg').exists()
+
+          # UI에서 금지한 이모지 및 장식용 유니코드 기호가 새 파일에 들어가지 않았는지 확인한다.
+          emoji_like = re.compile(r'[\U0001F000-\U0001FFFF\u2600-\u27BF\u2190-\u21FF\u2200-\u22FF\u2300-\u23FF\u25A0-\u25FF\u2900-\u297F\u2B00-\u2BFF]')
+          for p in [Path('assets/ui-v043.css'), Path('assets/ui-v043.js')]:
+              assert not emoji_like.search(p.read_text(encoding='utf-8')), f'forbidden symbol in {p}'
+
+      - name: Commit injected index
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'feat: apply overall Fold UI v0.00.43 [skip ci]'
+          git push
