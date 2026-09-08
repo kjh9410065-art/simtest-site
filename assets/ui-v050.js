@@ -1,9 +1,10 @@
 /* v0.00.50
-   v0.00.49에서 실제 이미지가 보이지 않는 경우를 대비해 빠른 메뉴 이미지 경로를 다시 직접 지정한다.
-   이미지 요소와 배경 이미지 방식을 모두 지원한다.
+   기존 index.html에 오래된 스타일이 문서 뒤쪽에 남아 있어도 마지막에 새 CSS가 적용되도록 한다.
+   동시에 빠른 메뉴의 실제 이미지 경로를 직접 보정한다.
 */
 (function(){
-  function apply(){
+  /* 빠른 메뉴 네 개의 실제 이미지 파일을 직접 연결한다. */
+  function applyQuickImages(){
     const quick=document.querySelector('#home .quick');
     if(!quick) return;
 
@@ -15,30 +16,59 @@
     ];
 
     quick.querySelectorAll('button').forEach(function(button,index){
-      if(!sources[index]) return;
+      const source=sources[index];
+      if(!source) return;
+
+      /* .ico가 있는 기존 카드 구조를 실제 이미지 배경으로 교체한다. */
       const ico=button.querySelector('.ico');
-      if(!ico) return;
+      if(ico){
+        ico.textContent='';
+        ico.style.backgroundImage='url("'+source+'")';
+        ico.style.backgroundSize='cover';
+        ico.style.backgroundPosition='center';
+        ico.style.backgroundRepeat='no-repeat';
+      }
 
-      /* 기존 아이콘 문자를 제거하고 실제 이미지 파일을 사용한다. */
-      ico.textContent='';
-      ico.style.backgroundImage='url("'+sources[index]+'")';
-      ico.style.backgroundSize='cover';
-      ico.style.backgroundPosition='center';
-      ico.style.backgroundRepeat='no-repeat';
-
-      /* 혹시 기존 img가 들어 있다면 동일한 실제 파일로 교체한다. */
-      const img=ico.querySelector('img');
-      if(img){
-        img.src=sources[index];
+      /* .ico 밖에 남아 있는 기존 img도 실제 파일로 교체한다. */
+      button.querySelectorAll('img').forEach(function(img){
+        img.src=source;
         img.alt='';
         img.style.display='block';
         img.style.width='100%';
         img.style.height='100%';
         img.style.objectFit='cover';
-      }
+      });
     });
   }
 
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply);
-  else apply();
+  /* 오래된 CSS보다 마지막에 적용되도록 CSS 링크를 문서의 가장 뒤에 추가한다. */
+  function applyFinalCss(){
+    if(document.getElementById('ui-v050-final-link')) return;
+
+    const link=document.createElement('link');
+    link.id='ui-v050-final-link';
+    link.rel='stylesheet';
+    link.href='assets/ui-v050.css?v=0.00.50-final';
+
+    /* body 끝에 붙여 문서 뒤쪽에 남아 있는 레거시 스타일보다 우선 적용되게 한다. */
+    (document.body || document.documentElement).appendChild(link);
+  }
+
+  /* 페이지가 완전히 로드된 뒤 한 번 더 적용해 이미지와 CSS를 확실히 보정한다. */
+  function apply(){
+    applyFinalCss();
+    applyQuickImages();
+    setTimeout(applyQuickImages,100);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',apply);
+  }else{
+    apply();
+  }
+
+  window.addEventListener('load',function(){
+    applyFinalCss();
+    applyQuickImages();
+  });
 })();
