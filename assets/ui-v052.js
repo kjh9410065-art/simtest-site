@@ -1,10 +1,11 @@
-/* v0.00.55
-   결과 화면의 기존 JPG 일러스트가 항상 최신 표시 스타일을 사용하도록
-   CSS 캐시 버전을 갱신하고, 삭제된 SVG 경로가 남아 있을 경우에만 JPG로 교체한다.
+/* v0.00.56
+   테스트 결과 화면에서 JPG 일러스트가 로드되지 않아 빈 영역으로 보이는 문제를 보강한다.
+   결과 이미지는 숨기지 않고 즉시 표시하며, 로드 실패 시 기본 결과 이미지로 안전하게 대체한다.
    생년월일 입력값은 새로고침이나 재진입 후 복원하지 않는다.
 */
 (function(){
-  const VERSION='0.00.55';
+  const VERSION='0.00.56';
+  const RESULT_FALLBACK='assets/result.jpg?v='+VERSION;
 
   const quickItems=[
     {label:'12띠 운세',image:'assets/fortune/zodiac05.jpg?v='+VERSION,action:'openFortune()'},
@@ -53,7 +54,7 @@
     });
   }
 
-  /* 삭제된 SVG 결과 경로가 소스에 남아 있는 경우에만 같은 이름의 JPG로 바꾼다. */
+  /* 과거 소스에 삭제된 SVG 결과 경로가 남아 있더라도 같은 이름의 JPG로 교체한다. */
   function stableResultImagePath(src){
     if(!src || src.indexOf('assets/results/')===-1) return null;
     const clean=src.split('?')[0];
@@ -63,34 +64,70 @@
     return 'assets/results/'+base+'.jpg?v='+VERSION;
   }
 
-  /* 결과 이미지가 동적으로 생성되는 경우에도 삭제된 SVG만 JPG로 치환한다. */
+  /* 결과 이미지가 동적으로 만들어지는 경우에도 SVG만 JPG로 치환한다. */
   function normalizeResultImages(root){
     const scope=root || document;
     scope.querySelectorAll('img[src*="assets/results/"]').forEach(function(img){
       const target=stableResultImagePath(img.getAttribute('src'));
-      if(!target) return;
-      img.src=target;
+      if(target) img.src=target;
     });
   }
 
-  /* 테스트 완료 후 결과 영역에 새 이미지가 추가되거나 src가 바뀌는 경우를 감시한다. */
+  /* 결과 이미지가 실제로 표시되는지 확인하고, 실패하면 기본 JPG를 사용한다. */
+  function ensureResultArtwork(){
+    const img=document.getElementById('result-art-img');
+    if(!img) return;
+
+    /* 기존 CSS나 이전 스크립트가 이미지를 숨겨도 결과 화면에서는 반드시 보이게 한다. */
+    img.style.display='block';
+    img.style.visibility='visible';
+    img.style.opacity='1';
+    img.loading='eager';
+    img.decoding='async';
+
+    /* 실패한 특정 결과 이미지 대신 프로젝트에 항상 존재하는 기본 결과 이미지를 보여준다. */
+    if(img.dataset.resultFallbackBound!=='1'){
+      img.dataset.resultFallbackBound='1';
+      img.addEventListener('error',function(){
+        if(this.dataset.resultFallbackUsed==='1') return;
+        this.dataset.resultFallbackUsed='1';
+        this.src=RESULT_FALLBACK;
+      });
+    }
+
+    /* 현재 src가 비어 있거나 잘못된 경우에도 기본 이미지를 즉시 지정한다. */
+    if(!img.getAttribute('src')) img.src=RESULT_FALLBACK;
+
+    /* 결과 화면이 다시 열릴 때마다 SVG 잔재와 숨김 상태를 다시 점검한다. */
+    const fixed=stableResultImagePath(img.getAttribute('src'));
+    if(fixed) img.src=fixed;
+  }
+
+  /* 테스트 완료 후 결과 이미지 src가 바뀌는 상황을 감시한다. */
   function watchDynamicResultImages(){
     if(!document.body || window.__resultJpgObserver) return;
     const observer=new MutationObserver(function(records){
       records.forEach(function(record){
-        if(record.type==='attributes' && record.attributeName==='src' && record.target.matches && record.target.matches('img[src*="assets/results/"]')){
-          const img=record.target;
-          const target=stableResultImagePath(img.getAttribute('src'));
-          if(target && img.getAttribute('src')!==target) img.src=target;
+        if(record.type==='attributes' && record.attributeName==='src'){
+          const target=record.target;
+          if(target && target.matches && target.matches('img[src*="assets/results/"]')){
+            const fixed=stableResultImagePath(target.getAttribute('src'));
+            if(fixed && target.getAttribute('src')!==fixed) target.src=fixed;
+          }
+          if(target && target.id==='result-art-img') ensureResultArtwork();
         }
         record.addedNodes.forEach(function(node){
-          if(node.nodeType===1) normalizeResultImages(node);
+          if(node.nodeType===1){
+            normalizeResultImages(node);
+            if(node.id==='result' || (node.querySelector && node.querySelector('#result-art-img'))) ensureResultArtwork();
+          }
         });
       });
     });
     observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['src']});
     window.__resultJpgObserver=observer;
     normalizeResultImages(document);
+    ensureResultArtwork();
   }
 
   /* 최신 결과 이미지 표시용 CSS를 강제로 다시 읽게 한다. */
@@ -108,6 +145,7 @@
     clearTemporaryPersonalInfo();
     rebuildQuickMenu();
     watchDynamicResultImages();
+    ensureResultArtwork();
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply);
@@ -117,6 +155,7 @@
     clearTemporaryPersonalInfo();
     rebuildQuickMenu();
     watchDynamicResultImages();
+    ensureResultArtwork();
   });
 
   window.addEventListener('beforeunload',function(){
