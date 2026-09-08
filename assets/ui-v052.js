@@ -1,10 +1,10 @@
-/* v0.00.60
-   결과 화면의 새 전용 일러스트를 안정적으로 표시하고,
-   배포 과정에서 실수로 삽입된 문자형 개행이 화면에 노출되는 것을 제거한다.
-   화면 크기별 레이아웃은 CSS가 담당한다.
+/* v0.00.61
+   결과 화면 전용 일러스트를 새 디자인으로 교체했다.
+   기존 결과 유형별 이미지는 사용하지 않고 하나의 안정적인 결과 아트워크를 표시한다.
+   모든 UI 아이콘은 기존 이미지 자산만 사용하며 이모지 문자는 사용하지 않는다.
 */
 (function(){
-  const VERSION='0.00.60';
+  const VERSION='0.00.61';
   const RESULT_ARTWORK='assets/results/result-main.svg?v='+VERSION;
   const RESULT_FALLBACK='assets/result.jpg?v='+VERSION;
 
@@ -15,7 +15,6 @@
     {label:'행운 아이템',image:'assets/ui/quick-lucky.svg?v='+VERSION,action:'showLucky()'}
   ];
 
-  /* 새로고침하거나 다시 들어왔을 때 생년월일을 복원하지 않는다. */
   function clearTemporaryPersonalInfo(){
     try{ localStorage.removeItem('fortuneBirthDate'); }catch(error){}
     const input=document.getElementById('birth-date');
@@ -31,7 +30,6 @@
     }
   }
 
-  /* 홈 빠른 메뉴는 기존 이미지 자산만 사용한다. */
   function rebuildQuickMenu(){
     const quick=document.querySelector('#home .quick');
     if(!quick) return;
@@ -55,7 +53,6 @@
     });
   }
 
-  /* body 바로 아래에 남은 문자형 개행/공백 노드를 제거한다. */
   function removeStrayTextNodes(){
     if(!document.body) return;
     Array.from(document.body.childNodes).forEach(function(node){
@@ -65,7 +62,7 @@
     });
   }
 
-  /* 결과 이미지가 어떤 유형으로 계산되더라도 새 전용 일러스트를 직접 사용한다. */
+  /* 결과 화면에는 새 전용 아트워크만 사용한다. */
   function ensureResultArtwork(){
     const img=document.getElementById('result-art-img');
     if(!img) return;
@@ -99,7 +96,6 @@
     else if(!current) img.src=RESULT_ARTWORK;
   }
 
-  /* 결과 화면이 동적으로 열려도 새 전용 일러스트를 유지한다. */
   function watchResultArtwork(){
     if(!document.body || window.__resultArtworkObserver) return;
     const observer=new MutationObserver(function(records){
@@ -115,7 +111,6 @@
     ensureResultArtwork();
   }
 
-  /* 최신 결과 화면용 CSS를 한 번만 불러온다. */
   function loadFinalCss(){
     if(document.getElementById('ui-v052-final-link')) return;
     const link=document.createElement('link');
