@@ -1,10 +1,8 @@
-/* v0.00.61
-   결과 화면 전용 일러스트를 새 디자인으로 교체했다.
-   기존 결과 유형별 이미지는 사용하지 않고 하나의 안정적인 결과 아트워크를 표시한다.
-   모든 UI 아이콘은 기존 이미지 자산만 사용하며 이모지 문자는 사용하지 않는다.
+/* v0.00.62
+   결과 화면 레이아웃 변경사항이 브라우저 캐시에 묻히지 않도록 자산 버전을 갱신한다.
 */
 (function(){
-  const VERSION='0.00.61';
+  const VERSION='0.00.62';
   const RESULT_ARTWORK='assets/results/result-main.svg?v='+VERSION;
   const RESULT_FALLBACK='assets/result.jpg?v='+VERSION;
 
@@ -19,7 +17,6 @@
     try{ localStorage.removeItem('fortuneBirthDate'); }catch(error){}
     const input=document.getElementById('birth-date');
     if(input) input.value='';
-
     const card=document.getElementById('personal-luck-card');
     if(card){
       card.innerHTML=''
@@ -39,12 +36,10 @@
       button.innerHTML='';
       button.setAttribute('onclick',item.action);
       button.setAttribute('aria-label',item.label);
-
       const visual=document.createElement('span');
       visual.className='quick-visual';
       visual.style.backgroundImage='url("'+item.image+'")';
       visual.setAttribute('aria-hidden','true');
-
       const label=document.createElement('span');
       label.className='quick-label';
       label.textContent=item.label;
@@ -62,11 +57,9 @@
     });
   }
 
-  /* 결과 화면에는 새 전용 아트워크만 사용한다. */
   function ensureResultArtwork(){
     const img=document.getElementById('result-art-img');
     if(!img) return;
-
     img.alt='';
     img.style.display='block';
     img.style.visibility='visible';
@@ -74,7 +67,6 @@
     img.style.objectFit='cover';
     img.loading='eager';
     img.decoding='async';
-
     if(img.dataset.resultArtworkBound!=='1'){
       img.dataset.resultArtworkBound='1';
       img.addEventListener('error',function(){
@@ -88,7 +80,6 @@
         this.src=RESULT_FALLBACK;
       });
     }
-
     const current=img.getAttribute('src') || '';
     const clean=current.split('?')[0];
     const artwork=RESULT_ARTWORK.split('?')[0];
@@ -112,7 +103,8 @@
   }
 
   function loadFinalCss(){
-    if(document.getElementById('ui-v052-final-link')) return;
+    const old=document.getElementById('ui-v052-final-link');
+    if(old) old.remove();
     const link=document.createElement('link');
     link.id='ui-v052-final-link';
     link.rel='stylesheet';
@@ -131,7 +123,6 @@
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply);
   else apply();
-
   window.addEventListener('pageshow',function(){
     clearTemporaryPersonalInfo();
     rebuildQuickMenu();
@@ -139,7 +130,6 @@
     watchResultArtwork();
     ensureResultArtwork();
   });
-
   window.addEventListener('beforeunload',function(){
     try{localStorage.removeItem('fortuneBirthDate');}catch(error){}
   });
