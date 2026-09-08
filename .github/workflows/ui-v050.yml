@@ -32,23 +32,23 @@ jobs:
           # 실제 파일명은 유지하고 쿼리 버전만 최신 런타임으로 맞춰
           # 브라우저와 Cloudflare가 이전 CSS/JS를 캐시하지 않게 한다.
           text = re.sub(
-              r'assets/ui-v052\.css\?v=[0-9.]+',
-              'assets/ui-v052.css?v=0.00.57',
+              r'assets/ui-v052\\.css\\?v=[0-9.]+',
+              'assets/ui-v052.css?v=0.00.59',
               text,
           )
           text = re.sub(
-              r'assets/ui-v052\.js\?v=[0-9.]+',
-              'assets/ui-v052.js?v=0.00.57',
+              r'assets/ui-v052\\.js\\?v=[0-9.]+',
+              'assets/ui-v052.js?v=0.00.59',
               text,
           )
 
           # 링크가 아직 없다면 각각 한 번씩 연결한다.
-          css = '<link rel="stylesheet" href="assets/ui-v052.css?v=0.00.57">'
-          js = '<script src="assets/ui-v052.js?v=0.00.57"></script>'
+          css = '<link rel="stylesheet" href="assets/ui-v052.css?v=0.00.59">'
+          js = '<script src="assets/ui-v052.js?v=0.00.59"></script>'
           if css not in text:
-              text = text.replace('</head>', css + '\n</head>', 1)
+              text = text.replace('</head>', css + '\\n</head>', 1)
           if js not in text:
-              text = text.replace('</body>', js + '\n</body>', 1)
+              text = text.replace('</body>', js + '\\n</body>', 1)
 
           path.write_text(text, encoding='utf-8')
 
@@ -62,13 +62,14 @@ jobs:
           css = Path('assets/ui-v052.css').read_text(encoding='utf-8')
           js = Path('assets/ui-v052.js').read_text(encoding='utf-8')
 
-          assert 'assets/ui-v052.css?v=0.00.57' in html
-          assert 'assets/ui-v052.js?v=0.00.57' in html
+          assert 'assets/ui-v052.css?v=0.00.59' in html
+          assert 'assets/ui-v052.js?v=0.00.59' in html
           assert '#result .result-art-frame #result-art-img' in css
           assert 'display:block!important' in css
           assert 'rebuildQuickMenu' in js
           assert "localStorage.removeItem('fortuneBirthDate')" in js
-          assert 'getResultJpgPath' in js
+          assert 'RESULT_ARTWORK' in js
+          assert "result-main.svg" in js
           assert "img.alt=''" in js
 
           # 이 프로젝트에서 금지한 이모지와 장식용 유니코드 기호를 검사한다.
@@ -81,5 +82,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot].com'
           git add index.html
-          git diff --cached --quiet || git commit -m 'fix: connect latest responsive runtime v0.00.57 [skip ci]'
+          git diff --cached --quiet || git commit -m 'fix: connect dedicated result artwork runtime v0.00.59 [skip ci]'
           git push
