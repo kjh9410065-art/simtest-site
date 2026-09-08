@@ -33,18 +33,18 @@ jobs:
           # 브라우저와 Cloudflare가 이전 CSS/JS를 캐시하지 않게 한다.
           text = re.sub(
               r'assets/ui-v052\.css\?v=[0-9.]+',
-              'assets/ui-v052.css?v=0.00.55',
+              'assets/ui-v052.css?v=0.00.57',
               text,
           )
           text = re.sub(
               r'assets/ui-v052\.js\?v=[0-9.]+',
-              'assets/ui-v052.js?v=0.00.55',
+              'assets/ui-v052.js?v=0.00.57',
               text,
           )
 
           # 링크가 아직 없다면 각각 한 번씩 연결한다.
-          css = '<link rel="stylesheet" href="assets/ui-v052.css?v=0.00.55">'
-          js = '<script src="assets/ui-v052.js?v=0.00.55"></script>'
+          css = '<link rel="stylesheet" href="assets/ui-v052.css?v=0.00.57">'
+          js = '<script src="assets/ui-v052.js?v=0.00.57"></script>'
           if css not in text:
               text = text.replace('</head>', css + '\n</head>', 1)
           if js not in text:
@@ -62,12 +62,14 @@ jobs:
           css = Path('assets/ui-v052.css').read_text(encoding='utf-8')
           js = Path('assets/ui-v052.js').read_text(encoding='utf-8')
 
-          assert 'assets/ui-v052.css?v=0.00.55' in html
-          assert 'assets/ui-v052.js?v=0.00.55' in html
+          assert 'assets/ui-v052.css?v=0.00.57' in html
+          assert 'assets/ui-v052.js?v=0.00.57' in html
           assert '#result .result-art-frame #result-art-img' in css
           assert 'display:block!important' in css
           assert 'rebuildQuickMenu' in js
           assert "localStorage.removeItem('fortuneBirthDate')" in js
+          assert 'getResultJpgPath' in js
+          assert "img.alt=''" in js
 
           # 이 프로젝트에서 금지한 이모지와 장식용 유니코드 기호를 검사한다.
           forbidden = re.compile(r'[\U0001F000-\U0001FFFF\u2190-\u21FF\u2200-\u22FF\u2300-\u23FF\u25A0-\u25FF\u2600-\u27BF\u2900-\u297F\u2B00-\u2BFF]')
@@ -77,7 +79,7 @@ jobs:
       - name: Commit index injection
         run: |
           git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.email '41898282+github-actions[bot].com'
           git add index.html
-          git diff --cached --quiet || git commit -m 'fix: connect latest responsive runtime v0.00.55 [skip ci]'
+          git diff --cached --quiet || git commit -m 'fix: connect latest responsive runtime v0.00.57 [skip ci]'
           git push
