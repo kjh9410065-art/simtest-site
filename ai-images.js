@@ -1,9 +1,7 @@
-// Cloudflare Workers AI에서 생성된 이미지만 화면에 넣는 이미지 로더입니다.
+// Cloudflare Workers AI 이미지를 불러오되, 메인 이미지는 지정된 고정 이미지를 사용합니다.
 (() => {
   const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-
-  // 프롬프트가 바뀌었으므로 기존 캐시 이미지를 사용하지 않고 새 메인 이미지를 요청합니다.
-  const imageVersion = "ai-20260909-v15";
+  const imageVersion = "ai-20260909-v16";
 
   const style = document.createElement("style");
   style.textContent = `
@@ -34,6 +32,13 @@
   if (!images.length) return;
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+  // 메인은 사용자가 선택한 이미지를 고정으로 사용합니다. 접속이나 날짜에 따라 바뀌지 않습니다.
+  const heroImages = images.filter((image) => image.dataset.aiImage === "hero");
+  heroImages.forEach((image) => {
+    image.src = `/hero-main.jpg?v=${imageVersion}`;
+    image.removeAttribute("aria-busy");
+  });
+
   async function checkAIHealth() {
     try {
       const response = await fetch(`/api/image-health?v=${imageVersion}`, { method: "GET", cache: "no-store" });
@@ -51,6 +56,7 @@
     const url = `/api/image?type=${encodeURIComponent(type)}&date=${encodeURIComponent(date)}&v=${imageVersion}`;
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       try {
+        // 실제 이미지 응답인지 확인합니다.
         const response = await fetch(url, { method: "GET", cache: "force-cache" });
         if (!response.ok) throw new Error(`AI image HTTP ${response.status}`);
         const contentType = response.headers.get("content-type") || "";
@@ -68,7 +74,8 @@
 
   (async () => {
     if (!(await checkAIHealth())) return;
-    const types = [...new Set(images.map((image) => image.dataset.aiImage).filter(Boolean))];
+    // 메인은 제외하고 카드용 AI 이미지만 생성합니다.
+    const types = [...new Set(images.map((image) => image.dataset.aiImage).filter((type) => type && type !== "hero"))];
     for (const type of types) {
       const objectUrl = await requestAIImage(type);
       if (!objectUrl) continue;
