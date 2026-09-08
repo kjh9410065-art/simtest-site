@@ -8,95 +8,24 @@
 #home .hero-character{object-fit:cover;object-position:center top}
 
 /* 빠른 메뉴는 실제 이미지가 카드 전체를 채우는 형태로 통일 */
-#home .quick-v041{
-  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
-  gap:12px !important;
-  padding:14px !important;
-}
-#home .quick-v041 button{
-  min-height:158px !important;
-  border-radius:22px !important;
-  padding:0 !important;
-  overflow:hidden !important;
-  position:relative !important;
-  display:block !important;
-}
-#home .quick-v041 .quick-art{
-  position:absolute !important;
-  inset:0 !important;
-  width:100% !important;
-  height:100% !important;
-  z-index:0 !important;
-}
-#home .quick-v041 .quick-art img{
-  width:100% !important;
-  height:100% !important;
-  object-fit:cover !important;
-  object-position:center !important;
-  display:block !important;
-}
-#home .quick-v041 button::after{
-  content:"" !important;
-  position:absolute !important;
-  inset:0 !important;
-  z-index:1 !important;
-  pointer-events:none !important;
-  background:linear-gradient(180deg,transparent 28%,rgba(5,7,40,.12) 46%,rgba(5,7,40,.94) 100%) !important;
-}
-#home .quick-v041 button strong,
-#home .quick-v041 button small{
-  position:absolute !important;
-  left:14px !important;
-  right:12px !important;
-  z-index:2 !important;
-  text-shadow:0 2px 10px rgba(0,0,0,.5) !important;
-}
-#home .quick-v041 button strong{
-  bottom:38px !important;
-  font-size:17px !important;
-  line-height:1.25 !important;
-}
-#home .quick-v041 button small{
-  bottom:14px !important;
-  font-size:11px !important;
-  color:#eeeaff !important;
-}
+#home .quick-v041{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:12px !important;padding:14px !important}
+#home .quick-v041 button{min-height:158px !important;border-radius:22px !important;padding:0 !important;overflow:hidden !important;position:relative !important;display:block !important}
+#home .quick-v041 .quick-art{position:absolute !important;inset:0 !important;width:100% !important;height:100% !important;z-index:0 !important}
+#home .quick-v041 .quick-art img{width:100% !important;height:100% !important;object-fit:cover !important;object-position:center !important;display:block !important}
+#home .quick-v041 button::after{content:"" !important;position:absolute !important;inset:0 !important;z-index:1 !important;pointer-events:none !important;background:linear-gradient(180deg,transparent 28%,rgba(5,7,40,.12) 46%,rgba(5,7,40,.94) 100%) !important}
+#home .quick-v041 button strong,#home .quick-v041 button small{position:absolute !important;left:14px !important;right:12px !important;z-index:2 !important;text-shadow:0 2px 10px rgba(0,0,0,.5) !important}
+#home .quick-v041 button strong{bottom:38px !important;font-size:17px !important;line-height:1.25 !important}
+#home .quick-v041 button small{bottom:14px !important;font-size:11px !important;color:#eeeaff !important}
 
 /* 현재 빠른 메뉴에서 존재하지 않는 love01.svg 대신 실제 저장된 JPG를 사용 */
-#home .quick-v041 button:nth-child(3) .quick-art{
-  background:url("results/love-1.jpg") center/cover no-repeat !important;
-}
+#home .quick-v041 button:nth-child(3) .quick-art{background:url("results/love-1.jpg") center/cover no-repeat !important}
 #home .quick-v041 button:nth-child(3) .quick-art img{display:none !important}
 
-/* 인기 테스트는 아이콘만 보여주지 않고 실제 테스트 아트워크를 넓게 보여준다. */
-#home .compact-test-card{
-  display:grid !important;
-  grid-template-columns:180px minmax(0,1fr) !important;
-  min-height:180px !important;
-  overflow:hidden !important;
-  border-radius:22px !important;
-}
-#home .compact-test-card .compact-icon{
-  width:100% !important;
-  height:100% !important;
-  min-height:180px !important;
-  border-radius:0 !important;
-  overflow:hidden !important;
-  background:#171553 !important;
-}
-#home .compact-test-card .compact-icon img{
-  width:100% !important;
-  height:100% !important;
-  object-fit:cover !important;
-  object-position:center !important;
-  display:block !important;
-}
-#home .compact-test-card .test-body{
-  display:flex !important;
-  flex-direction:column !important;
-  justify-content:center !important;
-  padding:20px !important;
-}
+/* 인기 테스트는 아이콘만 보여주지 않고 각 테스트의 대표 아트워크를 넓게 보여준다. */
+#home .compact-test-card{display:grid !important;grid-template-columns:180px minmax(0,1fr) !important;min-height:180px !important;overflow:hidden !important;border-radius:22px !important}
+#home .compact-test-card .compact-icon{width:100% !important;height:100% !important;min-height:180px !important;border-radius:0 !important;overflow:hidden !important;background:#171553 !important}
+#home .compact-test-card .compact-icon img{width:100% !important;height:100% !important;object-fit:cover !important;object-position:center !important;display:block !important}
+#home .compact-test-card .test-body{display:flex !important;flex-direction:column !important;justify-content:center !important;padding:20px !important}
 #home .compact-test-card .test-body h3{font-size:18px !important;line-height:1.35 !important}
 #home .compact-test-card .test-body p{font-size:13px !important;line-height:1.6 !important}
 #home .compact-test-card .start-link{font-size:13px !important}
@@ -109,12 +38,7 @@
 #home .ad{margin:2px 18px 10px !important;min-height:92px !important;border-radius:18px !important}
 
 /* 하단 네비게이션은 이미지 일러스트를 중심으로 정돈 */
-#home .bottom .nav-illust{
-  width:30px !important;
-  height:30px !important;
-  object-fit:contain !important;
-  display:block !important;
-}
+#home .bottom .nav-illust{width:30px !important;height:30px !important;object-fit:contain !important;display:block !important}
 #home .bottom b{width:34px !important;height:34px !important;display:grid !important;place-items:center !important}
 
 /* Fold 세로 화면: 넓은 화면을 활용하되 과도하게 커지지 않게 제한 */
@@ -125,23 +49,16 @@
   .brand{font-size:20px !important}
   .top button{font-size:0 !important}
   .top button img{width:30px !important;height:30px !important;display:block !important;margin:auto !important}
-
   #home .hero{min-height:520px !important}
   #home .hero-content{min-height:520px !important;padding:42px 52px 38px !important}
   #home .hero-character{width:54% !important;height:440px !important;right:0 !important;top:18px !important}
   #home .hero h1{font-size:44px !important;line-height:1.15 !important;max-width:620px !important}
   #home .hero p{font-size:17px !important;max-width:520px !important}
   #home .cta{height:64px !important;font-size:19px !important}
-
-  #home .quick-v041{
-    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
-    gap:14px !important;
-    padding:18px !important;
-  }
+  #home .quick-v041{grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:14px !important;padding:18px !important}
   #home .quick-v041 button{min-height:185px !important;border-radius:24px !important}
   #home .quick-v041 button strong{font-size:18px !important;left:16px !important}
   #home .quick-v041 button small{font-size:12px !important;left:16px !important}
-
   #home .section{padding:30px 24px 22px !important}
   #home .section h2{font-size:26px !important}
   #home .test-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:16px !important}
@@ -165,7 +82,6 @@
 }
 
 /* 로딩 실패 이미지가 카드 레이아웃을 깨뜨리지 않도록 기본 표시를 안정화 */
-#home .compact-icon,
-#home .quick-art,
-#home .art,
-#home .hero{background-color:#11144f}
+#home .compact-icon,#home .quick-art,#home .art,#home .hero{background-color:#11144f}
+
+/* v0.00.43 build trigger */
