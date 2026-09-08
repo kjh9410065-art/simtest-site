@@ -1,0 +1,99 @@
+/* v0.00.49
+   Fold 메인 화면을 실제 사용 가능한 크기로 다시 압축한다.
+   특히 Fold 세로에서 히어로와 빠른 메뉴가 화면을 과도하게 차지하지 않도록 한다.
+   빠른 메뉴는 네 칸이 항상 한 화면 폭 안에 들어오도록 min-width를 명확히 제한한다.
+*/
+
+/* 모든 기기에서 가로 스크롤이 생기지 않도록 루트 폭을 고정한다. */
+html,body{width:100%!important;max-width:100%!important;overflow-x:hidden!important}
+.app{width:100%!important;max-width:620px!important;margin:0 auto!important;overflow-x:hidden!important}
+
+/* 기본 시작 화면: 기존보다 훨씬 짧은 히어로를 사용한다. */
+#home .hero{height:285px!important;min-height:285px!important;max-height:285px!important}
+#home .hero-content{height:285px!important;min-height:285px!important;max-height:285px!important;padding:14px 16px 14px!important}
+#home .hero-character{width:46%!important;height:250px!important;right:-4px!important;top:5px!important}
+#home .kicker{font-size:9px!important;padding-top:0!important}
+#home .hero h1{font-size:22px!important;line-height:1.15!important;margin-bottom:7px!important;letter-spacing:-1.2px!important}
+#home .hero p{font-size:9px!important;line-height:1.35!important;margin-bottom:8px!important}
+#home .cta{height:34px!important;font-size:11px!important;border-radius:18px!important}
+
+/* 빠른 메뉴는 무조건 4열이다. 각 칸이 폭을 넘지 않도록 min-width:0을 사용한다. */
+#home .quick{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;width:100%!important;min-width:0!important;gap:5px!important;padding:6px!important}
+#home .quick button{width:100%!important;min-width:0!important;max-width:none!important;height:72px!important;min-height:72px!important;max-height:72px!important;padding:4px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:3px!important;text-align:center!important;border-radius:11px!important}
+#home .quick .ico{width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;flex:0 0 40px!important;border-radius:9px!important;font-size:0!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}
+#home .quick button>span:last-child{max-width:100%!important;font-size:9px!important;line-height:1.1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+
+/* 인기 테스트도 화면 높이를 최소화한다. */
+#home .section{padding:12px 10px!important}
+#home .section-head{margin-bottom:7px!important}
+#home .section h2{font-size:16px!important}
+#home .test-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+#home .compact-test-card{height:82px!important;min-height:82px!important;max-height:82px!important;padding:0!important;display:flex!important;align-items:center!important;border-radius:12px!important}
+#home .compact-test-card .compact-icon{width:58px!important;height:58px!important;min-width:58px!important;min-height:58px!important;flex:0 0 58px!important;margin-left:6px!important;border-radius:10px!important;aspect-ratio:1/1!important;overflow:hidden!important}
+#home .compact-test-card .compact-icon img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:inherit!important;display:block!important}
+#home .compact-test-card .test-body{padding:6px!important;min-width:0!important;overflow:hidden!important}
+#home .compact-test-card .test-body h3{font-size:11px!important;margin-bottom:2px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#home .compact-test-card .test-body p{font-size:8px!important;line-height:1.25!important;max-height:20px!important;min-height:0!important;margin-bottom:2px!important;overflow:hidden!important}
+#home .compact-test-card .start-link{font-size:8px!important}
+#home .ad{height:48px!important;margin:5px 10px!important}
+
+/* 일반 스마트폰 가로: 세로 공간을 더 압축한다. */
+@media(max-width:899px) and (max-height:520px) and (orientation:landscape){
+  #home .hero{height:220px!important;min-height:220px!important;max-height:220px!important}
+  #home .hero-content{height:220px!important;min-height:220px!important;max-height:220px!important;padding:10px 14px!important}
+  #home .hero-character{height:200px!important;width:40%!important}
+  #home .hero h1{font-size:19px!important}
+  #home .hero p{font-size:8px!important;margin-bottom:5px!important}
+  #home .cta{height:29px!important;font-size:10px!important}
+  #home .quick button{height:62px!important;min-height:62px!important;max-height:62px!important}
+  #home .quick .ico{width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;flex-basis:34px!important}
+}
+
+/* Fold 세로: 사용자가 지적한 핵심 구간. 메인 시작 화면을 짧고 밀도 있게 만든다. */
+@media(min-width:600px) and (max-width:899px) and (orientation:portrait){
+  .app{max-width:100%!important}
+  #home .hero{height:270px!important;min-height:270px!important;max-height:270px!important}
+  #home .hero-content{height:270px!important;min-height:270px!important;max-height:270px!important;padding:14px 22px!important}
+  #home .hero-character{width:44%!important;height:245px!important;right:0!important;top:4px!important}
+  #home .hero h1{font-size:23px!important;margin-bottom:7px!important}
+  #home .hero p{font-size:9px!important;margin-bottom:8px!important}
+  #home .cta{height:34px!important;font-size:11px!important}
+  #home .quick{padding:6px 10px!important;gap:6px!important}
+  #home .quick button{height:72px!important;min-height:72px!important;max-height:72px!important}
+  #home .quick .ico{width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;flex-basis:40px!important}
+  #home .quick button>span:last-child{font-size:9px!important}
+  #home .section{padding:12px 12px!important}
+  #home .compact-test-card{height:84px!important;min-height:84px!important;max-height:84px!important}
+  #home .compact-test-card .compact-icon{width:60px!important;height:60px!important;min-width:60px!important;min-height:60px!important;flex-basis:60px!important}
+}
+
+/* Fold 가로: 폭을 넓게 쓰면서 히어로는 짧게 유지한다. */
+@media(min-width:700px) and (orientation:landscape) and (max-width:1199px){
+  .app{max-width:1100px!important}
+  #home .hero{height:240px!important;min-height:240px!important;max-height:240px!important}
+  #home .hero-content{height:240px!important;min-height:240px!important;max-height:240px!important;padding:12px 28px!important}
+  #home .hero-character{height:220px!important;width:38%!important}
+  #home .hero h1{font-size:24px!important}
+  #home .hero p{font-size:9px!important}
+  #home .cta{height:31px!important;font-size:10px!important}
+  #home .quick{padding:7px 18px!important;gap:7px!important}
+  #home .quick button{height:68px!important;min-height:68px!important;max-height:68px!important}
+  #home .quick .ico{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;flex-basis:38px!important}
+}
+
+/* PC: 넓은 화면에서는 콘텐츠를 크게 쓰되 세로 높이는 통제한다. */
+@media(min-width:1200px){
+  .app{max-width:1280px!important}
+  #home .hero{height:390px!important;min-height:390px!important;max-height:390px!important}
+  #home .hero-content{height:390px!important;min-height:390px!important;max-height:390px!important;padding:32px 60px!important}
+  #home .hero-character{height:350px!important}
+  #home .hero h1{font-size:36px!important}
+  #home .quick{padding:10px 60px!important;gap:10px!important}
+  #home .quick button{height:96px!important;min-height:96px!important;max-height:96px!important;flex-direction:row!important;justify-content:flex-start!important;text-align:left!important;padding:10px!important}
+  #home .quick .ico{width:64px!important;height:64px!important;min-width:64px!important;min-height:64px!important;flex-basis:64px!important}
+  #home .quick button>span:last-child{font-size:14px!important;white-space:normal!important}
+}
+
+/* 메뉴 패널은 메인 화면 폭과 별개로 적당한 고정 폭만 사용한다. */
+.side-menu{position:fixed!important;inset:0!important;z-index:1000!important}
+.side-menu-panel{width:min(360px,86vw)!important;max-width:360px!important;height:100dvh!important;min-height:100vh!important;overflow-y:auto!important;overflow-x:hidden!important;padding:16px!important}
