@@ -2,7 +2,8 @@ name: Replace static images with Workers AI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -14,16 +15,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Replace image files with AI image endpoints
-        shell: python
+      - name: Replace image references
+        shell: bash
         run: |
+          python - <<'PY'
           from pathlib import Path
           import re
 
           path = Path("index.html")
           html = path.read_text(encoding="utf-8")
 
-          # 기존 정적 SVG의 src 속성을 Workers AI 이미지 표시자로 바꿉니다.
           replacements = {
               "hero-night.svg": "hero",
               "art-zodiac.svg": "zodiac",
@@ -33,14 +34,15 @@ jobs:
           }
 
           for filename, image_type in replacements.items():
-              pattern = rf'src=(["\\\'])assets/{re.escape(filename)}\\1'
+              # 따옴표 종류와 상관없이 기존 img src를 AI 이미지 표시자로 바꿉니다.
+              pattern = r'src=([' + '"' + r"'])(?:assets/" + re.escape(filename) + r')\1'
               html = re.sub(pattern, f'data-ai-image="{image_type}"', html)
 
-              # 다른 위치에 같은 정적 파일 경로가 남아 있으면 API 경로로 바꿉니다.
+              # 다른 코드에 남아 있는 정적 경로도 제거합니다.
               html = html.replace(f"assets/{filename}", f"/api/image?type={image_type}")
 
-          # 날짜를 URL에 포함해 날짜가 바뀌면 새 이미지를 만들고, 같은 날짜에는 캐시된 이미지를 사용합니다.
-          loader = r'''<script>
+          # 브라우저가 페이지를 그린 뒤 오늘 날짜를 붙여 Workers AI 이미지를 요청합니다.
+          loader = '''<script>
   // 정적 이미지 파일 대신 Cloudflare Workers AI에서 오늘의 이미지를 가져옵니다.
   (() => {
     const date = new Date().toISOString().slice(0, 10);
@@ -58,11 +60,12 @@ jobs:
               html = html.replace("</body>", loader + "\n</body>")
 
           path.write_text(html, encoding="utf-8")
+          PY
 
       - name: Remove static image files
         run: rm -f assets/art-zodiac.svg assets/art-stars.svg assets/art-test.svg assets/art-lucky.svg assets/hero-night.svg
 
-      - name: Verify no static image references remain
+      - name: Verify migration
         shell: bash
         run: |
           if grep -n "assets/.*\.svg" index.html; then
