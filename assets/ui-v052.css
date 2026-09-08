@@ -1,0 +1,104 @@
+/* v0.00.52
+   메인 홈의 빠른 메뉴를 기존 마크업과 완전히 분리해 다시 구성한다.
+   기존 이미지 안의 글자와 중복 텍스트가 겹치지 않도록 이미지 영역과 제목 영역을 분리한다.
+*/
+
+#home .quick{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:7px!important;
+  padding:10px 9px 12px!important;
+  width:100%!important;
+  background:#080b3d!important;
+  overflow:hidden!important;
+}
+
+#home .quick button{
+  position:relative!important;
+  display:block!important;
+  width:100%!important;
+  height:94px!important;
+  min-height:94px!important;
+  max-height:94px!important;
+  padding:0!important;
+  border:1px solid #8661c8!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  background:#10134d!important;
+  box-shadow:none!important;
+  text-align:center!important;
+}
+
+/* 기존 quick 안의 오래된 아이콘 구조가 화면에 남지 않도록 새 시각 영역으로 덮는다. */
+#home .quick .quick-visual{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  background-repeat:no-repeat!important;
+  background-position:center!important;
+  background-size:cover!important;
+  z-index:1!important;
+}
+
+/* 이미지 위쪽은 깨끗하게 보이고 아래쪽만 어둡게 만들어 제목 가독성을 높인다. */
+#home .quick .quick-visual:after{
+  content:"";
+  position:absolute!important;
+  inset:0!important;
+  background:linear-gradient(180deg,transparent 48%,rgba(5,7,43,.18) 62%,rgba(5,7,43,.94) 100%)!important;
+}
+
+#home .quick .quick-label{
+  position:absolute!important;
+  left:4px!important;
+  right:4px!important;
+  bottom:7px!important;
+  z-index:3!important;
+  display:block!important;
+  color:#fff!important;
+  font-size:12px!important;
+  line-height:1.15!important;
+  font-weight:900!important;
+  text-align:center!important;
+  white-space:normal!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+  text-shadow:0 1px 5px rgba(0,0,0,.9)!important;
+}
+
+/* 기존 ico, img, i 요소는 v0.00.52 JS가 새 구조로 교체하므로 화면에서는 사용하지 않는다. */
+#home .quick .ico,
+#home .quick .quick-visual img,
+#home .quick .quick-visual i{
+  display:none!important;
+}
+
+/* 작은 스마트폰에서는 카드 높이를 조금 줄여 첫 화면 밀도를 유지한다. */
+@media(max-width:599px) and (orientation:portrait){
+  #home .quick{gap:6px!important;padding:9px 8px 11px!important}
+  #home .quick button{height:92px!important;min-height:92px!important;max-height:92px!important;border-radius:15px!important}
+  #home .quick .quick-label{font-size:11px!important;bottom:7px!important}
+}
+
+/* Fold 세로에서는 넓어진 화면을 활용한다. */
+@media(min-width:600px) and (max-width:899px) and (orientation:portrait){
+  #home .quick{gap:9px!important;padding:12px 16px 14px!important}
+  #home .quick button{height:106px!important;min-height:106px!important;max-height:106px!important}
+  #home .quick .quick-label{font-size:15px!important}
+}
+
+/* 스마트폰 가로에서는 세로 공간을 아낀다. */
+@media(max-width:1199px) and (orientation:landscape){
+  #home .quick{gap:8px!important;padding:8px 14px 10px!important}
+  #home .quick button{height:80px!important;min-height:80px!important;max-height:80px!important}
+  #home .quick .quick-label{font-size:11px!important;bottom:6px!important}
+}
+
+/* PC에서는 카드가 너무 작아지지 않도록 조금 키운다. */
+@media(min-width:1200px){
+  #home .quick{gap:12px!important;padding:14px 20px 16px!important}
+  #home .quick button{height:124px!important;min-height:124px!important;max-height:124px!important;border-radius:18px!important}
+  #home .quick .quick-label{font-size:17px!important;bottom:10px!important}
+}
