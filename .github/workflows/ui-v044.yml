@@ -1,0 +1,47 @@
+name: Apply v0.00.44 responsive UI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/ui-v044.css'
+      - '.github/workflows/ui-v044.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+      - name: Inject responsive stylesheet
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+          css = '<link rel="stylesheet" href="assets/ui-v044.css?v=0.00.44">'
+          if css not in text:
+              text = text.replace('</head>', css + '\n</head>', 1)
+          path.write_text(text, encoding='utf-8')
+      - name: Validate responsive rules
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          html = Path('index.html').read_text(encoding='utf-8')
+          css = Path('assets/ui-v044.css').read_text(encoding='utf-8')
+          assert 'assets/ui-v044.css?v=0.00.44' in html
+          assert 'orientation:landscape' in css
+          assert 'min-width:1200px' in css
+          forbidden = re.compile(r'[\U0001F000-\U0001FFFF\u2190-\u21FF\u2200-\u22FF\u2300-\u23FF\u25A0-\u25FF\u2600-\u27BF\u2900-\u297F\u2B00-\u2BFF]')
+          assert not forbidden.search(css)
+      - name: Commit injected stylesheet link
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'feat: apply responsive UI v0.00.44 [skip ci]'
+          git push
