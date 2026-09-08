@@ -56,7 +56,6 @@
     const url = `/api/image?type=${encodeURIComponent(type)}&date=${encodeURIComponent(date)}&v=${imageVersion}`;
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       try {
-        // 실제 이미지 응답인지 확인합니다.
         const response = await fetch(url, { method: "GET", cache: "force-cache" });
         if (!response.ok) throw new Error(`AI image HTTP ${response.status}`);
         const contentType = response.headers.get("content-type") || "";
