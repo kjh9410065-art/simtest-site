@@ -1,10 +1,11 @@
-/* v0.00.58
-   심리테스트 결과 화면에는 새로 만든 전용 일러스트를 직접 사용한다.
-   기존 결과 JPG나 삭제된 SVG를 중간 변환하는 방식은 결과 대표 이미지에서 사용하지 않는다.
-   이미지가 실패하면 기존 기본 결과 이미지로 대체하고 깨진 alt 텍스트는 표시하지 않는다.
+/* v0.00.59
+   심리테스트 결과 화면은 기존 유형별 JPG를 사용하지 않고
+   새로 추가한 결과 전용 일러스트를 항상 사용한다.
+   결과 유형 제목과 이미지가 서로 어긋나는 문제와 이전 이미지가 잠깐 보이는 문제를 막는다.
+   모든 이미지는 기존 저장소 자산만 사용한다.
 */
 (function(){
-  const VERSION='0.00.58';
+  const VERSION='0.00.59';
   const RESULT_ARTWORK='assets/results/result-main.svg?v='+VERSION;
   const RESULT_FALLBACK='assets/result.jpg?v='+VERSION;
 
@@ -83,7 +84,7 @@
       });
     }
 
-    /* 테스트 결과를 계산하는 코드가 어떤 기존 이미지를 지정하더라도 전용 이미지로 고정한다. */
+    /* 테스트 결과가 지정한 기존 이미지 대신 새 전용 일러스트를 사용한다. */
     const current=img.getAttribute('src') || '';
     const clean=current.split('?')[0];
     if(clean!==RESULT_ARTWORK.split('?')[0] && img.dataset.resultFallbackUsed!=='1'){
@@ -93,7 +94,7 @@
     }
   }
 
-  /* 결과 화면이 동적으로 열리거나 src가 다시 바뀌는 경우에도 전용 이미지로 유지한다. */
+  /* 결과 화면이 동적으로 열리거나 이미지 경로가 다시 바뀌어도 전용 일러스트를 유지한다. */
   function watchResultArtwork(){
     if(!document.body || window.__resultArtworkObserver) return;
     const observer=new MutationObserver(function(records){
