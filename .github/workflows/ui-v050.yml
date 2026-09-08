@@ -1,4 +1,4 @@
-name: Apply v0.00.52 final responsive home
+name: Apply responsive UI runtime
 
 on:
   push:
@@ -20,18 +20,31 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v4
 
-      - name: Inject v0.00.52 runtime files
+      - name: Connect latest responsive runtime
         shell: python
         run: |
           from pathlib import Path
+          import re
 
           path = Path('index.html')
           text = path.read_text(encoding='utf-8')
 
-          css = '<link rel="stylesheet" href="assets/ui-v052.css?v=0.00.52">'
-          js = '<script src="assets/ui-v052.js?v=0.00.52"></script>'
+          # 실제 파일명은 유지하고 쿼리 버전만 최신 런타임으로 맞춰
+          # 브라우저와 Cloudflare가 이전 CSS/JS를 캐시하지 않게 한다.
+          text = re.sub(
+              r'assets/ui-v052\.css\?v=[0-9.]+',
+              'assets/ui-v052.css?v=0.00.55',
+              text,
+          )
+          text = re.sub(
+              r'assets/ui-v052\.js\?v=[0-9.]+',
+              'assets/ui-v052.js?v=0.00.55',
+              text,
+          )
 
-          # 최신 패치 연결이 없으면 head와 body에 한 번씩 추가한다.
+          # 링크가 아직 없다면 각각 한 번씩 연결한다.
+          css = '<link rel="stylesheet" href="assets/ui-v052.css?v=0.00.55">'
+          js = '<script src="assets/ui-v052.js?v=0.00.55"></script>'
           if css not in text:
               text = text.replace('</head>', css + '\n</head>', 1)
           if js not in text:
@@ -49,9 +62,10 @@ jobs:
           css = Path('assets/ui-v052.css').read_text(encoding='utf-8')
           js = Path('assets/ui-v052.js').read_text(encoding='utf-8')
 
-          assert 'assets/ui-v052.css?v=0.00.52' in html
-          assert 'assets/ui-v052.js?v=0.00.52' in html
-          assert 'quick-visual' in css
+          assert 'assets/ui-v052.css?v=0.00.55' in html
+          assert 'assets/ui-v052.js?v=0.00.55' in html
+          assert '#result .result-art-frame #result-art-img' in css
+          assert 'display:block!important' in css
           assert 'rebuildQuickMenu' in js
           assert "localStorage.removeItem('fortuneBirthDate')" in js
 
@@ -65,5 +79,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git diff --cached --quiet || git commit -m 'feat: apply final responsive home v0.00.52 [skip ci]'
+          git diff --cached --quiet || git commit -m 'fix: connect latest responsive runtime v0.00.55 [skip ci]'
           git push
