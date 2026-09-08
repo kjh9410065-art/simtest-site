@@ -14,7 +14,7 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v4
 
-      - name: Replace every deleted result SVG reference
+      - name: Validate and normalize result paths
         shell: python
         run: |
           from pathlib import Path
@@ -23,21 +23,24 @@ jobs:
           path = Path('index.html')
           text = path.read_text(encoding='utf-8')
 
-          # 결과 이미지와 테스트 질문 이미지에 남아 있는 모든 SVG 경로를
-          # 같은 파일명의 기존 JPG 경로로 변경한다.
-          # 쿼리 문자열이 붙은 경우도 함께 처리한다.
+          # 실제로 존재하는 결과 JPG에 대해서만 SVG 경로를 JPG로 바꾼다.
+          def replace_svg(match):
+              base = match.group(1)
+              candidate = Path(base + '.jpg')
+              return base + '.jpg' if candidate.exists() else match.group(0)
+
           fixed = re.sub(
-              r'(assets/results/[^"\'\s?]+)\.svg',
-              r'\1.jpg',
+              r'(assets/results/(?!result-main\.)[^"\'\s?]+)\.svg',
+              replace_svg,
               text,
               flags=re.IGNORECASE,
           )
 
-          if fixed != text:
-              path.write_text(fixed, encoding='utf-8')
-              print('index.html: all result SVG references were replaced with JPG references')
-          else:
-              print('index.html: no result SVG references remain')
+          # 현재 결과 런타임 버전을 index.html에 연결해 브라우저 캐시를 갱신한다.
+          fixed = re.sub(r'assets/ui-v052\.css\?v=[0-9.]+', 'assets/ui-v052.css?v=0.00.64', fixed)
+          fixed = re.sub(r'assets/ui-v052\.js\?v=[0-9.]+', 'assets/ui-v052.js?v=0.00.64', fixed)
+
+          path.write_text(fixed, encoding='utf-8')
 
       - name: Commit source fix
         shell: bash
@@ -50,5 +53,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "fix: replace all deleted result SVG references with JPG assets [skip ci]"
+          git commit -m "fix: normalize result asset paths and cache version [skip ci]"
           git push
