@@ -1,4 +1,4 @@
-name: Apply v0.00.40 quick menu image fix
+name: Apply final quick card markup
 
 on:
   push:
@@ -15,46 +15,62 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Inject v0.00.40 assets
+      - name: Replace quick menu with image cards
         shell: python
         run: |
           from pathlib import Path
           import re
 
-          index = Path('index.html')
-          text = index.read_text(encoding='utf-8')
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
 
-          # 이전 퀵메뉴 보정 CSS/JS 연결을 제거해 오래된 규칙이 다시 적용되지 않게 한다.
-          text = re.sub(r'\n?<link[^>]*assets/ui-v0\.00\.39\.css[^>]*>', '', text)
-          text = re.sub(r'\n?<link[^>]*assets/ui-v039\.css[^>]*>', '', text)
-          text = re.sub(r'\n?<link[^>]*assets/ui-v040\.css[^>]*>', '', text)
-          text = re.sub(r'\n?<script[^>]*assets/ui-v040\.js[^>]*></script>', '', text)
+          # 모든 이전 퀵메뉴 보정 파일 연결을 제거한다.
+          s = re.sub(r'\n?<link[^>]*assets/ui-v03[7-9]\.css[^>]*>', '', s)
+          s = re.sub(r'\n?<link[^>]*assets/ui-v040\.css[^>]*>', '', s)
+          s = re.sub(r'\n?<link[^>]*assets/ui-v041\.css[^>]*>', '', s)
+          s = re.sub(r'\n?<script[^>]*assets/ui-v0?4[01](?:\.js)[^>]*></script>', '', s)
 
-          # 최신 CSS와 JS를 head/body에 각각 한 번만 연결한다.
-          css = '<link rel="stylesheet" href="assets/ui-v040.css?v=0.00.40">'
-          js = '<script defer src="assets/ui-v040.js?v=0.00.40"></script>'
+          # 기존 quick 메뉴를 직접 교체한다.
+          quick = '''<div class="quick quick-final">
+          <button onclick="openFortune()"><span class="quick-art"><img src="assets/fortune/zodiac05.jpg?v=0.00.42" alt=""></span><strong>12띠 운세</strong><small>오늘의 운세 확인하기</small></button>
+          <button onclick="openStars()"><span class="quick-art"><img src="assets/fortune/star01.jpg?v=0.00.42" alt=""></span><strong>별자리 운세</strong><small>나의 별자리 운세</small></button>
+          <button onclick="openTests()"><span class="quick-art"><img src="assets/results/love01.svg?v=0.00.42" alt=""></span><strong>심리 테스트</strong><small>지금, 나를 알아보는 시간</small></button>
+          <button onclick="showLucky()"><span class="quick-art"><img src="assets/ui/quick-lucky.svg?v=0.00.42" alt=""></span><strong>행운 아이템</strong><small>오늘의 행운 아이템</small></button>
+          </div>'''
 
-          if '</head>' in text:
-              text = text.replace('</head>', css + '\n</head>', 1)
-          else:
-              text += '\n' + css
+          # 기존 quick div는 내부에 다른 div가 없기 때문에 이 패턴으로 정확히 찾는다.
+          pattern = re.compile(r'<div class="quick(?:\s+[^>]*)?">.*?</div>\s*', re.S)
+          match = pattern.search(s)
+          if not match:
+              raise SystemExit('ERROR: quick menu was not found')
+          s = s[:match.start()] + quick + '\n' + s[match.end():]
 
-          if '</body>' in text:
-              text = text.replace('</body>', js + '\n</body>', 1)
-          else:
-              text += '\n' + js
+          # 최신 스타일을 HTML 자체에 넣어 외부 CSS 순서와 무관하게 적용한다.
+          css = '''<style id="quick-final-style">
+          #home .quick-final{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;padding:14px!important;background:#080b3d!important}
+          #home .quick-final button{position:relative!important;display:block!important;min-height:158px!important;padding:0!important;overflow:hidden!important;border:1px solid rgba(177,133,255,.55)!important;border-radius:22px!important;background:#111653!important;box-shadow:0 10px 24px rgba(0,0,0,.24)!important;text-align:left!important;color:#fff!important}
+          #home .quick-final .quick-art{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;z-index:0!important}
+          #home .quick-final .quick-art img{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important}
+          #home .quick-final button:after{content:""!important;position:absolute!important;inset:0!important;z-index:1!important;background:linear-gradient(180deg,transparent 32%,rgba(7,9,50,.12) 48%,rgba(7,9,50,.94) 100%)!important;pointer-events:none!important}
+          #home .quick-final button strong{position:absolute!important;left:14px!important;bottom:38px!important;z-index:2!important;font-size:17px!important;line-height:1.2!important;letter-spacing:-.7px!important}
+          #home .quick-final button small{position:absolute!important;left:14px!important;bottom:15px!important;z-index:2!important;font-size:11px!important;color:#e8ddff!important}
+          @media(min-width:700px){#home .quick-final{grid-template-columns:repeat(4,minmax(0,1fr))!important}#home .quick-final button{min-height:190px!important}}
+          @media(max-width:420px){#home .quick-final{gap:10px!important;padding:12px!important}#home .quick-final button{min-height:148px!important;border-radius:20px!important}#home .quick-final button strong{left:12px!important;bottom:35px!important;font-size:16px!important}#home .quick-final button small{left:12px!important;bottom:13px!important;font-size:10px!important}}
+          </style>'''
 
-          index.write_text(text, encoding='utf-8')
+          s = re.sub(r'<style id="quick-final-style">.*?</style>', '', s, flags=re.S)
+          s = s.replace('</head>', css + '\n</head>', 1)
+          p.write_text(s, encoding='utf-8')
 
-      - name: Commit patch
+      - name: Validate and commit
         shell: bash
         run: |
+          grep -q 'quick-final' index.html
+          grep -q 'assets/fortune/zodiac05.jpg?v=0.00.42' index.html
+          grep -q 'assets/fortune/star01.jpg?v=0.00.42' index.html
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          if git diff --cached --quiet; then
-            echo "No source changes needed"
-            exit 0
-          fi
-          git commit -m "fix: force quick menu images v0.00.40 [skip ci]"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "fix: apply final quick card markup [skip ci]"
           git push
