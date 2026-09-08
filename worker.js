@@ -1,6 +1,4 @@
 // Cloudflare Worker가 사이트의 동적 이미지를 생성합니다.
-// 브라우저가 직접 AI API를 호출하지 않도록 Workers AI 바인딩을 서버에서 사용합니다.
-
 const IMAGE_MODEL = "@cf/black-forest-labs/flux-1-schnell";
 
 const PROMPTS = {
@@ -13,69 +11,52 @@ const PROMPTS = {
 
 function getDateKey(request) {
   const url = new URL(request.url);
-  return url.searchParams.get("date") || new Date().toISOString().slice(0, 10);
+  return url.searchParams.get("date") || new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(new Date());
 }
 
-function toImageResponse(base64, type, date) {
-  // Workers AI가 반환하는 Base64 이미지를 브라우저가 바로 표시할 수 있는 JPEG 응답으로 변환합니다.
-  const binary = atob(base64);
-  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-
-  return new Response(bytes, {
-    headers: {
-      "Content-Type": "image/jpeg",
-      // 날짜가 바뀌면 URL도 바뀌므로 하루 단위 이미지를 안정적으로 캐시할 수 있습니다.
-      "Cache-Control": "public, max-age=86400, s-maxage=86400",
-      "X-AI-Image-Type": type,
-      "X-AI-Image-Date": date
-    }
-  });
+// AI가 일시적으로 실패해도 깨진 이미지 대신 사용할 안전한 SVG입니다.
+function fallbackImage(type) {
+  const labels = { hero: "TODAY", zodiac: "ZODIAC", stars: "STARS", test: "TEST", lucky: "LUCK" };
+  const label = labels[type] || "TODAY";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#111846"/><stop offset=".58" stop-color="#302c73"/><stop offset="1" stop-color="#7656df"/></linearGradient><radialGradient id="r"><stop stop-color="#d8caff" stop-opacity=".55"/><stop offset="1" stop-color="#d8caff" stop-opacity="0"/></radialGradient></defs><rect width="900" height="600" fill="url(#g)"/><circle cx="690" cy="160" r="180" fill="url(#r)"/><circle cx="710" cy="155" r="68" fill="#f1ecff" opacity=".9"/><circle cx="210" cy="140" r="5" fill="#fff" opacity=".9"/><circle cx="290" cy="250" r="4" fill="#fff" opacity=".7"/><circle cx="530" cy="90" r="4" fill="#fff" opacity=".8"/><circle cx="600" cy="330" r="5" fill="#fff" opacity=".7"/><path d="M130 470 C270 350 410 520 560 390 C650 312 740 390 820 330" fill="none" stroke="#cdbbff" stroke-width="3" opacity=".5"/><text x="70" y="520" fill="#fff" font-family="Arial,sans-serif" font-size="30" font-weight="700" letter-spacing="7">${label}</text></svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // 이미지 API 이외의 요청은 기존 정적 사이트 파일을 그대로 제공합니다.
-    if (url.pathname !== "/api/image") {
-      return env.ASSETS.fetch(request);
-    }
-
-    if (request.method !== "GET") {
-      return new Response("Method Not Allowed", { status: 405 });
-    }
+    // 이미지 API가 아니면 정적 사이트를 그대로 제공합니다.
+    if (url.pathname !== "/api/image") return env.ASSETS.fetch(request);
+    if (request.method !== "GET") return new Response("Method Not Allowed", { status: 405 });
 
     const type = url.searchParams.get("type") || "hero";
     const prompt = PROMPTS[type];
-
-    if (!prompt) {
-      return new Response("Unknown image type", { status: 400 });
-    }
+    if (!prompt) return new Response("Unknown image type", { status: 400 });
 
     const date = getDateKey(request);
 
     try {
-      // 같은 날짜에는 같은 시드를 사용해 페이지가 다시 열려도 이미지 콘셉트가 흔들리지 않게 합니다.
+      // 날짜와 이미지 종류를 시드로 사용해 하루 동안 동일한 결과를 유지합니다.
       const seedText = `${date}:${type}`;
       let seed = 0;
-      for (let i = 0; i < seedText.length; i += 1) {
-        seed = (seed * 31 + seedText.charCodeAt(i)) >>> 0;
-      }
+      for (let i = 0; i < seedText.length; i += 1) seed = (seed * 31 + seedText.charCodeAt(i)) >>> 0;
 
-      const result = await env.AI.run(IMAGE_MODEL, {
-        prompt,
-        seed,
-        steps: 4
-      });
+      const result = await env.AI.run(IMAGE_MODEL, { prompt, seed, steps: 4 });
+      if (!result || typeof result.image !== "string" || !result.image) throw new Error("Workers AI returned no image");
 
-      return toImageResponse(result.image, type, date);
+      // Cloudflare 공식 FLUX 예제와 동일하게 Base64를 data URI로 전달합니다.
+      return Response.json(
+        { dataURI: `data:image/jpeg;charset=utf-8;base64,${result.image}`, type, date, fallback: false },
+        { headers: { "Cache-Control": "public, max-age=86400, s-maxage=86400" } }
+      );
     } catch (error) {
-      // AI 생성에 실패했을 때 브라우저가 무한 로딩하지 않도록 명확한 오류를 반환합니다.
       console.error("AI image generation failed", error);
-      return new Response("AI image generation failed", {
-        status: 502,
-        headers: { "Content-Type": "text/plain; charset=utf-8" }
-      });
+      // AI 호출 실패가 사이트 전체 레이아웃을 깨뜨리지 않도록 정상적인 200 응답으로 fallback을 반환합니다.
+      return Response.json(
+        { dataURI: fallbackImage(type), type, date, fallback: true },
+        { headers: { "Cache-Control": "public, max-age=3600, s-maxage=3600", "X-AI-Image-Fallback": "true" } }
+      );
     }
   }
 };
