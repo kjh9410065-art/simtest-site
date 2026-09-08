@@ -1,0 +1,53 @@
+name: Fix result image paths
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix-result-paths:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Replace deleted SVG result paths with existing JPG assets
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+
+          # 결과 이미지와 테스트 질문 이미지가 삭제된 SVG를 직접 요청하지 않도록
+          # assets/results/*.svg 경로를 동일한 이름의 JPG 경로로 바꾼다.
+          fixed = re.sub(
+              r'(assets/results/[^\"\'\\s?]+)\.svg(?=(?:\?[^\"\'\\s]*)?[\"\'])',
+              r'\1.jpg',
+              text,
+              flags=re.IGNORECASE,
+          )
+
+          if fixed != text:
+              path.write_text(fixed, encoding='utf-8')
+              print('index.html: deleted SVG result paths replaced with JPG paths')
+          else:
+              print('index.html: no deleted SVG result paths found')
+
+      - name: Commit source fix
+        shell: bash
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "No source change required."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "fix: use JPG assets for test result and question images [skip ci]"
+          git push
