@@ -1299,17 +1299,7 @@ html,body{background:#080b34!important}
   #result .result-info h1{font-size:22px!important;}
 }
 </style><link rel="stylesheet" href="assets/ui-v034.css?v=0.00.34">
-<style id="quick-final-style">
-#home .quick-final{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;padding:14px!important;background:#080b3d!important}
-#home .quick-final button{position:relative!important;display:block!important;min-height:158px!important;padding:0!important;overflow:hidden!important;border:1px solid rgba(177,133,255,.55)!important;border-radius:22px!important;background:#111653!important;box-shadow:0 10px 24px rgba(0,0,0,.24)!important;text-align:left!important;color:#fff!important}
-#home .quick-final .quick-art{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;z-index:0!important}
-#home .quick-final .quick-art img{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important}
-#home .quick-final button:after{content:""!important;position:absolute!important;inset:0!important;z-index:1!important;background:linear-gradient(180deg,transparent 32%,rgba(7,9,50,.12) 48%,rgba(7,9,50,.94) 100%)!important;pointer-events:none!important}
-#home .quick-final button strong{position:absolute!important;left:14px!important;bottom:38px!important;z-index:2!important;font-size:17px!important;line-height:1.2!important;letter-spacing:-.7px!important}
-#home .quick-final button small{position:absolute!important;left:14px!important;bottom:15px!important;z-index:2!important;font-size:11px!important;color:#e8ddff!important}
-@media(min-width:700px){#home .quick-final{grid-template-columns:repeat(4,minmax(0,1fr))!important}#home .quick-final button{min-height:190px!important}}
-@media(max-width:420px){#home .quick-final{gap:10px!important;padding:12px!important}#home .quick-final button{min-height:148px!important;border-radius:20px!important}#home .quick-final button strong{left:12px!important;bottom:35px!important;font-size:16px!important}#home .quick-final button small{left:12px!important;bottom:13px!important;font-size:10px!important}}
-</style>
+
 
 <style id="quick-v041-final">
 .quick-v041{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;padding:14px!important;background:#080b3d!important}
@@ -1323,8 +1313,18 @@ html,body{background:#080b34!important}
 @media(min-width:700px){.quick-v041{grid-template-columns:repeat(4,minmax(0,1fr))!important}.quick-v041 button{min-height:190px!important}}
 @media(max-width:420px){.quick-v041{gap:10px!important;padding:12px!important}.quick-v041 button{min-height:148px!important;border-radius:20px!important}.quick-v041 button strong{left:12px!important;bottom:35px!important;font-size:16px!important}.quick-v041 button small{left:12px!important;bottom:13px!important;font-size:10px!important}}
 </style>
-<link rel="stylesheet" href="assets/ui-v037.css?v=0.00.37">
 <link rel="stylesheet" href="assets/ui-v043.css?v=0.00.43">
+<style id="quick-final-style">
+#home .quick-final{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;padding:14px!important;background:#080b3d!important}
+#home .quick-final button{position:relative!important;display:block!important;min-height:158px!important;padding:0!important;overflow:hidden!important;border:1px solid rgba(177,133,255,.55)!important;border-radius:22px!important;background:#111653!important;box-shadow:0 10px 24px rgba(0,0,0,.24)!important;text-align:left!important;color:#fff!important}
+#home .quick-final .quick-art{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;z-index:0!important}
+#home .quick-final .quick-art img{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important}
+#home .quick-final button:after{content:""!important;position:absolute!important;inset:0!important;z-index:1!important;background:linear-gradient(180deg,transparent 32%,rgba(7,9,50,.12) 48%,rgba(7,9,50,.94) 100%)!important;pointer-events:none!important}
+#home .quick-final button strong{position:absolute!important;left:14px!important;bottom:38px!important;z-index:2!important;font-size:17px!important;line-height:1.2!important;letter-spacing:-.7px!important}
+#home .quick-final button small{position:absolute!important;left:14px!important;bottom:15px!important;z-index:2!important;font-size:11px!important;color:#e8ddff!important}
+@media(min-width:700px){#home .quick-final{grid-template-columns:repeat(4,minmax(0,1fr))!important}#home .quick-final button{min-height:190px!important}}
+@media(max-width:420px){#home .quick-final{gap:10px!important;padding:12px!important}#home .quick-final button{min-height:148px!important;border-radius:20px!important}#home .quick-final button strong{left:12px!important;bottom:35px!important;font-size:16px!important}#home .quick-final button small{left:12px!important;bottom:13px!important;font-size:10px!important}}
+</style>
 </head>
 <body>
 <div class="app">
@@ -1356,11 +1356,11 @@ html,body{background:#080b34!important}
 <main class="page">
 <section class="view on" id="home">
 <div class="hero"><div class="hero-bg"></div><img alt="밤하늘의 여성 캐릭터" class="hero-character" src="assets/hero.jpg"/><div class="hero-shade"></div><div class="hero-content"><div class="kicker"> 오늘의 운세 &amp; 심리테스트</div><div><h1>오늘의 운세로<br/>당신의 하루를 <em>더 특별하게</em></h1><p>운세와 심리테스트로<br/>당신의 마음을 들여다보세요</p><button class="cta" onclick="openFortune()">오늘의 운세 보기 </button></div></div></div>
-<div class="quick quick-v041">
-<button onclick="openFortune()"><span class="quick-art"><img src="assets/fortune/zodiac05.jpg?v=0.00.41" alt=""></span><strong>12띠 운세</strong><small>오늘의 운세 확인하기</small></button>
-<button onclick="openStars()"><span class="quick-art"><img src="assets/fortune/star01.jpg?v=0.00.41" alt=""></span><strong>별자리 운세</strong><small>나의 별자리 운세</small></button>
-<button onclick="openTests()"><span class="quick-art"><img src="assets/results/love01.svg?v=0.00.41" alt=""></span><strong>심리 테스트</strong><small>지금, 나를 알아보는 시간</small></button>
-<button onclick="showLucky()"><span class="quick-art"><img class="lucky-art" src="assets/ui/quick-lucky.svg?v=0.00.41" alt=""></span><strong>행운 아이템</strong><small>오늘의 행운 아이템</small></button>
+<div class="quick quick-final">
+<button onclick="openFortune()"><span class="quick-art"><img src="assets/fortune/zodiac05.jpg?v=0.00.42" alt=""></span><strong>12띠 운세</strong><small>오늘의 운세 확인하기</small></button>
+<button onclick="openStars()"><span class="quick-art"><img src="assets/fortune/star01.jpg?v=0.00.42" alt=""></span><strong>별자리 운세</strong><small>나의 별자리 운세</small></button>
+<button onclick="openTests()"><span class="quick-art"><img src="assets/results/love01.svg?v=0.00.42" alt=""></span><strong>심리 테스트</strong><small>지금, 나를 알아보는 시간</small></button>
+<button onclick="showLucky()"><span class="quick-art"><img src="assets/ui/quick-lucky.svg?v=0.00.42" alt=""></span><strong>행운 아이템</strong><small>오늘의 행운 아이템</small></button>
 </div>
 <section class="section"><div class="section-head"><h2><span class="illus-icon flame-illus"></span> 지금 인기 테스트</h2><button class="more" onclick="openTests()">전체 보기 </button></div><div class="test-grid" id="home-tests"></div></section>
 <div class="ad">광고 영역</div>
