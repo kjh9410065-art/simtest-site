@@ -1,4 +1,4 @@
-name: Apply v0.00.50 compact responsive home
+name: Apply v0.00.52 final responsive home
 
 on:
   push:
@@ -6,6 +6,8 @@ on:
     paths:
       - 'assets/ui-v050.css'
       - 'assets/ui-v050.js'
+      - 'assets/ui-v052.css'
+      - 'assets/ui-v052.js'
       - '.github/workflows/ui-v050.yml'
 
 permissions:
@@ -18,19 +20,18 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v4
 
-      - name: Inject v0.00.50 runtime files
+      - name: Inject v0.00.52 runtime files
         shell: python
         run: |
           from pathlib import Path
-          import re
 
           path = Path('index.html')
           text = path.read_text(encoding='utf-8')
 
-          css = '<link rel="stylesheet" href="assets/ui-v050.css?v=0.00.50">'
-          js = '<script src="assets/ui-v050.js?v=0.00.50"></script>'
+          css = '<link rel="stylesheet" href="assets/ui-v052.css?v=0.00.52">'
+          js = '<script src="assets/ui-v052.js?v=0.00.52"></script>'
 
-          # 기존 v0.00.50 연결이 있으면 중복하지 않고, 없으면 문서 끝에 연결한다.
+          # 최신 패치 연결이 없으면 head와 body에 한 번씩 추가한다.
           if css not in text:
               text = text.replace('</head>', css + '\n</head>', 1)
           if js not in text:
@@ -45,17 +46,16 @@ jobs:
           import re
 
           html = Path('index.html').read_text(encoding='utf-8')
-          css = Path('assets/ui-v050.css').read_text(encoding='utf-8')
-          js = Path('assets/ui-v050.js').read_text(encoding='utf-8')
+          css = Path('assets/ui-v052.css').read_text(encoding='utf-8')
+          js = Path('assets/ui-v052.js').read_text(encoding='utf-8')
 
-          assert 'assets/ui-v050.css?v=0.00.50' in html
-          assert 'assets/ui-v050.js?v=0.00.50' in html
-          assert 'box-sizing:border-box' in css
-          assert 'grid-template-columns:repeat(4,minmax(0,1fr))' in css
-          assert 'orientation:landscape' in css
-          assert 'assets/tests_nonhuman/love-art.jpg' in js
+          assert 'assets/ui-v052.css?v=0.00.52' in html
+          assert 'assets/ui-v052.js?v=0.00.52' in html
+          assert 'quick-visual' in css
+          assert 'rebuildQuickMenu' in js
+          assert "localStorage.removeItem('fortuneBirthDate')" in js
 
-          # UI에서 금지한 이모지와 장식용 유니코드 기호가 들어가지 않았는지 검사한다.
+          # 이 프로젝트에서 금지한 이모지와 장식용 유니코드 기호를 검사한다.
           forbidden = re.compile(r'[\U0001F000-\U0001FFFF\u2190-\u21FF\u2200-\u22FF\u2300-\u23FF\u25A0-\u25FF\u2600-\u27BF\u2900-\u297F\u2B00-\u2BFF]')
           assert not forbidden.search(css)
           assert not forbidden.search(js)
@@ -65,5 +65,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git diff --cached --quiet || git commit -m 'feat: apply compact responsive home v0.00.50 [skip ci]'
+          git diff --cached --quiet || git commit -m 'feat: apply final responsive home v0.00.52 [skip ci]'
           git push
