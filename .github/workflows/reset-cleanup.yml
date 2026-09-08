@@ -1,0 +1,41 @@
+name: Reset legacy files
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Remove legacy project files
+        shell: bash
+        run: |
+          # 새 프로그램의 핵심 파일인 index.html과 wrangler.jsonc만 남긴다.
+          find . -mindepth 1 -maxdepth 1 \
+            ! -name '.git' \
+            ! -name 'index.html' \
+            ! -name 'wrangler.jsonc' \
+            -exec rm -rf {} +
+
+          # 이 일회성 정리 워크플로 자체도 제거한다.
+          rm -f .github/workflows/reset-cleanup.yml
+
+      - name: Commit clean repository
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Repository is already clean."
+            exit 0
+          fi
+          git commit -m "reset: clean repository for new application"
+          git push
