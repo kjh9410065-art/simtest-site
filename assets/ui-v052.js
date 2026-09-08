@@ -1,42 +1,43 @@
-/* v0.00.52
-   메인 홈의 빠른 메뉴를 깨끗한 이미지 카드로 다시 구성하고,
-   사용자가 입력한 생년월일이 새로고침 후 남지 않도록 저장 데이터를 제거한다.
+/* v0.00.53
+   결과 화면에서 삭제된 이전 SVG 일러스트가 잠깐 나타나지 않도록
+   기존 결과 이미지 경로를 안정적인 JPG 자산으로 즉시 교체한다.
+   생년월일 입력값도 새로고침 후 남지 않도록 초기화한다.
 */
 (function(){
-  /* 빠른 메뉴에 사용할 기존 저장소 이미지만 연결한다. 새 이미지는 생성하지 않는다. */
   const quickItems=[
-    {label:'12띠 운세',image:'assets/fortune/zodiac05.jpg?v=0.00.52',action:'openFortune()'},
-    {label:'별자리 운세',image:'assets/fortune/star01.jpg?v=0.00.52',action:'openStars()'},
-    {label:'심리 테스트',image:'assets/tests/love-icon.jpg?v=0.00.52',action:'openTests()'},
-    {label:'행운 아이템',image:'assets/ui/quick-lucky.svg?v=0.00.52',action:'showLucky()'}
+    {label:'12띠 운세',image:'assets/fortune/zodiac05.jpg?v=0.00.53',action:'openFortune()'},
+    {label:'별자리 운세',image:'assets/fortune/star01.jpg?v=0.00.53',action:'openStars()'},
+    {label:'심리 테스트',image:'assets/tests/love-icon.jpg?v=0.00.53',action:'openTests()'},
+    {label:'행운 아이템',image:'assets/ui/quick-lucky.svg?v=0.00.53',action:'showLucky()'}
   ];
 
-  /* 생년월일은 개인정보성 입력값이므로 브라우저에 남겨두지 않는다. */
+  /* 생년월일과 개인 운세 결과는 브라우저 저장소에 남기지 않는다. */
   function clearTemporaryPersonalInfo(){
-    try{
-      localStorage.removeItem('fortuneBirthDate');
-    }catch(error){}
-
+    try{ localStorage.removeItem('fortuneBirthDate'); }catch(error){}
     const input=document.getElementById('birth-date');
     if(input) input.value='';
+
+    const card=document.getElementById('personal-luck-card');
+    if(card){
+      card.innerHTML=''
+        +'<div class="personal-luck-icon">오늘</div>'
+        +'<h3>나의 오늘 운세를 확인해보세요</h3>'
+        +'<p>생년월일을 입력하면 나에게 맞는 오늘의 운세를 보여드려요.</p>'
+        +'<button class="personal-luck-btn" onclick="openBirthModal()">생년월일 입력하고 확인</button>';
+    }
   }
 
-  /* 기존 빠른 메뉴 내부의 중복 텍스트와 오래된 아이콘 구조를 통째로 교체한다. */
+  /* 홈 빠른 메뉴는 기존 이미지 자산만 사용하고 내부 중복 구조를 제거한다. */
   function rebuildQuickMenu(){
     const quick=document.querySelector('#home .quick');
     if(!quick) return;
-
-    const buttons=quick.querySelectorAll('button');
-    buttons.forEach(function(button,index){
+    quick.querySelectorAll('button').forEach(function(button,index){
       const item=quickItems[index];
       if(!item) return;
-
-      /* 기존 onclick을 유지하되 화면에 남아 있던 내부 구조는 제거한다. */
       button.innerHTML='';
       button.setAttribute('onclick',item.action);
       button.setAttribute('aria-label',item.label);
 
-      /* 이미지 영역과 제목 영역을 완전히 분리한다. */
       const visual=document.createElement('span');
       visual.className='quick-visual';
       visual.style.backgroundImage='url("'+item.image+'")';
@@ -45,19 +46,65 @@
       const label=document.createElement('span');
       label.className='quick-label';
       label.textContent=item.label;
-
       button.appendChild(visual);
       button.appendChild(label);
     });
   }
 
-  /* v0.00.52 CSS를 기존 패치보다 늦게 연결해 레거시 스타일을 확실히 덮는다. */
+  /* 삭제된 SVG 결과 이미지를 대응하는 기존 JPG로 바꾼다. */
+  function stableResultImagePath(src){
+    if(!src || src.indexOf('assets/results/')===-1) return null;
+    const clean=src.split('?')[0];
+    const file=clean.split('/').pop();
+    if(!/\.svg$/i.test(file)) return null;
+
+    /* love-1.svg -> love-1.jpg 같은 1:1 대응을 사용한다. */
+    const base=file.replace(/\.svg$/i,'');
+    return 'assets/results/'+base+'.jpg?v=0.00.53';
+  }
+
+  function normalizeResultImages(root){
+    const scope=root || document;
+    scope.querySelectorAll('img[src*="assets/results/"]').forEach(function(img){
+      const target=stableResultImagePath(img.getAttribute('src'));
+      if(!target) return;
+      img.style.visibility='hidden';
+      img.onload=function(){ this.style.visibility='visible'; };
+      img.onerror=function(){ this.style.visibility='hidden'; };
+      img.src=target;
+    });
+  }
+
+  /* 결과가 테스트 완료 시 동적으로 생성되므로 src 변경도 감시한다. */
+  function watchDynamicResultImages(){
+    if(!document.body || window.__resultJpgObserver) return;
+    const observer=new MutationObserver(function(records){
+      records.forEach(function(record){
+        if(record.type==='attributes' && record.attributeName==='src' && record.target.matches && record.target.matches('img[src*="assets/results/"]')){
+          const img=record.target;
+          const target=stableResultImagePath(img.getAttribute('src'));
+          if(target && img.getAttribute('src')!==target){
+            img.style.visibility='hidden';
+            img.onload=function(){ this.style.visibility='visible'; };
+            img.src=target;
+          }
+        }
+        record.addedNodes.forEach(function(node){
+          if(node.nodeType===1) normalizeResultImages(node);
+        });
+      });
+    });
+    observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['src']});
+    window.__resultJpgObserver=observer;
+    normalizeResultImages(document);
+  }
+
   function loadFinalCss(){
     if(document.getElementById('ui-v052-final-link')) return;
     const link=document.createElement('link');
     link.id='ui-v052-final-link';
     link.rel='stylesheet';
-    link.href='assets/ui-v052.css?v=0.00.52';
+    link.href='assets/ui-v052.css?v=0.00.53';
     document.head.appendChild(link);
   }
 
@@ -65,21 +112,18 @@
     loadFinalCss();
     clearTemporaryPersonalInfo();
     rebuildQuickMenu();
+    watchDynamicResultImages();
   }
 
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',apply);
-  }else{
-    apply();
-  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply);
+  else apply();
 
-  /* 뒤로가기나 브라우저 복원으로 화면이 되살아나도 입력값을 다시 지운다. */
   window.addEventListener('pageshow',function(){
     clearTemporaryPersonalInfo();
     rebuildQuickMenu();
+    watchDynamicResultImages();
   });
 
-  /* 새로고침 직전에도 저장된 생년월일을 제거한다. */
   window.addEventListener('beforeunload',function(){
     try{localStorage.removeItem('fortuneBirthDate');}catch(error){}
   });
