@@ -1,10 +1,10 @@
-/* v0.00.56
-   테스트 결과 화면에서 JPG 일러스트가 로드되지 않아 빈 영역으로 보이는 문제를 보강한다.
-   결과 이미지는 숨기지 않고 즉시 표시하며, 로드 실패 시 기본 결과 이미지로 안전하게 대체한다.
-   생년월일 입력값은 새로고침이나 재진입 후 복원하지 않는다.
+/* v0.00.57
+   심리테스트 결과 이미지가 배포 환경에서 깨질 때 alt 텍스트가 크게 노출되는 문제를 보강한다.
+   결과 프로필의 파일명만 사용해 실제 JPG 경로를 다시 만들고, 실패하면 기본 결과 JPG로 대체한다.
+   결과 이미지에는 새 이미지 파일을 생성하지 않고 기존 JPG 자산만 사용한다.
 */
 (function(){
-  const VERSION='0.00.56';
+  const VERSION='0.00.57';
   const RESULT_FALLBACK='assets/result.jpg?v='+VERSION;
 
   const quickItems=[
@@ -14,7 +14,7 @@
     {label:'행운 아이템',image:'assets/ui/quick-lucky.svg?v='+VERSION,action:'showLucky()'}
   ];
 
-  /* 생년월일과 개인 운세 결과를 브라우저 저장소에 남기지 않는다. */
+  /* 생년월일은 새로고침이나 재진입 후 복원하지 않는다. */
   function clearTemporaryPersonalInfo(){
     try{ localStorage.removeItem('fortuneBirthDate'); }catch(error){}
     const input=document.getElementById('birth-date');
@@ -30,7 +30,7 @@
     }
   }
 
-  /* 홈 빠른 메뉴를 이미지와 텍스트가 겹치지 않는 구조로 다시 만든다. */
+  /* 홈 빠른 메뉴는 기존 이미지 자산만 사용한다. */
   function rebuildQuickMenu(){
     const quick=document.querySelector('#home .quick');
     if(!quick) return;
@@ -54,56 +54,62 @@
     });
   }
 
-  /* 과거 소스에 삭제된 SVG 결과 경로가 남아 있더라도 같은 이름의 JPG로 교체한다. */
-  function stableResultImagePath(src){
-    if(!src || src.indexOf('assets/results/')===-1) return null;
-    const clean=src.split('?')[0];
-    const file=clean.split('/').pop();
-    if(!/\.svg$/i.test(file)) return null;
-    const base=file.replace(/\.svg$/i,'');
-    return 'assets/results/'+base+'.jpg?v='+VERSION;
+  /* 이전 결과 경로가 남아 있어도 파일명 기준으로 기존 JPG 자산을 사용한다. */
+  function getResultJpgPath(src){
+    if(!src) return null;
+    const clean=String(src).split('?')[0];
+    const file=clean.split('/').pop() || '';
+    if(!/^[a-z0-9-]+\.jpg$/i.test(file)) return null;
+    return 'assets/results/'+file+'?v='+VERSION;
   }
 
-  /* 결과 이미지가 동적으로 만들어지는 경우에도 SVG만 JPG로 치환한다. */
+  /* 결과 이미지가 추가되면 잘못된 SVG 경로를 즉시 기존 JPG로 교체한다. */
   function normalizeResultImages(root){
     const scope=root || document;
     scope.querySelectorAll('img[src*="assets/results/"]').forEach(function(img){
-      const target=stableResultImagePath(img.getAttribute('src'));
-      if(target) img.src=target;
+      const target=getResultJpgPath(img.getAttribute('src'));
+      if(target && img.getAttribute('src')!==target){
+        img.alt='';
+        img.src=target;
+      }
     });
   }
 
-  /* 결과 이미지가 실제로 표시되는지 확인하고, 실패하면 기본 JPG를 사용한다. */
+  /* 결과 화면의 대표 이미지는 실패해도 alt 텍스트가 화면을 차지하지 않도록 처리한다. */
   function ensureResultArtwork(){
     const img=document.getElementById('result-art-img');
     if(!img) return;
 
-    /* 기존 CSS나 이전 스크립트가 이미지를 숨겨도 결과 화면에서는 반드시 보이게 한다. */
+    img.alt='';
     img.style.display='block';
     img.style.visibility='visible';
     img.style.opacity='1';
+    img.style.objectFit='cover';
     img.loading='eager';
     img.decoding='async';
 
-    /* 실패한 특정 결과 이미지 대신 프로젝트에 항상 존재하는 기본 결과 이미지를 보여준다. */
     if(img.dataset.resultFallbackBound!=='1'){
       img.dataset.resultFallbackBound='1';
       img.addEventListener('error',function(){
-        if(this.dataset.resultFallbackUsed==='1') return;
+        /* 기본 JPG까지 실패한 경우에는 깨진 이미지와 alt 문구를 모두 숨긴다. */
+        if(this.dataset.resultFallbackUsed==='1'){
+          this.style.display='none';
+          this.alt='';
+          return;
+        }
         this.dataset.resultFallbackUsed='1';
+        this.alt='';
         this.src=RESULT_FALLBACK;
       });
     }
 
-    /* 현재 src가 비어 있거나 잘못된 경우에도 기본 이미지를 즉시 지정한다. */
+    const current=img.getAttribute('src');
+    const fixed=getResultJpgPath(current);
+    if(fixed && current!==fixed) img.src=fixed;
     if(!img.getAttribute('src')) img.src=RESULT_FALLBACK;
-
-    /* 결과 화면이 다시 열릴 때마다 SVG 잔재와 숨김 상태를 다시 점검한다. */
-    const fixed=stableResultImagePath(img.getAttribute('src'));
-    if(fixed) img.src=fixed;
   }
 
-  /* 테스트 완료 후 결과 이미지 src가 바뀌는 상황을 감시한다. */
+  /* 결과가 동적으로 생성되거나 이미지 경로가 바뀌어도 계속 점검한다. */
   function watchDynamicResultImages(){
     if(!document.body || window.__resultJpgObserver) return;
     const observer=new MutationObserver(function(records){
@@ -111,15 +117,20 @@
         if(record.type==='attributes' && record.attributeName==='src'){
           const target=record.target;
           if(target && target.matches && target.matches('img[src*="assets/results/"]')){
-            const fixed=stableResultImagePath(target.getAttribute('src'));
-            if(fixed && target.getAttribute('src')!==fixed) target.src=fixed;
+            const fixed=getResultJpgPath(target.getAttribute('src'));
+            if(fixed && target.getAttribute('src')!==fixed){
+              target.alt='';
+              target.src=fixed;
+            }
           }
           if(target && target.id==='result-art-img') ensureResultArtwork();
         }
         record.addedNodes.forEach(function(node){
           if(node.nodeType===1){
             normalizeResultImages(node);
-            if(node.id==='result' || (node.querySelector && node.querySelector('#result-art-img'))) ensureResultArtwork();
+            if(node.id==='result' || (node.querySelector && node.querySelector('#result-art-img'))){
+              ensureResultArtwork();
+            }
           }
         });
       });
@@ -130,7 +141,7 @@
     ensureResultArtwork();
   }
 
-  /* 최신 결과 이미지 표시용 CSS를 강제로 다시 읽게 한다. */
+  /* 최신 결과 화면 보정 CSS를 불러온다. */
   function loadFinalCss(){
     if(document.getElementById('ui-v052-final-link')) return;
     const link=document.createElement('link');
