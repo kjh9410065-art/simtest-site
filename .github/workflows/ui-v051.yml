@@ -1,0 +1,64 @@
+name: Apply v0.00.51 typography normalization
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/ui-v051.css'
+      - '.github/workflows/ui-v051.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Inject v0.00.51 stylesheet as the final stylesheet
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+          css = '<link rel="stylesheet" href="assets/ui-v051.css?v=0.00.51">'
+
+          # 기존 v0.00.51 링크를 먼저 제거해 중복 로드를 방지합니다.
+          text = text.replace(css, '')
+
+          # 문서 안에 남아 있는 이전 v0.00.51 링크도 제거합니다.
+          text = re.sub(r'<link[^>]+assets/ui-v051\\.css[^>]*>', '', text)
+
+          # head가 닫히기 직전에 삽입해 브라우저가 가장 마지막 CSS로 읽도록 합니다.
+          text = text.replace('</head>', css + '\n</head>', 1)
+          path.write_text(text, encoding='utf-8')
+
+      - name: Validate
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          html = Path('index.html').read_text(encoding='utf-8')
+          css = Path('assets/ui-v051.css').read_text(encoding='utf-8')
+
+          assert html.count('assets/ui-v051.css?v=0.00.51') == 1
+          assert 'word-break:keep-all' in css
+          assert '#home .quick button > span:last-child' in css
+          assert '@media(min-width:600px) and (max-width:899px) and (orientation:portrait)' in css
+
+          # 프로젝트에서 금지한 이모지와 장식용 유니코드 기호를 새 CSS에 넣지 않습니다.
+          forbidden = re.compile(r'[\U0001F000-\U0001FFFF\u2190-\u21FF\u2200-\u22FF\u2300-\u23FF\u25A0-\u25FF\u2600-\u27BF\u2900-\u297F\u2B00-\u2BFF]')
+          assert not forbidden.search(css)
+
+      - name: Commit index injection
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'fix: apply typography normalization v0.00.51 [skip ci]'
+          git push
