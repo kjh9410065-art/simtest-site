@@ -1,4 +1,4 @@
-name: Apply v0.00.41 home quick cards
+name: Apply v0.00.41 home card layout
 
 on:
   push:
@@ -14,24 +14,61 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Inject v0.00.41 styles and script
+
+      - name: Replace quick menu markup and remove old overrides
         shell: python
         run: |
           from pathlib import Path
           import re
-          index = Path('index.html')
-          text = index.read_text(encoding='utf-8')
-          text = re.sub(r'\n?<link[^>]*assets/ui-v041\.css[^>]*>', '', text)
-          text = re.sub(r'\n?<script[^>]*assets/ui-v041\.js[^>]*></script>', '', text)
-          text = text.replace('</head>', '<link rel="stylesheet" href="assets/ui-v041.css?v=0.00.41">\n</head>', 1)
-          text = text.replace('</body>', '<script defer src="assets/ui-v041.js?v=0.00.41"></script>\n</body>', 1)
-          index.write_text(text, encoding='utf-8')
-      - name: Commit patch
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # 이전 버전의 퀵메뉴 스타일 연결을 모두 제거한다.
+          s = re.sub(r'\n?<link[^>]*assets/ui-v03[7-9]\.css[^>]*>', '', s)
+          s = re.sub(r'\n?<link[^>]*assets/ui-v040\.css[^>]*>', '', s)
+          s = re.sub(r'\n?<link[^>]*assets/ui-v041\.css[^>]*>', '', s)
+          s = re.sub(r'\n?<script[^>]*assets/ui-v0?41\.js[^>]*></script>', '', s)
+
+          # 기존 quick 영역을 통째로 교체해 CSS 충돌 가능성을 없앤다.
+          quick = '''<div class="quick quick-v041">
+          <button onclick="openFortune()"><span class="quick-art"><img src="assets/fortune/zodiac05.jpg?v=0.00.41" alt=""></span><strong>12띠 운세</strong><small>오늘의 운세 확인하기</small></button>
+          <button onclick="openStars()"><span class="quick-art"><img src="assets/fortune/star01.jpg?v=0.00.41" alt=""></span><strong>별자리 운세</strong><small>나의 별자리 운세</small></button>
+          <button onclick="openTests()"><span class="quick-art"><img src="assets/results/love01.svg?v=0.00.41" alt=""></span><strong>심리 테스트</strong><small>지금, 나를 알아보는 시간</small></button>
+          <button onclick="showLucky()"><span class="quick-art"><img class="lucky-art" src="assets/ui/quick-lucky.svg?v=0.00.41" alt=""></span><strong>행운 아이템</strong><small>오늘의 행운 아이템</small></button>
+          </div>'''
+
+          m = re.search(r'<div class="quick(?:\s+[^>]*)?>.*?</div>', s, re.S)
+          if not m:
+              raise SystemExit('quick menu not found')
+          s = s[:m.start()] + quick + s[m.end():]
+
+          css = '''<style id="quick-v041-final">
+          .quick-v041{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;padding:14px!important;background:#080b3d!important}
+          .quick-v041 button{position:relative!important;display:block!important;min-height:158px!important;padding:0!important;overflow:hidden!important;border:1px solid rgba(177,133,255,.55)!important;border-radius:22px!important;background:#111653!important;box-shadow:0 10px 24px rgba(0,0,0,.24)!important;text-align:left!important;color:#fff!important}
+          .quick-v041 .quick-art{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;z-index:0!important}
+          .quick-v041 .quick-art img{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important}
+          .quick-v041 button:after{content:""!important;position:absolute!important;inset:0!important;z-index:1!important;background:linear-gradient(180deg,transparent 32%,rgba(7,9,50,.1) 45%,rgba(7,9,50,.94) 100%)!important;pointer-events:none!important}
+          .quick-v041 button strong{position:absolute!important;left:14px!important;bottom:38px!important;z-index:2!important;font-size:17px!important;line-height:1.2!important;letter-spacing:-.7px!important}
+          .quick-v041 button small{position:absolute!important;left:14px!important;bottom:15px!important;z-index:2!important;font-size:11px!important;color:#e8ddff!important}
+          .quick-v041 button:active{transform:scale(.985)!important}
+          @media(min-width:700px){.quick-v041{grid-template-columns:repeat(4,minmax(0,1fr))!important}.quick-v041 button{min-height:190px!important}}
+          @media(max-width:420px){.quick-v041{gap:10px!important;padding:12px!important}.quick-v041 button{min-height:148px!important;border-radius:20px!important}.quick-v041 button strong{left:12px!important;bottom:35px!important;font-size:16px!important}.quick-v041 button small{left:12px!important;bottom:13px!important;font-size:10px!important}}
+          </style>'''
+
+          s = re.sub(r'<style id="quick-v041-final">.*?</style>', '', s, flags=re.S)
+          s = s.replace('</head>', css + '\n</head>', 1)
+          p.write_text(s, encoding='utf-8')
+
+      - name: Validate and commit
         shell: bash
         run: |
+          grep -q 'quick-v041' index.html
+          grep -q 'assets/fortune/zodiac05.jpg?v=0.00.41' index.html
+          grep -q 'assets/fortune/star01.jpg?v=0.00.41' index.html
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "feat: refine home quick cards v0.00.41 [skip ci]"
+          git commit -m "fix: apply final quick card markup v0.00.41 [skip ci]"
           git push
