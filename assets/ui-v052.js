@@ -1,11 +1,10 @@
-/* v0.00.59
-   심리테스트 결과 화면은 기존 유형별 JPG를 사용하지 않고
-   새로 추가한 결과 전용 일러스트를 항상 사용한다.
-   결과 유형 제목과 이미지가 서로 어긋나는 문제와 이전 이미지가 잠깐 보이는 문제를 막는다.
-   모든 이미지는 기존 저장소 자산만 사용한다.
+/* v0.00.60
+   결과 화면의 새 전용 일러스트를 안정적으로 표시하고,
+   배포 과정에서 실수로 삽입된 문자형 개행이 화면에 노출되는 것을 제거한다.
+   화면 크기별 레이아웃은 CSS가 담당한다.
 */
 (function(){
-  const VERSION='0.00.59';
+  const VERSION='0.00.60';
   const RESULT_ARTWORK='assets/results/result-main.svg?v='+VERSION;
   const RESULT_FALLBACK='assets/result.jpg?v='+VERSION;
 
@@ -16,7 +15,7 @@
     {label:'행운 아이템',image:'assets/ui/quick-lucky.svg?v='+VERSION,action:'showLucky()'}
   ];
 
-  /* 생년월일은 새로고침이나 재진입 후 복원하지 않는다. */
+  /* 새로고침하거나 다시 들어왔을 때 생년월일을 복원하지 않는다. */
   function clearTemporaryPersonalInfo(){
     try{ localStorage.removeItem('fortuneBirthDate'); }catch(error){}
     const input=document.getElementById('birth-date');
@@ -56,7 +55,17 @@
     });
   }
 
-  /* 결과 대표 이미지는 항상 새 전용 일러스트를 직접 사용한다. */
+  /* body 바로 아래에 남은 문자형 개행/공백 노드를 제거한다. */
+  function removeStrayTextNodes(){
+    if(!document.body) return;
+    Array.from(document.body.childNodes).forEach(function(node){
+      if(node.nodeType!==Node.TEXT_NODE) return;
+      const value=node.nodeValue||'';
+      if(/^\\s*\\n\\s*$/.test(value) || value.trim()==='\\n') node.remove();
+    });
+  }
+
+  /* 결과 이미지가 어떤 유형으로 계산되더라도 새 전용 일러스트를 직접 사용한다. */
   function ensureResultArtwork(){
     const img=document.getElementById('result-art-img');
     if(!img) return;
@@ -72,7 +81,6 @@
     if(img.dataset.resultArtworkBound!=='1'){
       img.dataset.resultArtworkBound='1';
       img.addEventListener('error',function(){
-        /* 전용 이미지까지 실패하면 기존 기본 이미지를 사용한다. */
         if(this.dataset.resultFallbackUsed==='1'){
           this.style.display='none';
           this.alt='';
@@ -84,28 +92,21 @@
       });
     }
 
-    /* 테스트 결과가 지정한 기존 이미지 대신 새 전용 일러스트를 사용한다. */
     const current=img.getAttribute('src') || '';
     const clean=current.split('?')[0];
-    if(clean!==RESULT_ARTWORK.split('?')[0] && img.dataset.resultFallbackUsed!=='1'){
-      img.src=RESULT_ARTWORK;
-    }else if(!current){
-      img.src=RESULT_ARTWORK;
-    }
+    const artwork=RESULT_ARTWORK.split('?')[0];
+    if(clean!==artwork && img.dataset.resultFallbackUsed!=='1') img.src=RESULT_ARTWORK;
+    else if(!current) img.src=RESULT_ARTWORK;
   }
 
-  /* 결과 화면이 동적으로 열리거나 이미지 경로가 다시 바뀌어도 전용 일러스트를 유지한다. */
+  /* 결과 화면이 동적으로 열려도 새 전용 일러스트를 유지한다. */
   function watchResultArtwork(){
     if(!document.body || window.__resultArtworkObserver) return;
     const observer=new MutationObserver(function(records){
       records.forEach(function(record){
-        if(record.type==='attributes' && record.attributeName==='src' && record.target && record.target.id==='result-art-img'){
-          ensureResultArtwork();
-        }
+        if(record.type==='attributes' && record.attributeName==='src' && record.target && record.target.id==='result-art-img') ensureResultArtwork();
         record.addedNodes.forEach(function(node){
-          if(node.nodeType===1 && (node.id==='result' || (node.querySelector && node.querySelector('#result-art-img')))){
-            ensureResultArtwork();
-          }
+          if(node.nodeType===1 && (node.id==='result' || (node.querySelector && node.querySelector('#result-art-img')))) ensureResultArtwork();
         });
       });
     });
@@ -114,7 +115,7 @@
     ensureResultArtwork();
   }
 
-  /* 최신 결과 화면 보정 CSS를 불러온다. */
+  /* 최신 결과 화면용 CSS를 한 번만 불러온다. */
   function loadFinalCss(){
     if(document.getElementById('ui-v052-final-link')) return;
     const link=document.createElement('link');
@@ -128,6 +129,7 @@
     loadFinalCss();
     clearTemporaryPersonalInfo();
     rebuildQuickMenu();
+    removeStrayTextNodes();
     watchResultArtwork();
     ensureResultArtwork();
   }
@@ -138,6 +140,7 @@
   window.addEventListener('pageshow',function(){
     clearTemporaryPersonalInfo();
     rebuildQuickMenu();
+    removeStrayTextNodes();
     watchResultArtwork();
     ensureResultArtwork();
   });
