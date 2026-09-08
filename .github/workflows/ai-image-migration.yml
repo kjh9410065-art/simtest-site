@@ -9,7 +9,6 @@ permissions:
 
 jobs:
   migrate:
-    # 이미 변환된 커밋에서는 변경사항이 없으므로 한 번만 실질적인 수정이 일어납니다.
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,7 +23,7 @@ jobs:
           path = Path("index.html")
           html = path.read_text(encoding="utf-8")
 
-          # 기존 정적 SVG를 브라우저에서 Workers AI 이미지 API를 호출하는 표시자로 바꿉니다.
+          # 기존 정적 SVG의 src 속성을 Workers AI 이미지 표시자로 바꿉니다.
           replacements = {
               "hero-night.svg": "hero",
               "art-zodiac.svg": "zodiac",
@@ -34,19 +33,15 @@ jobs:
           }
 
           for filename, image_type in replacements.items():
-              pattern = rf'src=(?[\"\'])assets/{re.escape(filename)}\\1'
-              html = re.sub(
-                  pattern,
-                  f'data-ai-image="{image_type}"',
-                  html,
-              )
+              pattern = rf'src=(["\\\'])assets/{re.escape(filename)}\\1'
+              html = re.sub(pattern, f'data-ai-image="{image_type}"', html)
 
-              # 혹시 같은 파일을 다른 방식으로 참조한 코드가 남아 있으면 직접적인 파일 참조를 제거합니다.
+              # 다른 위치에 같은 정적 파일 경로가 남아 있으면 API 경로로 바꿉니다.
               html = html.replace(f"assets/{filename}", f"/api/image?type={image_type}")
 
-          # 날짜를 URL에 넣어 하루 단위로 새로운 이미지를 생성하고 캐시하도록 합니다.
+          # 날짜를 URL에 포함해 날짜가 바뀌면 새 이미지를 만들고, 같은 날짜에는 캐시된 이미지를 사용합니다.
           loader = r'''<script>
-  // 정적 이미지 파일 대신 Cloudflare Workers AI에서 오늘 날짜에 맞는 이미지를 가져옵니다.
+  // 정적 이미지 파일 대신 Cloudflare Workers AI에서 오늘의 이미지를 가져옵니다.
   (() => {
     const date = new Date().toISOString().slice(0, 10);
     document.querySelectorAll("[data-ai-image]").forEach((image) => {
