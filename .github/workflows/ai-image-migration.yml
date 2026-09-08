@@ -5,9 +5,80 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   migrate:
     runs-on: ubuntu-latest
     steps:
-      - name: Test workflow
-        run: echo "workflow is valid"
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Replace static image references
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("index.html")
+          html = path.read_text(encoding="utf-8")
+
+          replacements = {
+              "hero-night.svg": "hero",
+              "art-zodiac.svg": "zodiac",
+              "art-stars.svg": "stars",
+              "art-test.svg": "test",
+              "art-lucky.svg": "lucky",
+          }
+
+          for filename, image_type in replacements.items():
+              html = html.replace(
+                  f'src="assets/{filename}"',
+                  f'data-ai-image="{image_type}"'
+              )
+              html = html.replace(
+                  f"src='assets/{filename}'",
+                  f'data-ai-image="{image_type}"'
+              )
+
+          loader = '''<script>
+  // 정적 이미지 파일 대신 Cloudflare Workers AI에서 오늘의 이미지를 가져옵니다.
+  (() => {
+    const date = new Date().toISOString().slice(0, 10);
+    document.querySelectorAll("[data-ai-image]").forEach((image) => {
+      const type = image.dataset.aiImage;
+      if (!type) return;
+      image.loading = type === "hero" ? "eager" : "lazy";
+      image.decoding = "async";
+      image.src = `/api/image?type=${encodeURIComponent(type)}&date=${date}`;
+    });
+  })();
+  </script>'''
+
+          if "[data-ai-image]" not in html:
+              html = html.replace("</body>", loader + "\n</body>")
+
+          path.write_text(html, encoding="utf-8")
+          PY
+
+      - name: Remove static image files
+        run: rm -f assets/art-zodiac.svg assets/art-stars.svg assets/art-test.svg assets/art-lucky.svg assets/hero-night.svg
+
+      - name: Verify no static SVG references remain
+        run: |
+          if grep -n "assets/.*\.svg" index.html; then
+            echo "Static SVG image reference remains in index.html"
+            exit 1
+          fi
+
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html assets
+          if git diff --cached --quiet; then
+            echo "No migration changes needed"
+            exit 0
+          fi
+          git commit -m "Use Workers AI for site illustrations"
+          git push
