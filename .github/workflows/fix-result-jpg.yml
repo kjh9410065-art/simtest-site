@@ -44,6 +44,9 @@ jobs:
           script = '<script src="assets/ui-v052.js?v=0.00.66"></script>'
           fixed = re.sub(r'(?:\s*<script src="assets/ui-v052\.js\?v=[0-9.]+"></script>){2,}', '\n' + script, fixed)
 
+          # 소스에 남아 있던 문자 그대로의 백슬래시 n을 제거한다.
+          fixed = fixed.replace('</html>' + chr(92) + 'n', '</html>')
+
           path.write_text(fixed, encoding='utf-8')
 
       - name: Commit source fix
@@ -57,5 +60,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "fix: normalize result asset paths and runtime loading [skip ci]"
+          git commit -m "fix: remove stray source text [skip ci]"
           git push
