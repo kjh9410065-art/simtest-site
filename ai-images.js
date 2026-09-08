@@ -2,8 +2,8 @@
 (() => {
   const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 
-  // 시안 비교 후 새 이미지와 최종 카드 비율을 함께 적용합니다.
-  const imageVersion = "ai-20260909-v14";
+  // 프롬프트가 바뀌었으므로 기존 캐시 이미지를 사용하지 않고 새 메인 이미지를 요청합니다.
+  const imageVersion = "ai-20260909-v15";
 
   const style = document.createElement("style");
   style.textContent = `
@@ -51,7 +51,6 @@
     const url = `/api/image?type=${encodeURIComponent(type)}&date=${encodeURIComponent(date)}&v=${imageVersion}`;
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       try {
-        // 실제 이미지 응답인지 확인합니다.
         const response = await fetch(url, { method: "GET", cache: "force-cache" });
         if (!response.ok) throw new Error(`AI image HTTP ${response.status}`);
         const contentType = response.headers.get("content-type") || "";
