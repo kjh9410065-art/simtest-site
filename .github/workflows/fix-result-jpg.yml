@@ -40,6 +40,10 @@ jobs:
           fixed = re.sub(r'assets/ui-v052\.css\?v=[0-9.]+', 'assets/ui-v052.css?v=0.00.66', fixed)
           fixed = re.sub(r'assets/ui-v052\.js\?v=[0-9.]+', 'assets/ui-v052.js?v=0.00.66', fixed)
 
+          # 같은 런타임 script가 중복 삽입된 경우 한 번만 남긴다.
+          script = '<script src="assets/ui-v052.js?v=0.00.66"></script>'
+          fixed = re.sub(r'(?:\s*<script src="assets/ui-v052\.js\?v=[0-9.]+"></script>){2,}', '\n' + script, fixed)
+
           path.write_text(fixed, encoding='utf-8')
 
       - name: Commit source fix
@@ -53,5 +57,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "fix: normalize result asset paths and cache version [skip ci]"
+          git commit -m "fix: normalize result asset paths and runtime loading [skip ci]"
           git push
