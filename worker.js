@@ -14,12 +14,26 @@ function getDateKey(request) {
   return url.searchParams.get("date") || new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(new Date());
 }
 
-// AI가 일시적으로 실패해도 깨진 이미지 대신 사용할 안전한 SVG입니다.
+// AI가 실패해도 깨진 이미지 아이콘이 나오지 않도록 실제 SVG 이미지 데이터를 만듭니다.
 function fallbackImage(type) {
-  const labels = { hero: "TODAY", zodiac: "ZODIAC", stars: "STARS", test: "TEST", lucky: "LUCK" };
-  const label = labels[type] || "TODAY";
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#111846"/><stop offset=".58" stop-color="#302c73"/><stop offset="1" stop-color="#7656df"/></linearGradient><radialGradient id="r"><stop stop-color="#d8caff" stop-opacity=".55"/><stop offset="1" stop-color="#d8caff" stop-opacity="0"/></radialGradient></defs><rect width="900" height="600" fill="url(#g)"/><circle cx="690" cy="160" r="180" fill="url(#r)"/><circle cx="710" cy="155" r="68" fill="#f1ecff" opacity=".9"/><circle cx="210" cy="140" r="5" fill="#fff" opacity=".9"/><circle cx="290" cy="250" r="4" fill="#fff" opacity=".7"/><circle cx="530" cy="90" r="4" fill="#fff" opacity=".8"/><circle cx="600" cy="330" r="5" fill="#fff" opacity=".7"/><path d="M130 470 C270 350 410 520 560 390 C650 312 740 390 820 330" fill="none" stroke="#cdbbff" stroke-width="3" opacity=".5"/><text x="70" y="520" fill="#fff" font-family="Arial,sans-serif" font-size="30" font-weight="700" letter-spacing="7">${label}</text></svg>`;
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#111846"/><stop offset=".58" stop-color="#302c73"/><stop offset="1" stop-color="#7656df"/></linearGradient><radialGradient id="r"><stop stop-color="#e3d9ff" stop-opacity=".62"/><stop offset="1" stop-color="#d8caff" stop-opacity="0"/></radialGradient></defs><rect width="1200" height="750" fill="url(#g)"/><circle cx="900" cy="210" r="240" fill="url(#r)"/><circle cx="925" cy="205" r="82" fill="#f4f0ff" opacity=".92"/><circle cx="190" cy="150" r="5" fill="#fff" opacity=".85"/><circle cx="320" cy="290" r="4" fill="#fff" opacity=".72"/><circle cx="600" cy="100" r="4" fill="#fff" opacity=".82"/><circle cx="720" cy="390" r="5" fill="#fff" opacity=".72"/><path d="M100 585 C300 430 430 650 630 500 C760 400 900 520 1110 380" fill="none" stroke="#cdbbff" stroke-width="4" opacity=".48"/><circle cx="270" cy="530" r="52" fill="#1b2054" opacity=".75"/><path d="M0 690 C230 590 420 690 620 610 C820 530 1000 640 1200 550 V750 H0Z" fill="#0c1237" opacity=".65"/></svg>`;
+  const bytes = new TextEncoder().encode(svg);
+  return new Response(bytes, {
+    status: 200,
+    headers: {
+      "Content-Type": "image/svg+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      "X-AI-Image-Fallback": "true",
+      "X-AI-Image-Type": type
+    }
+  });
+}
+
+function base64ToBytes(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return bytes;
 }
 
 export default {
@@ -37,7 +51,7 @@ export default {
     const date = getDateKey(request);
 
     try {
-      // 날짜와 이미지 종류를 시드로 사용해 하루 동안 동일한 결과를 유지합니다.
+      // 날짜와 이미지 종류를 시드로 사용해 같은 날짜에는 같은 이미지를 유지합니다.
       const seedText = `${date}:${type}`;
       let seed = 0;
       for (let i = 0; i < seedText.length; i += 1) seed = (seed * 31 + seedText.charCodeAt(i)) >>> 0;
@@ -45,18 +59,19 @@ export default {
       const result = await env.AI.run(IMAGE_MODEL, { prompt, seed, steps: 4 });
       if (!result || typeof result.image !== "string" || !result.image) throw new Error("Workers AI returned no image");
 
-      // Cloudflare 공식 FLUX 예제와 동일하게 Base64를 data URI로 전달합니다.
-      return Response.json(
-        { dataURI: `data:image/jpeg;charset=utf-8;base64,${result.image}`, type, date, fallback: false },
-        { headers: { "Cache-Control": "public, max-age=86400, s-maxage=86400" } }
-      );
+      // 브라우저가 별도의 JSON 처리 없이 일반 이미지 URL로 바로 표시할 수 있게 반환합니다.
+      return new Response(base64ToBytes(result.image), {
+        status: 200,
+        headers: {
+          "Content-Type": "image/jpeg",
+          "Cache-Control": "public, max-age=86400, s-maxage=86400",
+          "X-AI-Image-Type": type,
+          "X-AI-Image-Date": date
+        }
+      });
     } catch (error) {
       console.error("AI image generation failed", error);
-      // AI 호출 실패가 사이트 전체 레이아웃을 깨뜨리지 않도록 정상적인 200 응답으로 fallback을 반환합니다.
-      return Response.json(
-        { dataURI: fallbackImage(type), type, date, fallback: true },
-        { headers: { "Cache-Control": "public, max-age=3600, s-maxage=3600", "X-AI-Image-Fallback": "true" } }
-      );
+      return fallbackImage(type);
     }
   }
 };
