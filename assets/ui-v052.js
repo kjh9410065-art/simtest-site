@@ -1,10 +1,11 @@
-/* v0.00.57
-   심리테스트 결과 이미지가 배포 환경에서 깨질 때 alt 텍스트가 크게 노출되는 문제를 보강한다.
-   결과 프로필의 파일명만 사용해 실제 JPG 경로를 다시 만들고, 실패하면 기본 결과 JPG로 대체한다.
-   결과 이미지에는 새 이미지 파일을 생성하지 않고 기존 JPG 자산만 사용한다.
+/* v0.00.58
+   심리테스트 결과 화면에는 새로 만든 전용 일러스트를 직접 사용한다.
+   기존 결과 JPG나 삭제된 SVG를 중간 변환하는 방식은 결과 대표 이미지에서 사용하지 않는다.
+   이미지가 실패하면 기존 기본 결과 이미지로 대체하고 깨진 alt 텍스트는 표시하지 않는다.
 */
 (function(){
-  const VERSION='0.00.57';
+  const VERSION='0.00.58';
+  const RESULT_ARTWORK='assets/results/result-main.svg?v='+VERSION;
   const RESULT_FALLBACK='assets/result.jpg?v='+VERSION;
 
   const quickItems=[
@@ -54,28 +55,7 @@
     });
   }
 
-  /* 이전 결과 경로가 남아 있어도 파일명 기준으로 기존 JPG 자산을 사용한다. */
-  function getResultJpgPath(src){
-    if(!src) return null;
-    const clean=String(src).split('?')[0];
-    const file=clean.split('/').pop() || '';
-    if(!/^[a-z0-9-]+\.jpg$/i.test(file)) return null;
-    return 'assets/results/'+file+'?v='+VERSION;
-  }
-
-  /* 결과 이미지가 추가되면 잘못된 SVG 경로를 즉시 기존 JPG로 교체한다. */
-  function normalizeResultImages(root){
-    const scope=root || document;
-    scope.querySelectorAll('img[src*="assets/results/"]').forEach(function(img){
-      const target=getResultJpgPath(img.getAttribute('src'));
-      if(target && img.getAttribute('src')!==target){
-        img.alt='';
-        img.src=target;
-      }
-    });
-  }
-
-  /* 결과 화면의 대표 이미지는 실패해도 alt 텍스트가 화면을 차지하지 않도록 처리한다. */
+  /* 결과 대표 이미지는 항상 새 전용 일러스트를 직접 사용한다. */
   function ensureResultArtwork(){
     const img=document.getElementById('result-art-img');
     if(!img) return;
@@ -88,10 +68,10 @@
     img.loading='eager';
     img.decoding='async';
 
-    if(img.dataset.resultFallbackBound!=='1'){
-      img.dataset.resultFallbackBound='1';
+    if(img.dataset.resultArtworkBound!=='1'){
+      img.dataset.resultArtworkBound='1';
       img.addEventListener('error',function(){
-        /* 기본 JPG까지 실패한 경우에는 깨진 이미지와 alt 문구를 모두 숨긴다. */
+        /* 전용 이미지까지 실패하면 기존 기본 이미지를 사용한다. */
         if(this.dataset.resultFallbackUsed==='1'){
           this.style.display='none';
           this.alt='';
@@ -103,41 +83,33 @@
       });
     }
 
-    const current=img.getAttribute('src');
-    const fixed=getResultJpgPath(current);
-    if(fixed && current!==fixed) img.src=fixed;
-    if(!img.getAttribute('src')) img.src=RESULT_FALLBACK;
+    /* 테스트 결과를 계산하는 코드가 어떤 기존 이미지를 지정하더라도 전용 이미지로 고정한다. */
+    const current=img.getAttribute('src') || '';
+    const clean=current.split('?')[0];
+    if(clean!==RESULT_ARTWORK.split('?')[0] && img.dataset.resultFallbackUsed!=='1'){
+      img.src=RESULT_ARTWORK;
+    }else if(!current){
+      img.src=RESULT_ARTWORK;
+    }
   }
 
-  /* 결과가 동적으로 생성되거나 이미지 경로가 바뀌어도 계속 점검한다. */
-  function watchDynamicResultImages(){
-    if(!document.body || window.__resultJpgObserver) return;
+  /* 결과 화면이 동적으로 열리거나 src가 다시 바뀌는 경우에도 전용 이미지로 유지한다. */
+  function watchResultArtwork(){
+    if(!document.body || window.__resultArtworkObserver) return;
     const observer=new MutationObserver(function(records){
       records.forEach(function(record){
-        if(record.type==='attributes' && record.attributeName==='src'){
-          const target=record.target;
-          if(target && target.matches && target.matches('img[src*="assets/results/"]')){
-            const fixed=getResultJpgPath(target.getAttribute('src'));
-            if(fixed && target.getAttribute('src')!==fixed){
-              target.alt='';
-              target.src=fixed;
-            }
-          }
-          if(target && target.id==='result-art-img') ensureResultArtwork();
+        if(record.type==='attributes' && record.attributeName==='src' && record.target && record.target.id==='result-art-img'){
+          ensureResultArtwork();
         }
         record.addedNodes.forEach(function(node){
-          if(node.nodeType===1){
-            normalizeResultImages(node);
-            if(node.id==='result' || (node.querySelector && node.querySelector('#result-art-img'))){
-              ensureResultArtwork();
-            }
+          if(node.nodeType===1 && (node.id==='result' || (node.querySelector && node.querySelector('#result-art-img')))){
+            ensureResultArtwork();
           }
         });
       });
     });
     observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['src']});
-    window.__resultJpgObserver=observer;
-    normalizeResultImages(document);
+    window.__resultArtworkObserver=observer;
     ensureResultArtwork();
   }
 
@@ -155,7 +127,7 @@
     loadFinalCss();
     clearTemporaryPersonalInfo();
     rebuildQuickMenu();
-    watchDynamicResultImages();
+    watchResultArtwork();
     ensureResultArtwork();
   }
 
@@ -165,7 +137,7 @@
   window.addEventListener('pageshow',function(){
     clearTemporaryPersonalInfo();
     rebuildQuickMenu();
-    watchDynamicResultImages();
+    watchResultArtwork();
     ensureResultArtwork();
   });
 
