@@ -1,4 +1,4 @@
-// Cloudflare Worker가 사이트의 동적 이미지를 생성합니다.
+// Cloudflare Worker가 사이트의 동적 AI 이미지만 생성합니다.
 const IMAGE_MODEL = "@cf/black-forest-labs/flux-1-schnell";
 
 const PROMPTS = {
@@ -12,21 +12,6 @@ const PROMPTS = {
 function getDateKey(request) {
   const url = new URL(request.url);
   return url.searchParams.get("date") || new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(new Date());
-}
-
-// AI가 실패해도 깨진 이미지 아이콘이 나오지 않도록 실제 SVG 이미지 데이터를 만듭니다.
-function fallbackImage(type) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#111846"/><stop offset=".58" stop-color="#302c73"/><stop offset="1" stop-color="#7656df"/></linearGradient><radialGradient id="r"><stop stop-color="#e3d9ff" stop-opacity=".62"/><stop offset="1" stop-color="#d8caff" stop-opacity="0"/></radialGradient></defs><rect width="1200" height="750" fill="url(#g)"/><circle cx="900" cy="210" r="240" fill="url(#r)"/><circle cx="925" cy="205" r="82" fill="#f4f0ff" opacity=".92"/><circle cx="190" cy="150" r="5" fill="#fff" opacity=".85"/><circle cx="320" cy="290" r="4" fill="#fff" opacity=".72"/><circle cx="600" cy="100" r="4" fill="#fff" opacity=".82"/><circle cx="720" cy="390" r="5" fill="#fff" opacity=".72"/><path d="M100 585 C300 430 430 650 630 500 C760 400 900 520 1110 380" fill="none" stroke="#cdbbff" stroke-width="4" opacity=".48"/><circle cx="270" cy="530" r="52" fill="#1b2054" opacity=".75"/><path d="M0 690 C230 590 420 690 620 610 C820 530 1000 640 1200 550 V750 H0Z" fill="#0c1237" opacity=".65"/></svg>`;
-  const bytes = new TextEncoder().encode(svg);
-  return new Response(bytes, {
-    status: 200,
-    headers: {
-      "Content-Type": "image/svg+xml; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
-      "X-AI-Image-Fallback": "true",
-      "X-AI-Image-Type": type
-    }
-  });
 }
 
 function base64ToBytes(base64) {
@@ -51,27 +36,45 @@ export default {
     const date = getDateKey(request);
 
     try {
-      // 날짜와 이미지 종류를 시드로 사용해 같은 날짜에는 같은 이미지를 유지합니다.
+      // 날짜와 이미지 종류를 시드로 사용해 하루 동안 동일한 AI 이미지를 유지합니다.
       const seedText = `${date}:${type}`;
       let seed = 0;
       for (let i = 0; i < seedText.length; i += 1) seed = (seed * 31 + seedText.charCodeAt(i)) >>> 0;
 
-      const result = await env.AI.run(IMAGE_MODEL, { prompt, seed, steps: 4 });
-      if (!result || typeof result.image !== "string" || !result.image) throw new Error("Workers AI returned no image");
+      // Cloudflare Workers AI의 공식 FLUX 이미지 생성 모델을 호출합니다.
+      const result = await env.AI.run(IMAGE_MODEL, {
+        prompt,
+        seed,
+        steps: 4
+      });
 
-      // 브라우저가 별도의 JSON 처리 없이 일반 이미지 URL로 바로 표시할 수 있게 반환합니다.
+      if (!result || typeof result.image !== "string" || !result.image) {
+        throw new Error("Workers AI returned no image");
+      }
+
+      // 생성된 Base64 이미지를 실제 JPEG 응답으로 반환합니다.
       return new Response(base64ToBytes(result.image), {
         status: 200,
         headers: {
           "Content-Type": "image/jpeg",
+          // 하루 동안 같은 날짜/종류 요청은 생성된 AI 이미지를 재사용합니다.
           "Cache-Control": "public, max-age=86400, s-maxage=86400",
           "X-AI-Image-Type": type,
-          "X-AI-Image-Date": date
+          "X-AI-Image-Date": date,
+          "X-AI-Image-Source": "cloudflare-workers-ai"
         }
       });
     } catch (error) {
-      console.error("AI image generation failed", error);
-      return fallbackImage(type);
+      // 정적 이미지로 대체하지 않습니다. 문제가 있으면 명확한 오류를 반환해 원인을 숨기지 않습니다.
+      console.error("Workers AI image generation failed", error);
+      return new Response("Workers AI image generation failed", {
+        status: 502,
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Cache-Control": "no-store",
+          "X-AI-Image-Source": "cloudflare-workers-ai"
+        }
+      });
     }
   }
 };
