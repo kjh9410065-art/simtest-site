@@ -2,8 +2,8 @@
 (() => {
   const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 
-  // 일본 애니메이션 스타일 이미지를 새로 생성하도록 버전을 갱신합니다.
-  const imageVersion = "ai-20260909-v12";
+  // 시안과 비교한 뒤 이미지 구도를 다시 생성하도록 버전을 갱신합니다.
+  const imageVersion = "ai-20260909-v13";
 
   const style = document.createElement("style");
   style.textContent = `
