@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-label="심리테스트 결과 일러스트">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6d45d8"/>
+      <stop offset="0.55" stop-color="#342080"/>
+      <stop offset="1" stop-color="#17134f"/>
+    </linearGradient>
+    <radialGradient id="halo">
+      <stop offset="0" stop-color="#d7b9ff" stop-opacity="0.9"/>
+      <stop offset="0.55" stop-color="#9b6cff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#7a48e8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e4d4ff"/>
+      <stop offset="1" stop-color="#9d72df"/>
+    </linearGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+
+  <!-- 전체 결과 이미지 배경 -->
+  <rect width="640" height="640" rx="42" fill="url(#bg)"/>
+  <circle cx="320" cy="260" r="245" fill="url(#halo)" filter="url(#soft)"/>
+  <circle cx="320" cy="260" r="184" fill="#a982ef" opacity="0.24"/>
+
+  <!-- 배경 식물 -->
+  <g opacity="0.72">
+    <path d="M72 510 C72 430 105 365 140 330" fill="none" stroke="#8ec8a5" stroke-width="10" stroke-linecap="round"/>
+    <ellipse cx="103" cy="405" rx="38" ry="16" transform="rotate(-42 103 405)" fill="#78b88f"/>
+    <ellipse cx="126" cy="365" rx="42" ry="17" transform="rotate(30 126 365)" fill="#91d0a8"/>
+    <ellipse cx="83" cy="456" rx="40" ry="17" transform="rotate(28 83 456)" fill="#6fae87"/>
+  </g>
+
+  <!-- 인물 머리카락 -->
+  <path d="M214 278 C205 171 271 101 366 112 C456 122 496 203 466 311 C450 365 405 398 328 389 C258 381 220 341 214 278Z" fill="#30204f"/>
+  <path d="M232 250 C246 177 309 139 376 153 C422 163 451 200 454 249 C421 228 397 214 361 215 C314 216 277 231 232 250Z" fill="#4c2e72"/>
+
+  <!-- 얼굴 -->
+  <ellipse cx="344" cy="255" rx="83" ry="99" fill="#f7c8b7"/>
+  <path d="M281 244 C291 181 345 151 397 175 C421 186 438 205 445 232 C411 214 377 205 337 215 C318 220 299 232 281 244Z" fill="#3c285b"/>
+  <ellipse cx="314" cy="260" rx="8" ry="5" fill="#3c285b"/>
+  <ellipse cx="374" cy="260" rx="8" ry="5" fill="#3c285b"/>
+  <path d="M328 294 Q344 307 360 294" fill="none" stroke="#b65f79" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="300" cy="286" r="13" fill="#ef9da8" opacity="0.35"/>
+  <circle cx="391" cy="286" r="13" fill="#ef9da8" opacity="0.35"/>
+
+  <!-- 몸통 -->
+  <path d="M233 366 C251 330 284 319 344 319 C404 319 438 332 458 366 L505 546 L179 546Z" fill="url(#shirt)"/>
+  <path d="M278 346 Q344 391 410 346" fill="none" stroke="#f0e5ff" stroke-width="13" opacity="0.75"/>
+
+  <!-- 오른팔: 자신감 있는 자세 -->
+  <path d="M414 365 C444 332 465 296 472 252 L505 150 C513 124 535 111 552 121 C568 130 571 151 563 171 L523 274 C511 326 491 381 459 417Z" fill="#f7c8b7"/>
+  <path d="M500 151 C493 135 501 116 516 108 C532 99 548 106 556 120 L567 139 L548 152 L531 139 L519 160Z" fill="#f7c8b7"/>
+
+  <!-- 왼팔 -->
+  <path d="M275 369 C243 384 217 416 198 455 L171 513 L227 530 L265 454 L307 409Z" fill="#b88ce8"/>
+  <ellipse cx="175" cy="514" rx="35" ry="29" fill="#f7c8b7"/>
+
+  <!-- 책상과 소품 -->
+  <rect x="54" y="532" width="532" height="54" rx="27" fill="#241b61" opacity="0.9"/>
+  <rect x="94" y="503" width="120" height="25" rx="8" fill="#8d68c6" opacity="0.7"/>
+  <rect x="104" y="478" width="110" height="25" rx="8" fill="#b69ae8" opacity="0.65"/>
+  <rect x="455" y="476" width="72" height="55" rx="12" fill="#d8c6ee" opacity="0.85"/>
+  <rect x="469" y="489" width="44" height="8" rx="4" fill="#7655a9" opacity="0.6"/>
+  <rect x="469" y="505" width="34" height="8" rx="4" fill="#7655a9" opacity="0.45"/>
+
+  <!-- 부드러운 빛 포인트 -->
+  <circle cx="117" cy="168" r="7" fill="#eadcff" opacity="0.85"/>
+  <circle cx="526" cy="314" r="9" fill="#eadcff" opacity="0.75"/>
+  <circle cx="154" cy="278" r="5" fill="#fff" opacity="0.7"/>
+  <circle cx="492" cy="207" r="5" fill="#fff" opacity="0.7"/>
+</svg>
