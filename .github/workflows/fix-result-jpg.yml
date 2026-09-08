@@ -14,7 +14,7 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v4
 
-      - name: Replace deleted SVG result paths with existing JPG assets
+      - name: Replace every deleted result SVG reference
         shell: python
         run: |
           from pathlib import Path
@@ -23,10 +23,11 @@ jobs:
           path = Path('index.html')
           text = path.read_text(encoding='utf-8')
 
-          # 결과 이미지와 테스트 질문 이미지가 삭제된 SVG를 직접 요청하지 않도록
-          # assets/results/*.svg 경로를 동일한 이름의 JPG 경로로 바꾼다.
+          # 결과 이미지와 테스트 질문 이미지에 남아 있는 모든 SVG 경로를
+          # 같은 파일명의 기존 JPG 경로로 변경한다.
+          # 쿼리 문자열이 붙은 경우도 함께 처리한다.
           fixed = re.sub(
-              r'(assets/results/[^\"\'\\s?]+)\.svg(?=(?:\?[^\"\'\\s]*)?[\"\'])',
+              r'(assets/results/[^"\'\s?]+)\.svg',
               r'\1.jpg',
               text,
               flags=re.IGNORECASE,
@@ -34,9 +35,9 @@ jobs:
 
           if fixed != text:
               path.write_text(fixed, encoding='utf-8')
-              print('index.html: deleted SVG result paths replaced with JPG paths')
+              print('index.html: all result SVG references were replaced with JPG references')
           else:
-              print('index.html: no deleted SVG result paths found')
+              print('index.html: no result SVG references remain')
 
       - name: Commit source fix
         shell: bash
@@ -49,5 +50,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "fix: use JPG assets for test result and question images [skip ci]"
+          git commit -m "fix: replace all deleted result SVG references with JPG assets [skip ci]"
           git push
