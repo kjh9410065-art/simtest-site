@@ -1,7 +1,32 @@
-/* v0.00.60
-   심리테스트 결과 화면을 실제 서비스 화면에 맞게 정리한다.
-   결과 이미지는 전용 일러스트 하나를 안정적으로 표시한다.
+/* v0.00.62
+   심리테스트 결과 화면을 실제 서비스 화면처럼 정리한다.
+   모든 화면에서 콘텐츠가 가로로 넘치지 않도록 폭과 줄바꿈을 강제한다.
 */
+
+#result,
+#result .result,
+#result .result-summary,
+#result .result-info,
+#result .result-body,
+#result .result-section{
+  box-sizing:border-box!important;
+  max-width:100%!important;
+}
+
+#result{overflow-x:hidden!important;}
+#result .result{width:100%!important;overflow:hidden!important;}
+#result .result-info,
+#result .result-info *{
+  min-width:0!important;
+  max-width:100%!important;
+}
+#result .result-info h1,
+#result .result-info p,
+#result .result-body p,
+#result .result-section p{
+  overflow-wrap:anywhere!important;
+  word-break:keep-all!important;
+}
 
 #result .result-art-frame{
   position:relative!important;
@@ -9,6 +34,7 @@
   overflow:hidden!important;
   background:#17144d!important;
   border-radius:22px!important;
+  flex:none!important;
 }
 
 #result .result-art-frame .result-orbit{
@@ -26,51 +52,47 @@
   opacity:1!important;
   width:100%!important;
   height:100%!important;
-  min-width:100%!important;
-  min-height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
   object-fit:cover!important;
   object-position:center!important;
 }
 
-/* 일반 스마트폰 세로: 이미지와 결과 제목을 나란히 배치한다. */
 @media(max-width:599px) and (orientation:portrait){
-  #result .result{padding:18px 18px 34px!important;}
-  #result .result-summary{display:grid!important;grid-template-columns:minmax(0,180px) minmax(0,1fr)!important;align-items:center!important;gap:14px!important;margin:8px 0 20px!important;}
-  #result .result-art-frame{width:180px!important;height:180px!important;min-width:180px!important;min-height:180px!important;max-width:180px!important;max-height:180px!important;aspect-ratio:1/1!important;}
-  #result .result-info h1{font-size:24px!important;line-height:1.25!important;margin:0 0 10px!important;word-break:keep-all!important;}
-}
-
-/* 아주 작은 일반폰에서는 이미지와 텍스트가 겹치지 않도록 조금 줄인다. */
-@media(max-width:390px) and (orientation:portrait){
-  #result .result{padding-left:14px!important;padding-right:14px!important;}
-  #result .result-summary{grid-template-columns:150px minmax(0,1fr)!important;gap:11px!important;}
-  #result .result-art-frame{width:150px!important;height:150px!important;min-width:150px!important;min-height:150px!important;max-width:150px!important;max-height:150px!important;}
-  #result .result-info h1{font-size:21px!important;}
+  #result .result{padding:16px 16px 30px!important;}
+  #result .result-summary{display:grid!important;grid-template-columns:minmax(0,150px) minmax(0,1fr)!important;align-items:center!important;gap:14px!important;margin:8px 0 20px!important;}
+  #result .result-art-frame{width:150px!important;height:150px!important;min-width:150px!important;min-height:150px!important;max-width:150px!important;max-height:150px!important;aspect-ratio:1/1!important;border-radius:18px!important;}
+  #result .result-info h1{font-size:23px!important;line-height:1.25!important;margin:0 0 9px!important;word-break:keep-all!important;}
   #result .tag{padding:6px 8px!important;font-size:10px!important;}
 }
 
-/* Fold 세로에서는 조금 더 큰 결과 이미지를 허용한다. */
+@media(max-width:390px) and (orientation:portrait){
+  #result .result{padding-left:13px!important;padding-right:13px!important;}
+  #result .result-summary{grid-template-columns:minmax(0,132px) minmax(0,1fr)!important;gap:11px!important;}
+  #result .result-art-frame{width:132px!important;height:132px!important;min-width:132px!important;min-height:132px!important;max-width:132px!important;max-height:132px!important;}
+  #result .result-info h1{font-size:20px!important;}
+  #result .tag{padding:5px 7px!important;font-size:9px!important;}
+}
+
 @media(min-width:600px) and (max-width:899px) and (orientation:portrait){
-  #result .result{max-width:760px!important;margin:0 auto!important;padding:20px 24px 36px!important;}
-  #result .result-summary{display:grid!important;grid-template-columns:minmax(0,280px) minmax(0,1fr)!important;align-items:center!important;gap:24px!important;}
-  #result .result-art-frame{width:280px!important;height:280px!important;min-width:280px!important;min-height:280px!important;max-width:280px!important;max-height:280px!important;}
-  #result .result-info h1{font-size:30px!important;}
+  #result .result{width:100%!important;max-width:760px!important;margin:0 auto!important;padding:20px 24px 36px!important;}
+  #result .result-summary{display:grid!important;grid-template-columns:minmax(0,250px) minmax(0,1fr)!important;align-items:center!important;gap:22px!important;margin:8px 0 22px!important;}
+  #result .result-art-frame{width:250px!important;height:250px!important;min-width:250px!important;min-height:250px!important;max-width:250px!important;max-height:250px!important;}
+  #result .result-info h1{font-size:29px!important;line-height:1.25!important;}
 }
 
-/* 폴드/플립/스마트폰 가로: 화면 높이를 기준으로 결과 영역을 제한한다. */
 @media(max-width:1199px) and (orientation:landscape){
-  #result .result{max-width:900px!important;margin:0 auto!important;padding:18px 24px 34px!important;}
-  #result .result-summary{display:grid!important;grid-template-columns:minmax(0,260px) minmax(0,1fr)!important;align-items:center!important;gap:24px!important;margin:6px 0 20px!important;}
-  #result .result-art-frame{width:260px!important;height:260px!important;min-width:260px!important;min-height:260px!important;max-width:260px!important;max-height:260px!important;}
-  #result .result-info h1{font-size:29px!important;}
+  #result .result{width:100%!important;max-width:900px!important;margin:0 auto!important;padding:18px 24px 34px!important;}
+  #result .result-summary{display:grid!important;grid-template-columns:minmax(0,240px) minmax(0,1fr)!important;align-items:center!important;gap:22px!important;margin:6px 0 20px!important;}
+  #result .result-art-frame{width:240px!important;height:240px!important;min-width:240px!important;min-height:240px!important;max-width:240px!important;max-height:240px!important;}
+  #result .result-info h1{font-size:28px!important;}
 }
 
-/* PC: 콘텐츠 폭을 제한해 결과 화면이 지나치게 넓어지지 않게 한다. */
 @media(min-width:1200px){
-  #result .result{max-width:900px!important;margin:0 auto!important;padding:24px 30px 40px!important;}
-  #result .result-summary{display:grid!important;grid-template-columns:360px minmax(0,1fr)!important;align-items:center!important;gap:30px!important;}
-  #result .result-art-frame{width:360px!important;height:360px!important;min-width:360px!important;min-height:360px!important;}
+  #result .result{width:100%!important;max-width:1080px!important;margin:0 auto!important;padding:24px 30px 40px!important;}
+  #result .result-summary{display:grid!important;grid-template-columns:minmax(0,400px) minmax(0,1fr)!important;align-items:center!important;gap:36px!important;margin:10px 0 28px!important;}
+  #result .result-art-frame{width:400px!important;height:400px!important;min-width:400px!important;min-height:400px!important;max-width:400px!important;max-height:400px!important;}
+  #result .result-info h1{font-size:36px!important;line-height:1.2!important;}
 }
 
-/* 결과 이미지가 실패하더라도 깨진 이미지 아이콘이나 alt 문자열을 표시하지 않는다. */
 #result .result-art-frame img[alt=""]{font-size:0!important;color:transparent!important;text-indent:-9999px!important;}
