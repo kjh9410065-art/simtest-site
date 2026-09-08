@@ -17,49 +17,38 @@ jobs:
 
       - name: Replace static image references
         run: |
-          python - <<'PY'
-          from pathlib import Path
+          sed -i 's#src="assets/hero-night.svg"#data-ai-image="hero"#g' index.html
+          sed -i "s#src='assets/hero-night.svg'#data-ai-image='hero'#g" index.html
+          sed -i 's#src="assets/art-zodiac.svg"#data-ai-image="zodiac"#g' index.html
+          sed -i "s#src='assets/art-zodiac.svg'#data-ai-image='zodiac'#g" index.html
+          sed -i 's#src="assets/art-stars.svg"#data-ai-image="stars"#g' index.html
+          sed -i "s#src='assets/art-stars.svg'#data-ai-image='stars'#g" index.html
+          sed -i 's#src="assets/art-test.svg"#data-ai-image="test"#g' index.html
+          sed -i "s#src='assets/art-test.svg'#data-ai-image='test'#g" index.html
+          sed -i 's#src="assets/art-lucky.svg"#data-ai-image="lucky"#g' index.html
+          sed -i "s#src='assets/art-lucky.svg'#data-ai-image='lucky'#g" index.html
+          sed -i 's#assets/hero-night.svg#/api/image?type=hero#g' index.html
+          sed -i 's#assets/art-zodiac.svg#/api/image?type=zodiac#g' index.html
+          sed -i 's#assets/art-stars.svg#/api/image?type=stars#g' index.html
+          sed -i 's#assets/art-test.svg#/api/image?type=test#g' index.html
+          sed -i 's#assets/art-lucky.svg#/api/image?type=lucky#g' index.html
+          sed -i 's#</body>#<script src="ai-images.js"></script></body>#' index.html
 
-          path = Path("index.html")
-          html = path.read_text(encoding="utf-8")
-
-          replacements = {
-              "hero-night.svg": "hero",
-              "art-zodiac.svg": "zodiac",
-              "art-stars.svg": "stars",
-              "art-test.svg": "test",
-              "art-lucky.svg": "lucky",
-          }
-
-          for filename, image_type in replacements.items():
-              html = html.replace(
-                  f'src="assets/{filename}"',
-                  f'data-ai-image="{image_type}"'
-              )
-              html = html.replace(
-                  f"src='assets/{filename}'",
-                  f'data-ai-image="{image_type}"'
-              )
-
-          loader = '''<script>
-  // 정적 이미지 파일 대신 Cloudflare Workers AI에서 오늘의 이미지를 가져옵니다.
-  (() => {
-    const date = new Date().toISOString().slice(0, 10);
-    document.querySelectorAll("[data-ai-image]").forEach((image) => {
-      const type = image.dataset.aiImage;
-      if (!type) return;
-      image.loading = type === "hero" ? "eager" : "lazy";
-      image.decoding = "async";
-      image.src = `/api/image?type=${encodeURIComponent(type)}&date=${date}`;
-    });
-  })();
-  </script>'''
-
-          if "[data-ai-image]" not in html:
-              html = html.replace("</body>", loader + "\n</body>")
-
-          path.write_text(html, encoding="utf-8")
-          PY
+      - name: Create AI image loader
+        run: |
+          cat > ai-images.js <<'EOF'
+          // 페이지의 이미지 파일을 사용하지 않고 Workers AI에서 이미지를 받아옵니다.
+          (() => {
+            const date = new Date().toISOString().slice(0, 10);
+            document.querySelectorAll("[data-ai-image]").forEach((image) => {
+              const type = image.dataset.aiImage;
+              if (!type) return;
+              image.loading = type === "hero" ? "eager" : "lazy";
+              image.decoding = "async";
+              image.src = `/api/image?type=${encodeURIComponent(type)}&date=${date}`;
+            });
+          })();
+          EOF
 
       - name: Remove static image files
         run: rm -f assets/art-zodiac.svg assets/art-stars.svg assets/art-test.svg assets/art-lucky.svg assets/hero-night.svg
@@ -75,7 +64,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html assets
+          git add index.html ai-images.js assets
           if git diff --cached --quiet; then
             echo "No migration changes needed"
             exit 0
