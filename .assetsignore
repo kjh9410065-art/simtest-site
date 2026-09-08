@@ -1,0 +1,4 @@
+# Worker source and deployment configuration should not be published as static assets.
+worker.js
+wrangler.jsonc
+.github/
