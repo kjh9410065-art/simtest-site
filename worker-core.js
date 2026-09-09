@@ -1,5 +1,20 @@
 // 기존 Worker 원본을 보존합니다.
-const SOFT_DESIGN = ``;
+// 홈 화면 이미지가 JS 실행 순서나 한글 파일명 URL 문제로 빠지지 않도록
+// Worker가 HTML에 직접 이미지 CSS를 주입합니다.
+const SOFT_DESIGN = `<style id="site-image-fix">
+.hero-art{
+  background-image:url("https://raw.githubusercontent.com/kjh9410065-art/simtest-site/main/바다를%20품은%20아늑한%20카페%20공간.png") !important;
+  background-size:cover !important;
+  background-position:center !important;
+  background-repeat:no-repeat !important;
+}
+.quick-card{background-color:rgba(255,255,255,.72) !important;background-size:cover !important;background-position:center !important;background-repeat:no-repeat !important;}
+.quick-card:nth-child(1){background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)),url("https://raw.githubusercontent.com/kjh9410065-art/simtest-site/main/고요한%20창가의%20타로%20카드%20정물.png") !important;}
+.quick-card:nth-child(2){background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)),url("https://raw.githubusercontent.com/kjh9410065-art/simtest-site/main/꽃잎%20흩날리는%20호숫가의%20봄%20풍경.png") !important;}
+.quick-card:nth-child(3){background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)),url("https://raw.githubusercontent.com/kjh9410065-art/simtest-site/main/바다를%20품은%20아늑한%20카페%20공간.png") !important;}
+.quick-card:nth-child(4){background-image:linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)),url("https://raw.githubusercontent.com/kjh9410065-art/simtest-site/main/따뜻한%20햇살%20아래%20온라인%20커뮤니티%20카페.png") !important;}
+</style>`;
+
 async function generateGeminiImage(request, env, forcedPrompt = "") {
   if (!env.GEMINI_API_KEY) return jsonResponse({ error: "GEMINI_API_KEY가 Cloudflare Secret에 등록되어 있지 않습니다." }, 500);
   let body = {};
