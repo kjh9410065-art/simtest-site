@@ -1,5 +1,6 @@
-// Cloudflare가 실제로 실행하는 worker.js에서 바로 이미지 연결을 처리합니다.
-// 별도의 bridge 파일에 의존하지 않아 배포 후에도 반드시 적용됩니다.
+// Cloudflare Worker에서 홈 이미지 연결을 처리합니다.
+// Cloudflare Assets에서 한글 파일명이 제대로 제공되지 않는 경우를 피하기 위해
+// 공개 GitHub 원본 파일을 이미지 주소로 직접 사용합니다.
 
 const IMAGE_MAP = {
   hero: '바다를 품은 아늑한 카페 공간.png',
@@ -11,37 +12,43 @@ const IMAGE_MAP = {
   ]
 };
 
-// 한글 파일명을 브라우저에서 안전하게 사용할 수 있는 URL로 변환합니다.
+// GitHub에 저장된 실제 이미지 파일의 공개 원본 주소를 만듭니다.
 function assetUrl(name) {
-  return encodeURI('/' + name);
+  return 'https://raw.githubusercontent.com/kjh9410065-art/simtest-site/main/' + encodeURIComponent(name);
 }
 
-// 실제 홈 화면 요소에 이미지 스타일을 직접 적용하는 스크립트입니다.
+// 실제 홈 화면 요소에 이미지 스타일을 직접 적용합니다.
 const IMAGE_SCRIPT = `<script>
 (function(){
   const heroUrl=${JSON.stringify(assetUrl(IMAGE_MAP.hero))};
   const quickUrls=${JSON.stringify(IMAGE_MAP.quick.map(assetUrl))};
 
   function apply(){
+    // 히어로 영역에 대표 이미지를 강제로 적용합니다.
     const hero=document.querySelector('.hero-art');
     if(hero){
       hero.style.setProperty('background-image','url("'+heroUrl+'")','important');
       hero.style.setProperty('background-size','cover','important');
       hero.style.setProperty('background-position','center','important');
+      hero.style.setProperty('background-repeat','no-repeat','important');
     }
 
+    // 상단 바로가기 카드 4개에 각각 다른 이미지를 적용합니다.
     document.querySelectorAll('.quick-card').forEach(function(card,i){
       if(!quickUrls[i]) return;
       card.style.setProperty('background-image','linear-gradient(rgba(255,255,255,.58),rgba(255,255,255,.58)),url("'+quickUrls[i]+'")','important');
       card.style.setProperty('background-size','cover','important');
       card.style.setProperty('background-position','center','important');
+      card.style.setProperty('background-repeat','no-repeat','important');
     });
   }
 
+  // DOM이 만들어진 뒤 적용하고, 페이지 내부에서 홈 화면이 다시 렌더링되는 경우도 대비합니다.
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply,{once:true});
   else apply();
   setTimeout(apply,300);
   setTimeout(apply,1000);
+  setTimeout(apply,2000);
 })();
 </script>`;
 
@@ -94,7 +101,7 @@ export default {
       try{return await generateGeminiImage(request,env);}catch(e){console.error(e);return jsonResponse({error:'이미지 생성 중 서버 오류가 발생했습니다.'},500);}
     }
 
-    // 정적 사이트를 가져온 뒤 <head>에 이미지 연결 스크립트를 직접 삽입합니다.
+    // 정적 사이트 HTML을 가져온 뒤 이미지 연결 스크립트를 삽입합니다.
     const response=await env.ASSETS.fetch(request);
     const type=response.headers.get('content-type')||'';
     if(!type.includes('text/html')) return response;
