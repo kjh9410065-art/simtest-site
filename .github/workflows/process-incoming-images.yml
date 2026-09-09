@@ -1,0 +1,68 @@
+name: Process incoming site images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/images/incoming/**'
+
+permissions:
+  contents: write
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Normalize incoming images
+        shell: bash
+        run: |
+          set -e
+          mkdir -p assets/images/processed
+          shopt -s nullglob
+          for file in assets/images/incoming/*; do
+            [ -f "$file" ] || continue
+            ext="${file##*.}"
+            base="$(basename "$file")"
+            # 이미 표준 WebP면 그대로 이동하고, 그 외 형식은 WebP로 변환합니다.
+            if [ "${ext,,}" = "webp" ]; then
+              mv "$file" "assets/images/processed/$base"
+            else
+              name="${base%.*}"
+              npx --yes sharp-cli -i "$file" -o "assets/images/processed/${name}.webp" webp --quality 88
+              rm "$file"
+            fi
+          done
+
+      - name: Update image registry
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          root = Path('assets/images/processed')
+          files = sorted(p.name for p in root.iterdir() if p.is_file() and p.suffix.lower() == '.webp')
+
+          # 파일명 규칙: hero.webp / quick-1.webp ... / test-1.webp ...
+          data = {
+              'hero': next((f for f in files if f == 'hero.webp'), None),
+              'quick': [f'quick-{i}.webp' for i in range(1, 5) if f'quick-{i}.webp' in files],
+              'tests': [f'test-{i}.webp' for i in range(1, 6) if f'test-{i}.webp' in files],
+          }
+          Path('assets/images/manifest.json').write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+
+      - name: Commit processed images and manifest
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/images
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Process incoming site images automatically"
+            git push
+          fi
