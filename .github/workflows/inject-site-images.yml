@@ -1,0 +1,58 @@
+name: Inject site images
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  inject:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Inject image CSS directly into index.html
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+          marker = '/* DIRECT_SITE_IMAGE_FIX_V1 */'
+
+          # 이미 주입된 경우에는 같은 CSS를 중복해서 넣지 않습니다.
+          if marker not in html:
+              css = '''<style>
+          /* DIRECT_SITE_IMAGE_FIX_V1 */
+          .hero-art{
+            background-image:url("/바다를%20품은%20아늑한%20카페%20공간.png") !important;
+            background-size:cover !important;
+            background-position:center !important;
+            background-repeat:no-repeat !important;
+          }
+          .quick-card{background-size:cover !important;background-position:center !important;background-repeat:no-repeat !important;}
+          .quick-card:nth-child(1){background-image:linear-gradient(rgba(255,255,255,.58),rgba(255,255,255,.58)),url("/고요한%20창가의%20타로%20카드%20정물.png") !important;}
+          .quick-card:nth-child(2){background-image:linear-gradient(rgba(255,255,255,.58),rgba(255,255,255,.58)),url("/꽃잎%20흩날리는%20호숫가의%20봄%20풍경.png") !important;}
+          .quick-card:nth-child(3){background-image:linear-gradient(rgba(255,255,255,.58),rgba(255,255,255,.58)),url("/바다를%20품은%20아늑한%20카페%20공간.png") !important;}
+          .quick-card:nth-child(4){background-image:linear-gradient(rgba(255,255,255,.58),rgba(255,255,255,.58)),url("/따뜻한%20햇살%20아래%20온라인%20커뮤니티%20카페.png") !important;}
+          </style>'''
+              html = html.replace('</head>', css + '</head>', 1)
+              path.write_text(html, encoding='utf-8')
+          PY
+
+      - name: Commit generated index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Apply homepage image styles directly to index"
+            git push
+          fi
