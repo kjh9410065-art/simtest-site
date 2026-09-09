@@ -1,0 +1,63 @@
+name: Process image inbox
+
+on:
+  push:
+    paths:
+      - 'assets/incoming/**'
+      - 'assets/image-manifest.json'
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Process incoming images
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import shutil
+
+          incoming = Path('assets/incoming')
+          images = Path('assets/images')
+          manifest_path = Path('assets/image-manifest.json')
+          images.mkdir(parents=True, exist_ok=True)
+
+          # manifest에 지정한 이름으로 들어온 이미지를 실제 사이트 이미지 폴더로 이동합니다.
+          if manifest_path.exists():
+              manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+          else:
+              manifest = {}
+
+          allowed = {'.png', '.jpg', '.jpeg', '.webp'}
+          for src in incoming.iterdir():
+              if not src.is_file() or src.suffix.lower() not in allowed:
+                  continue
+
+              # 파일명은 manifest의 target이 있으면 그 이름을 사용하고,
+              # 없으면 원래 파일명을 유지합니다.
+              target_name = manifest.get(src.name, src.name)
+              target = images / target_name
+              shutil.move(str(src), str(target))
+              print(f'Installed: {src.name} -> {target}')
+          PY
+
+      - name: Commit processed images
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/incoming assets/images assets/image-manifest.json
+          if git diff --cached --quiet; then
+            echo "No image changes to commit"
+          else
+            git commit -m "Process incoming site images"
+            git push
+          fi
