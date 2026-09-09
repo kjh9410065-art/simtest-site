@@ -26,7 +26,8 @@ async function generateGeminiImage(request, env, forcedPrompt = "") {
   if (!prompt) return jsonResponse({ error: "prompt가 필요합니다." }, 400);
   if (prompt.length > 6000) return jsonResponse({ error: "prompt는 6000자 이하로 입력해주세요." }, 400);
 
-  // Google 공식 REST 문서의 Gemini 3.1 Flash Image 엔드포인트를 사용합니다.
+  // Gemini 3.1 Flash Image의 Legacy GenerateContent REST API를 사용합니다.
+  // 먼저 공식 최소 설정으로 이미지 생성이 되는지 확인하고, 가로세로 비율은 이후 필요하면 별도 API로 적용합니다.
   const endpoint = "https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash-image:generateContent";
   const geminiResponse = await fetch(endpoint, {
     method: "POST",
@@ -34,8 +35,7 @@ async function generateGeminiImage(request, env, forcedPrompt = "") {
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
-        responseModalities: ["IMAGE"],
-        responseFormat: { image: { aspectRatio: "16:9", imageSize: "1K" } }
+        responseModalities: ["IMAGE"]
       }
     })
   });
