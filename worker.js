@@ -1,51 +1,62 @@
-// Cloudflare Workers에서 사이트 전체에 부드러운 디자인 레이어를 적용합니다.
-// 이미지와 이모지를 사용하지 않고 CSS만으로 분위기와 간격을 조정합니다.
+// 정적 사이트는 Cloudflare Assets에서 제공하고, CSS만으로 더 부드러운 분위기를 적용합니다.
 const SOFT_DESIGN = `
 <style id="soft-design">
 :root{
-  --navy:#20204d;--violet:#806bd1;--violet2:#b19fe8;--ink:#303047;--muted:#88879a;
-  --bg:#f8f7fa;--line:#eceaf1;--white:#fff;--shadow:0 6px 22px rgba(45,38,75,.055)
+  --navy:#30294f!important;--violet:#9178d4!important;--violet2:#bca9e8!important;
+  --ink:#393447!important;--muted:#918c9b!important;--bg:#fbf9f7!important;
+  --line:#eee9ef!important;--shadow:0 14px 34px rgba(69,57,89,.065)!important
 }
-body{background:var(--bg);color:var(--ink)}
-.header{height:66px;background:rgba(255,255,255,.94);color:var(--ink);border-bottom:1px solid #eeedf3;box-shadow:0 2px 15px rgba(35,31,63,.035);backdrop-filter:blur(16px)}
-.brand{color:var(--ink)}.brand strong{font-size:18px}.brand small{color:#9997a8}
-.nav{gap:22px}.nav button{color:#898899}.nav button.active{color:#6450b4;border-bottom-color:#8c78db}
-.head-actions button{background:#f2f0f7;color:#55478c;border-radius:13px}
-.hero{background:linear-gradient(135deg,#f1effd 0%,#f8f7ff 55%,#f7f0f7 100%);color:var(--ink);border-bottom:1px solid #eeebf5}
-.hero-inner{min-height:350px;padding:45px 28px 46px;grid-template-columns:1fr;gap:0;position:relative}
-.hero-inner>div:first-child{max-width:720px;z-index:2}
-.eyebrow{color:#7b68c4;margin-bottom:13px}.hero h1{font-size:clamp(40px,5vw,62px);line-height:1.1;letter-spacing:-4px;margin-bottom:16px;color:#292943}.hero h1 em{color:#8069d4}
-.hero p{color:#77768a;max-width:620px;font-size:13px;line-height:1.8;margin-bottom:22px}.actions{gap:8px}.primary,.secondary{height:46px;border-radius:14px}.primary{background:linear-gradient(105deg,#806bd5,#a693e8);box-shadow:0 7px 18px rgba(112,92,194,.16)}.secondary{background:#fff;color:#625d72;border-color:#e1dfe8}
-.hero-visual{position:absolute;right:max(28px,calc((100vw - 1240px)/2));top:52px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(169,149,232,.25),rgba(169,149,232,.07) 45%,transparent 70%);border:0;box-shadow:none;opacity:.8}
-.hero-visual:before{width:165px;height:165px;right:47px;top:47px;border-color:rgba(128,105,212,.18);box-shadow:0 0 0 22px rgba(128,105,212,.025),0 0 0 45px rgba(128,105,212,.018)}
-.hero-visual:after{content:"";left:auto;bottom:auto;right:80px;top:80px;width:8px;height:8px;border-radius:50%;background:#a18ce1;box-shadow:48px 22px 0 rgba(161,140,225,.48),-28px 55px 0 rgba(161,140,225,.28);font-size:0}
-.quick{margin:-8px auto 0;padding:0 28px}.quick-grid{gap:6px}.quick-card{min-height:150px;padding:17px;border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:var(--shadow)}.quick-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(45,38,75,.08)}
-.card-no{margin-bottom:15px;color:#917ddd}.quick-card strong{font-size:15px;margin-bottom:4px}.quick-card span{font-size:10.5px;color:#898899}.card-action{height:34px;border-radius:11px;background:#f3f0fb;color:#6955bf}
-.section{padding:38px 28px}.section-head{margin-bottom:11px}.section-head h2{font-size:21px;letter-spacing:-1.4px}.section-head p{color:#8d8b9c}.fortune-grid,.test-grid{gap:6px}
-.fortune-card,.test-card,.test-select{border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:var(--shadow)}.fortune-card{padding:19px;min-height:112px}.fortune-card:after{width:88px;height:88px;right:-30px;top:-30px;opacity:.55}.test-card{padding:17px;min-height:155px}.test-card .type{margin-bottom:12px}.test-card button,.test-select button{border-radius:11px;background:#f3f0fb;color:#6955bf}
-.lucky-banner{border-radius:22px;padding:25px;background:linear-gradient(135deg,#292958,#51417a);box-shadow:0 10px 28px rgba(45,35,77,.1)}.lucky-banner:after{width:170px;height:170px;right:-55px;top:-65px}.footer{padding:26px 20px;background:#171737}
-.fortune-page{background:linear-gradient(180deg,#26285c,#35316b)}.inner,.subview{padding-top:34px}.choice-grid{gap:6px}.choice{border-radius:14px}.result,.question,.result-card,.lucky-main{border-radius:21px;box-shadow:var(--shadow)}.result{margin-top:8px;padding:19px}.question{padding:21px;margin-top:6px}.answer{border-radius:14px;padding:13px}.run-actions{gap:6px;margin-top:6px}.result-card{padding:23px}.result-grid,.luck-grid{gap:6px}.lucky-page{background:linear-gradient(180deg,#282a60,#39316c)}.lucky-main{padding:27px}.overlay{background:rgba(27,25,50,.48);backdrop-filter:blur(5px)}.panel{border-radius:22px}
-@media(max-width:1050px){.nav{gap:14px}.hero-inner{min-height:330px}.hero-visual{width:220px;height:220px;right:24px}.quick-grid,.test-grid{gap:6px}}
+body{background:var(--bg)!important;color:var(--ink)!important}
+.header{height:68px!important;background:rgba(255,255,255,.92)!important;color:var(--ink)!important;border-bottom:1px solid #eeeaf0!important;box-shadow:0 3px 18px rgba(55,46,72,.035)!important;backdrop-filter:blur(16px)!important}
+.brand{color:#393447!important}.brand strong{font-size:18px!important}.brand small{color:#a19baa!important}
+.nav{gap:24px!important}.nav button{color:#938e9b!important;font-weight:700!important}.nav button.active{color:#6e5b9d!important;border-bottom-color:#a58fdd!important}
+.head-actions button{background:#f4f1f6!important;color:#625775!important;border-radius:14px!important}
+.hero{background:linear-gradient(135deg,#f1ecfb 0%,#f8f0f6 52%,#fbf5ef 100%)!important;color:#393447!important;border:0!important;position:relative!important;overflow:hidden!important}
+.hero:before{content:"";position:absolute;width:420px;height:420px;border-radius:50%;right:-170px;top:-220px;background:rgba(171,146,225,.13)!important}
+.hero:after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;left:-180px;bottom:-210px;background:rgba(231,168,190,.10)!important}
+.hero-inner{display:block!important;max-width:900px!important;min-height:385px!important;padding:58px 28px 68px!important;text-align:center!important;position:relative!important;z-index:1!important}
+.hero-inner>div:first-child{max-width:700px!important;margin:0 auto!important}
+.hero-visual{display:none!important}
+.eyebrow{color:#9279c9!important;letter-spacing:2.6px!important;margin-bottom:17px!important}
+.hero h1{color:#373245!important;font-size:clamp(42px,6vw,66px)!important;line-height:1.12!important;letter-spacing:-4px!important;margin-bottom:19px!important}
+.hero h1 em{color:#8069b3!important}
+.hero p{max-width:610px!important;color:#797382!important;font-size:14px!important;line-height:1.9!important;margin:0 auto 28px!important}
+.actions{justify-content:center!important;gap:9px!important}.primary{background:linear-gradient(105deg,#9276d8,#b29be5)!important;box-shadow:0 9px 23px rgba(129,104,193,.16)!important;border-radius:16px!important}.secondary{background:rgba(255,255,255,.66)!important;color:#665d70!important;border:1px solid rgba(126,110,154,.15)!important;border-radius:16px!important}
+.quick{margin:-22px auto 0!important;padding:0 28px!important}.quick-grid{gap:13px!important}
+.quick-card{background:#fff!important;border:1px solid #eeeaf0!important;border-radius:23px!important;min-height:170px!important;padding:21px!important;box-shadow:var(--shadow)!important}
+.quick-card:nth-child(1){background:linear-gradient(145deg,#fff,#f8f4ff)!important}.quick-card:nth-child(2){background:linear-gradient(145deg,#fff,#f8f5fd)!important}.quick-card:nth-child(3){background:linear-gradient(145deg,#fff,#fff5f8)!important}.quick-card:nth-child(4){background:linear-gradient(145deg,#fff,#f8f4fa)!important}
+.card-no{color:#9b85d0!important;margin-bottom:22px!important}.quick-card strong{color:#3d374b!important;font-size:16px!important}.quick-card span{color:#918c98!important}.card-action{background:#f3effa!important;color:#7560a5!important;border-radius:12px!important}
+.section{padding:58px 28px!important}.section-head{margin-bottom:18px!important}.section-head h2{color:#3d374a!important;font-size:23px!important}.section-head p{color:#9a95a0!important}.more{color:#826caf!important}
+.fortune-grid,.test-grid{gap:13px!important}.fortune-card,.test-card,.test-select,.question,.result-card,.result{border:1px solid #eeeaf0!important;border-radius:23px!important;box-shadow:var(--shadow)!important}
+.fortune-card{background:#fff!important;padding:23px!important}.fortune-card:after{background:linear-gradient(135deg,rgba(155,132,210,.10),rgba(231,174,194,.07))!important}.fortune-card small,.test-card .type,.test-select .type{color:#9a83d0!important}.fortune-card h3,.test-card h3,.test-select h2{color:#3c3749!important}.fortune-card p,.test-card p,.test-select p{color:#918c98!important}
+.test-card{padding:20px!important;min-height:185px!important}.test-card button,.test-select button{background:#f3effa!important;color:#7560a5!important;border-radius:12px!important}
+.lucky-banner{background:linear-gradient(135deg,#eee6fa,#f5e5eb)!important;color:#443c50!important;border-radius:25px!important;padding:31px!important;box-shadow:var(--shadow)!important}.lucky-banner:after{border-color:rgba(125,105,158,.09)!important}.lucky-banner small{color:#8068ae!important}.lucky-banner p{color:#817b89!important}
+.footer{background:#39334e!important;color:#aaa4b1!important}
+.fortune-page{background:linear-gradient(180deg,#eee9f7,#f9f5f5)!important;color:#393447!important}.inner,.subview{padding-top:42px!important}.back{color:#8068ae!important}.page-title h1,.subview h1{color:#393447!important}.page-title p,.lead{color:#918c99!important}
+.choice{background:#fff!important;color:#40394d!important;border:2px solid transparent!important;border-radius:15px!important;box-shadow:0 7px 20px rgba(68,56,89,.045)!important}.choice.active{border-color:#aa95df!important;background:#f5f0fd!important}
+.result{background:#fff!important;color:#393447!important}.score,.result-tag{background:#f3effa!important;color:#7560a5!important}
+.lucky-page{background:linear-gradient(180deg,#eee8f6,#faf4f5)!important;color:#393447!important}.lucky-main{border:1px solid #eeeaf0!important;box-shadow:var(--shadow)!important}.lucky-main:before{color:#f1ebf7!important}.lucky-info h1{color:#393447!important}.lucky-info p{color:#8a8492!important}.lucky-details div{background:#f8f5fa!important}
+.overlay{background:rgba(54,47,69,.36)!important;backdrop-filter:blur(5px)!important}.panel{border-radius:25px!important;box-shadow:0 25px 70px rgba(45,37,64,.14)!important}.search-input{border-color:#e9e4ec!important;border-radius:14px!important}.menu-list button{background:#f7f3f9!important;border-radius:13px!important}
 @media(max-width:720px){
- .header{height:60px;padding:0 15px}.hero-inner{min-height:0;padding:32px 18px 36px}.hero h1{font-size:37px;letter-spacing:-3px}.hero p{font-size:12px;line-height:1.8}.hero-visual{width:170px;height:170px;right:-40px;top:175px;opacity:.4}.hero-visual:before{width:110px;height:110px;right:30px;top:30px}.hero-visual:after{right:53px;top:53px}.quick{padding:0 15px;margin:-7px auto 0}.quick-grid{gap:6px}.quick-card{min-height:138px;padding:14px;border-radius:18px}.card-no{margin-bottom:13px}.section{padding:32px 15px}.fortune-grid,.test-grid{gap:6px}.fortune-card,.test-card,.test-select{border-radius:18px}.fortune-card{padding:16px}.test-card{min-height:150px;padding:14px}.lucky-banner{border-radius:19px;padding:21px}.inner,.subview{padding:29px 15px 60px}.choice-grid{gap:5px}.choice{border-radius:13px;padding:13px 6px}.result,.question,.result-card,.lucky-main{border-radius:19px}
+  .header{height:62px!important}.hero-inner{padding:43px 18px 50px!important;min-height:0!important}.hero h1{font-size:39px!important;letter-spacing:-3px!important}.hero p{font-size:12px!important;line-height:1.9!important}.primary,.secondary{height:49px!important;border-radius:15px!important}
+  .quick{margin:-17px auto 0!important;padding:0 14px!important}.quick-grid{gap:9px!important}.quick-card{min-height:152px!important;padding:17px!important;border-radius:20px!important}.card-no{margin-bottom:17px!important}.quick-card strong{font-size:14px!important}.quick-card span{font-size:10px!important}
+  .section{padding:44px 15px!important}.section-head h2{font-size:20px!important}.fortune-card,.test-card,.test-select{border-radius:20px!important}.fortune-card{padding:18px!important}.test-card{min-height:170px!important;padding:16px!important}.lucky-banner{border-radius:21px!important;padding:25px!important}.inner,.subview{padding:33px 15px 65px!important}.result,.question,.result-card,.lucky-main{border-radius:20px!important}
 }
-@media(max-width:390px){.hero h1{font-size:33px}.quick-grid,.test-grid,.test-list{grid-template-columns:1fr;gap:6px}.quick-card{min-height:132px}.hero-visual{display:none}}
-@media(max-width:900px) and (orientation:landscape) and (max-height:600px){.hero-inner{min-height:260px;padding:24px 30px 28px}.hero-visual{width:190px;height:190px;right:30px;top:35px}.quick-grid,.test-grid{gap:6px}}
-@media(min-width:1400px){.hero-inner{min-height:390px;padding-top:48px;padding-bottom:48px}.hero-visual{width:290px;height:290px}.section{padding-top:42px;padding-bottom:42px}}
+@media(max-width:390px){.hero-inner{padding:38px 16px 45px!important}.hero h1{font-size:35px!important}.quick-grid,.test-grid,.test-list{grid-template-columns:1fr!important}.quick-card{min-height:140px!important}}
+@media(max-width:900px) and (orientation:landscape) and (max-height:600px){.hero-inner{padding:30px 28px 38px!important}.hero h1{font-size:37px!important}.quick-grid,.test-grid{grid-template-columns:repeat(4,1fr)!important}}
+@media(min-width:1400px){.hero-inner{min-height:420px!important;padding-top:66px!important;padding-bottom:70px!important}.section{padding-top:64px!important;padding-bottom:64px!important}}
 </style>`;
 
 export default {
   async fetch(request, env) {
-    // 정적 파일은 원본 Assets에서 그대로 전달합니다.
+    // Cloudflare Assets에서 원본 응답을 가져옵니다.
     const response = await env.ASSETS.fetch(request);
     const contentType = response.headers.get("content-type") || "";
-
-    // HTML에만 디자인 레이어를 추가합니다.
     if (!contentType.includes("text/html")) return response;
 
+    // HTML에만 부드러운 디자인 레이어를 추가합니다. 사이트 기능과 데이터는 그대로 유지합니다.
     const html = await response.text();
     const updated = html.replace("</head>", `${SOFT_DESIGN}</head>`);
-
     return new Response(updated, {
       status: response.status,
       statusText: response.statusText,
