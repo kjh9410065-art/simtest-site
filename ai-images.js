@@ -1,6 +1,5 @@
 // 홈 화면 이미지를 안정적으로 연결합니다.
-// 메인 이미지는 GitHub 저장소의 확정 이미지를 사용하고,
-// 카드 이미지는 Cloudflare Workers AI API에서 직접 받아옵니다.
+// 메인 이미지는 저장소의 확정 이미지를 사용하고, 카드 이미지는 Cloudflare Workers AI에서 직접 받아옵니다.
 (() => {
   const date = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Seoul",
@@ -8,8 +7,9 @@
     month: "2-digit",
     day: "2-digit"
   }).format(new Date());
-  const imageVersion = "ai-20260909-v17";
-  const heroUrl = `https://raw.githubusercontent.com/kjh9410065-art/simtest-site/main/hero-main.jpg?v=${imageVersion}`;
+  const imageVersion = "ai-20260909-v18";
+  const localHeroUrl = `/hero-main.jpg?v=${imageVersion}`;
+  const remoteHeroUrl = `https://raw.githubusercontent.com/kjh9410065-art/simtest-site/main/hero-main.jpg?v=${imageVersion}`;
 
   const style = document.createElement("style");
   style.textContent = `
@@ -39,20 +39,27 @@
   const images = [...document.querySelectorAll("[data-ai-image]")];
   if (!images.length) return;
 
-  // 메인 이미지는 Workers AI가 실패해도 깨지지 않도록 저장소의 확정 이미지를 직접 사용합니다.
+  // 메인 이미지는 먼저 Cloudflare 정적 자산을 사용하고, 자산 라우팅이 실패하면 GitHub 원본으로 한 번만 전환합니다.
   images
     .filter((image) => image.dataset.aiImage === "hero")
     .forEach((image) => {
-      image.src = heroUrl;
+      image.src = localHeroUrl;
       image.loading = "eager";
       image.decoding = "async";
+      image.dataset.heroFallback = "0";
       image.onerror = () => {
-        image.style.visibility = "hidden";
+        if (image.dataset.heroFallback === "1") {
+          image.style.visibility = "hidden";
+          return;
+        }
+        image.dataset.heroFallback = "1";
+        image.src = remoteHeroUrl;
       };
       image.removeAttribute("aria-busy");
     });
 
-  // 카드 이미지는 사전 점검 API에 막히지 않고 실제 이미지 API를 바로 요청합니다.
+  // Workers AI 상태 확인에 실패해도 실제 이미지 요청은 계속합니다.
+  // 기존 health-gate 때문에 이미지 전체가 중단되던 문제를 제거했습니다.
   const cardTypes = [...new Set(
     images
       .map((image) => image.dataset.aiImage)
@@ -67,17 +74,16 @@
         image.src = url;
         image.loading = "lazy";
         image.decoding = "async";
+        image.dataset.retryDone = "0";
         image.removeAttribute("aria-busy");
 
-        // 첫 요청이 캐시나 일시적인 Worker 오류로 실패하면 새 버전으로 한 번 더 요청합니다.
         image.onerror = () => {
-          const retryUrl = `/api/image?type=${encodeURIComponent(type)}&date=${encodeURIComponent(date)}&v=${imageVersion}-retry`;
           if (image.dataset.retryDone === "1") {
             image.style.visibility = "hidden";
             return;
           }
           image.dataset.retryDone = "1";
-          image.src = retryUrl;
+          image.src = `/api/image?type=${encodeURIComponent(type)}&date=${encodeURIComponent(date)}&v=${imageVersion}-retry`;
         };
       });
   });
