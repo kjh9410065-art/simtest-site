@@ -47,9 +47,107 @@ body{background:var(--bg)!important;color:var(--ink)!important}
 @media(min-width:1400px){.hero-inner{min-height:420px!important;padding-top:66px!important;padding-bottom:70px!important}.section{padding-top:64px!important;padding-bottom:64px!important}}
 </style>`;
 
+// Gemini 이미지 생성 API를 호출합니다.
+// API 키는 GitHub 코드에 넣지 않고 Cloudflare Secret(GEMINI_API_KEY)에서만 읽습니다.
+async function generateGeminiImage(request, env) {
+  if (!env.GEMINI_API_KEY) {
+    return jsonResponse({ error: "GEMINI_API_KEY가 Cloudflare Secret에 등록되어 있지 않습니다." }, 500);
+  }
+
+  // 브라우저에서 보낸 프롬프트를 JSON으로 읽습니다.
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ error: "요청 형식이 올바르지 않습니다. JSON으로 prompt를 보내주세요." }, 400);
+  }
+
+  const prompt = typeof body?.prompt === "string" ? body.prompt.trim() : "";
+  if (!prompt) {
+    return jsonResponse({ error: "prompt가 필요합니다." }, 400);
+  }
+
+  // 지나치게 큰 요청으로 API가 낭비되지 않도록 프롬프트 길이를 제한합니다.
+  if (prompt.length > 6000) {
+    return jsonResponse({ error: "prompt는 6000자 이하로 입력해주세요." }, 400);
+  }
+
+  // Nano Banana 2( Gemini 3.1 Flash Image )를 사용합니다.
+  const endpoint = "https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash-image:generateContent";
+
+  const geminiResponse = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": env.GEMINI_API_KEY
+    },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{ text: prompt }]
+      }],
+      generationConfig: {
+        responseModalities: ["Image"]
+      }
+    })
+  });
+
+  const data = await geminiResponse.json();
+
+  if (!geminiResponse.ok) {
+    // Gemini에서 반환한 오류를 API 키 자체가 노출되지 않는 형태로 전달합니다.
+    return jsonResponse({
+      error: "Gemini 이미지 생성에 실패했습니다.",
+      detail: data?.error?.message || "Gemini API 오류"
+    }, geminiResponse.status);
+  }
+
+  // Gemini 응답에서 생성된 이미지의 inlineData를 찾아 반환합니다.
+  const parts = data?.candidates?.[0]?.content?.parts || [];
+  const imagePart = parts.find(part => part?.inlineData?.data);
+
+  if (!imagePart) {
+    return jsonResponse({ error: "Gemini 응답에서 생성된 이미지를 찾지 못했습니다." }, 502);
+  }
+
+  return jsonResponse({
+    success: true,
+    mimeType: imagePart.inlineData.mimeType || "image/png",
+    imageBase64: imagePart.inlineData.data
+  });
+}
+
+// JSON 응답을 공통 형식으로 만들어 반환합니다.
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store"
+    }
+  });
+}
+
 export default {
   async fetch(request, env) {
-    // Cloudflare Assets에서 원본 응답을 가져옵니다.
+    const url = new URL(request.url);
+
+    // /api/generate-image 요청은 정적 Assets보다 먼저 처리합니다.
+    // POST 방식만 허용하여 일반 페이지 요청과 분리합니다.
+    if (url.pathname === "/api/generate-image") {
+      if (request.method !== "POST") {
+        return jsonResponse({ error: "POST 요청만 사용할 수 있습니다." }, 405);
+      }
+
+      try {
+        return await generateGeminiImage(request, env);
+      } catch (error) {
+        // 예기치 않은 오류가 발생해도 API 키나 내부 정보를 그대로 노출하지 않습니다.
+        console.error("Gemini image generation error:", error);
+        return jsonResponse({ error: "이미지 생성 중 서버 오류가 발생했습니다." }, 500);
+      }
+    }
+
+    // 그 외 요청은 기존 Cloudflare Assets에서 제공합니다.
     const response = await env.ASSETS.fetch(request);
     const contentType = response.headers.get("content-type") || "";
     if (!contentType.includes("text/html")) return response;
