@@ -1,30 +1,28 @@
-// Cloudflare Worker에서 홈 이미지 연결을 처리합니다.
-// Cloudflare Assets에서 한글 파일명이 제대로 제공되지 않는 경우를 피하기 위해
-// 공개 GitHub 원본 파일을 이미지 주소로 직접 사용합니다.
-
+// 홈 화면의 이미지 연결만 관리합니다. 레이아웃/텍스트/버튼은 건드리지 않습니다.
 const IMAGE_MAP = {
-  hero: '바다를 품은 아늑한 카페 공간.png',
+  // 히어로: 현재보다 밝고 넓은 공간감의 이미지로 교체
+  hero: '햇살 머무는 바닷가 작업 공간.png',
+  // 현재 홈 카드 순서: 띠 운세 / 별자리 운세 / 심리테스트 / 행운의 아이템
   quick: [
+    '햇살 가득한 카페의 즐거운 모임.png',
+    '꿈결 같은 태양 오라클 카드 정원.png',
     '고요한 창가의 타로 카드 정물.png',
-    '꽃잎 흩날리는 호숫가의 봄 풍경.png',
-    '바다를 품은 아늑한 카페 공간.png',
     '따뜻한 햇살 아래 온라인 커뮤니티 카페.png'
   ]
 };
 
-// GitHub에 저장된 실제 이미지 파일의 공개 원본 주소를 만듭니다.
 function assetUrl(name) {
-  return 'https://raw.githubusercontent.com/kjh9410065-art/simtest-site/main/' + encodeURIComponent(name);
+  // 한글 파일명을 안전하게 URL로 변환합니다.
+  return encodeURI('/' + name);
 }
 
-// 실제 홈 화면 요소에 이미지 스타일을 직접 적용합니다.
+// 실제 페이지의 이미지 부분만 교체하는 스크립트입니다.
 const IMAGE_SCRIPT = `<script>
 (function(){
   const heroUrl=${JSON.stringify(assetUrl(IMAGE_MAP.hero))};
   const quickUrls=${JSON.stringify(IMAGE_MAP.quick.map(assetUrl))};
 
-  function apply(){
-    // 히어로 영역에 대표 이미지를 강제로 적용합니다.
+  function applyImages(){
     const hero=document.querySelector('.hero-art');
     if(hero){
       hero.style.setProperty('background-image','url("'+heroUrl+'")','important');
@@ -33,22 +31,24 @@ const IMAGE_SCRIPT = `<script>
       hero.style.setProperty('background-repeat','no-repeat','important');
     }
 
-    // 상단 바로가기 카드 4개에 각각 다른 이미지를 적용합니다.
-    document.querySelectorAll('.quick-card').forEach(function(card,i){
-      if(!quickUrls[i]) return;
-      card.style.setProperty('background-image','linear-gradient(rgba(255,255,255,.58),rgba(255,255,255,.58)),url("'+quickUrls[i]+'")','important');
+    document.querySelectorAll('.quick-card').forEach(function(card,index){
+      const image=quickUrls[index];
+      if(!image) return;
+      // 카드의 기존 흰 배경을 살짝 투명하게 만들어 이미지가 보이게 합니다.
+      card.style.setProperty('background-image','linear-gradient(rgba(255,255,255,.56),rgba(255,255,255,.56)),url("'+image+'")','important');
       card.style.setProperty('background-size','cover','important');
       card.style.setProperty('background-position','center','important');
       card.style.setProperty('background-repeat','no-repeat','important');
     });
   }
 
-  // DOM이 만들어진 뒤 적용하고, 페이지 내부에서 홈 화면이 다시 렌더링되는 경우도 대비합니다.
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply,{once:true});
-  else apply();
-  setTimeout(apply,300);
-  setTimeout(apply,1000);
-  setTimeout(apply,2000);
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',applyImages,{once:true});
+  }else{
+    applyImages();
+  }
+  setTimeout(applyImages,300);
+  setTimeout(applyImages,1000);
 })();
 </script>`;
 
@@ -101,7 +101,7 @@ export default {
       try{return await generateGeminiImage(request,env);}catch(e){console.error(e);return jsonResponse({error:'이미지 생성 중 서버 오류가 발생했습니다.'},500);}
     }
 
-    // 정적 사이트 HTML을 가져온 뒤 이미지 연결 스크립트를 삽입합니다.
+    // 정적 HTML을 가져온 뒤 이미지 연결 코드만 삽입합니다.
     const response=await env.ASSETS.fetch(request);
     const type=response.headers.get('content-type')||'';
     if(!type.includes('text/html')) return response;
