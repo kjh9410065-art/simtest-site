@@ -1,1 +1,0 @@
-Worker 원본은 Git blob으로 보존되어 있습니다.
