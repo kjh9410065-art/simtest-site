@@ -25,6 +25,7 @@ jobs:
           path = Path('index.html')
           html = path.read_text(encoding='utf-8')
 
+          # 기존 홈 리디자인 블록을 제거하고 한 번만 다시 삽입합니다.
           html = re.sub(r'<style>\s*/\* FLICK_HOME_REDESIGN \*/.*?</style>', '', html, flags=re.S)
           html = re.sub(r'<script>\s*/\* FLICK_HOME_REDESIGN_JS \*/.*?</script>', '', html, flags=re.S)
           for version in ('V1','V2','V3','V4','V5','V6','V7','V8'):
@@ -32,36 +33,36 @@ jobs:
 
           css = r'''<style>
           /* FLICK_HOME_REDESIGN */
-          :root{--fr-ink:#19342b;--fr-muted:#71827b;--fr-green:#2f8f70;--fr-green2:#62b18f;--fr-bg:#f5f9f6;--fr-line:#dfece5;--fr-shadow:0 10px 28px rgba(39,86,68,.07)}
-          body{background:var(--fr-bg)!important;color:var(--fr-ink)!important}
+          :root{--ivory:#fbf8ef;--ivory2:#f5f1e6;--green:#3c8065;--green2:#6ca78c;--deep:#18372d;--muted:#78867f;--line:#dfe8df;--shadow:0 12px 30px rgba(42,76,61,.08)}
+          body{background:var(--ivory)!important;color:var(--deep)!important}
           .hero,.hero-inner,.quick-grid,.quick-card,.test-card{background-image:none!important}
-          .hero{background:linear-gradient(135deg,#eaf6f0,#f8fbf9 52%,#e6f3ec)!important;border:0!important;position:relative!important}
-          .hero:before{content:"";position:absolute;left:4%;top:12px;width:70px;height:70px;border:1px solid rgba(47,143,112,.18);border-radius:50%}.hero:after{content:"";position:absolute;right:5%;bottom:10px;width:110px;height:36px;border-top:1px solid rgba(47,143,112,.16);border-radius:50%}
+          .hero{background:linear-gradient(135deg,#edf5ed,#fbf8ef 58%,#e7f0e7)!important;border:0!important;position:relative!important}
+          .hero:before{content:"";position:absolute;left:5%;top:16px;width:62px;height:62px;border:1px solid rgba(60,128,101,.18);border-radius:50%}.hero:after{content:"";position:absolute;right:6%;bottom:12px;width:120px;height:35px;border-top:1px solid rgba(60,128,101,.18);border-radius:50%}
           .hero-inner{grid-template-columns:1fr!important;max-width:980px!important;min-height:0!important;padding:18px 20px 22px!important;gap:12px!important;position:relative!important;z-index:1}
           .hero-inner>div:first-child{display:none!important}
-          .hero-art{height:155px!important;border-radius:20px!important;background:linear-gradient(135deg,#cce9da,#f2f8f4 50%,#c5e3d3)!important;box-shadow:var(--fr-shadow)!important;display:flex!important;align-items:flex-end;justify-content:flex-end;padding:0 7% 18px!important;position:relative!important;overflow:hidden!important}
-          .hero-art:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 78% 24%,rgba(255,255,255,.9) 0 7%,transparent 8%),radial-gradient(circle at 14% 78%,rgba(255,255,255,.55) 0 9%,transparent 10%),linear-gradient(135deg,transparent 0 62%,rgba(47,143,112,.08) 63% 64%,transparent 65%)}
-          .hero-art:after{content:"오늘도, 좋은 하루가 될 거예요";position:absolute;left:7%;top:28%;font-size:clamp(21px,3.2vw,32px);line-height:1.2;font-weight:900;letter-spacing:-1.8px;color:#193d31;max-width:430px}
+          .hero-art{height:155px!important;border-radius:20px!important;background:linear-gradient(135deg,#dbeadd,#fbf8ef 52%,#d3e5d9)!important;box-shadow:var(--shadow)!important;position:relative!important;overflow:hidden!important}
+          .hero-art:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 22%,rgba(255,255,255,.75) 0 8%,transparent 9%),radial-gradient(circle at 15% 80%,rgba(255,255,255,.55) 0 10%,transparent 11%),linear-gradient(135deg,transparent 0 62%,rgba(60,128,101,.07) 63% 64%,transparent 65%)}
+          .hero-art:after{content:"오늘도, 좋은 하루가 될 거예요";position:absolute;left:7%;top:28%;font-size:clamp(21px,3.2vw,32px);font-weight:900;letter-spacing:-1.8px;color:var(--deep)}
           .hero-art>*{display:none!important}
 
           .quick-grid{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:10px!important;max-width:980px!important;margin:0 auto!important;padding:16px 20px!important;background:transparent!important}
-          .quick-card{min-height:125px!important;border:1px solid var(--fr-line)!important;border-radius:18px!important;background:#fff!important;box-shadow:var(--fr-shadow)!important;padding:16px!important;display:flex!important;flex-direction:column!important;justify-content:flex-end!important;overflow:hidden!important;position:relative!important;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease!important}
-          .quick-card:hover{transform:translateY(-3px)!important;box-shadow:0 14px 32px rgba(39,86,68,.11)!important;border-color:#c7dfd3!important}
-          .quick-card:before{content:"";position:absolute;width:66px;height:66px;border-radius:50%;right:-17px;top:-17px;background:linear-gradient(135deg,#e0f2e8,#f5faf7);box-shadow:inset 0 0 0 1px rgba(47,143,112,.05)}
-          .quick-card:nth-child(1):after{content:"○ ○ ○ ○ ○ ○"}.quick-card:nth-child(2):after{content:"◇ ◇ ◇ ◇"}.quick-card:nth-child(3):after{content:"— ○ — ○"}.quick-card:nth-child(4):after{content:"+ · + · +"}
-          .quick-card:after{display:block;position:absolute;right:8px;top:10px;width:65px;color:#4b9a79;font-size:12px;line-height:1.7;text-align:center;letter-spacing:1px;opacity:.75}
-          .quick-card>*{position:relative;z-index:2}.quick-card h3,.quick-card strong{font-size:16px!important;font-weight:900!important;color:var(--fr-ink)!important;margin:0 0 5px!important}.quick-card p{font-size:10px!important;color:var(--fr-muted)!important;line-height:1.45!important;margin:0!important}.quick-card button,.quick-card .btn{background:#e8f5ee!important;color:#2f805f!important;border-radius:10px!important;height:32px!important;font-size:11px!important;font-weight:900!important;margin-top:8px!important;border:1px solid #d3e9dd!important}
+          .quick-card{min-height:125px!important;border:1px solid var(--line)!important;border-radius:18px!important;background:var(--ivory)!important;box-shadow:var(--shadow)!important;padding:16px!important;display:flex!important;flex-direction:column!important;justify-content:flex-end!important;overflow:hidden!important;position:relative!important;transition:.2s!important}
+          .quick-card:hover{transform:translateY(-3px)!important;box-shadow:0 16px 34px rgba(42,76,61,.12)!important;border-color:#c6d9cb!important}
+          .quick-card:before{content:"";position:absolute;width:68px;height:68px;right:-17px;top:-17px;border-radius:50%;background:linear-gradient(135deg,#e1eee3,#f6f1e5);box-shadow:inset 0 0 0 1px rgba(60,128,101,.08)}
+          .quick-card:nth-child(1):after{content:"○  ○  ○  ○"}.quick-card:nth-child(2):after{content:"◇  ◇  ◇"}.quick-card:nth-child(3):after{content:"—  ○  —"}.quick-card:nth-child(4):after{content:"+  ·  +"}
+          .quick-card:after{position:absolute;right:10px;top:13px;width:55px;color:#6da28a;font-size:11px;letter-spacing:1px;text-align:center;line-height:1.8}
+          .quick-card>*{position:relative;z-index:2}.quick-card h3,.quick-card strong{font-size:16px!important;font-weight:900!important;color:var(--deep)!important;margin:0 0 5px!important}.quick-card p{font-size:10px!important;color:var(--muted)!important;line-height:1.45!important;margin:0!important}.quick-card button,.quick-card .btn{background:#e6efe5!important;color:#35765b!important;border:1px solid #d1e0d3!important;border-radius:10px!important;height:32px!important;font-size:11px!important;font-weight:900!important;margin-top:8px!important}
 
-          .flick-new-intro{max-width:980px;margin:10px auto 0;padding:0 20px 8px;display:flex;align-items:center;justify-content:space-between;position:relative}.flick-new-intro:before{content:"";display:block;width:28px;height:3px;background:#55a782;border-radius:4px;position:absolute;left:20px;bottom:0}.flick-new-intro strong{font-size:20px;letter-spacing:-1px}.flick-new-intro span{font-size:10px;color:var(--fr-muted)}
-          .flick-new-strip{max-width:980px;margin:0 auto 22px;padding:0 20px;display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:10px}.flick-new-strip>div{min-height:66px;border-radius:16px;padding:13px 15px;background:#fff;border:1px solid var(--fr-line);box-shadow:var(--fr-shadow);position:relative;overflow:hidden}.flick-new-strip>div:after{content:"";position:absolute;right:-18px;bottom:-24px;width:60px;height:60px;border:1px solid rgba(47,143,112,.13);border-radius:50%}.flick-new-strip b{display:block;font-size:12px;margin-bottom:4px}.flick-new-strip small{color:var(--fr-muted);font-size:9px}.flick-new-strip .featured{background:linear-gradient(135deg,#318c6d,#5cae8b);color:#fff;border-color:transparent}.flick-new-strip .featured small{color:#e9f6ef}
+          .flick-new-intro{max-width:980px;margin:10px auto 0;padding:0 20px 8px;display:flex;align-items:center;justify-content:space-between;position:relative}.flick-new-intro:before{content:"";position:absolute;left:20px;bottom:0;width:28px;height:3px;border-radius:3px;background:var(--green2)}.flick-new-intro strong{font-size:20px;letter-spacing:-1px}.flick-new-intro span{font-size:10px;color:var(--muted)}
+          .flick-new-strip{max-width:980px;margin:0 auto 22px;padding:0 20px;display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:10px}.flick-new-strip>div{min-height:66px;border-radius:16px;padding:13px 15px;background:var(--ivory)!important;border:1px solid var(--line);box-shadow:var(--shadow);position:relative;overflow:hidden}.flick-new-strip>div:after{content:"";position:absolute;right:-18px;bottom:-24px;width:60px;height:60px;border:1px solid rgba(60,128,101,.15);border-radius:50%}.flick-new-strip b{display:block;font-size:12px;margin-bottom:4px}.flick-new-strip small{color:var(--muted);font-size:9px}.flick-new-strip .featured{background:linear-gradient(135deg,#3d8166,#6aa68a)!important;color:#fff;border-color:transparent}.flick-new-strip .featured small{color:#edf5ee}
 
-          .test-card{background:#fff!important;border:1px solid var(--fr-line)!important;border-radius:18px!important;box-shadow:var(--fr-shadow)!important;overflow:hidden!important;position:relative!important;transition:transform .2s ease,box-shadow .2s ease!important}.test-card:hover{transform:translateY(-3px)!important;box-shadow:0 14px 32px rgba(39,86,68,.11)!important}.test-card:before{content:"";display:block;height:72px;background:linear-gradient(135deg,#e6f4ed,#f7fbf9);position:relative}.test-card:after{position:absolute;top:20px;left:20px;font-size:32px;font-weight:300;color:#3e9473}.test-card:nth-child(1):after{content:"○"}.test-card:nth-child(2):after{content:"⌁"}.test-card:nth-child(3):after{content:"◇"}.test-card:nth-child(4):after{content:"+"}.test-card:nth-child(5):after{content:"□"}.test-card>*{position:relative;z-index:2}
-          .test-card:before{border-bottom:1px solid #e2eee8}
+          .test-card{background:var(--ivory)!important;border:1px solid var(--line)!important;border-radius:18px!important;box-shadow:var(--shadow)!important;overflow:hidden!important;position:relative!important;transition:.2s!important}.test-card:hover{transform:translateY(-3px)!important;box-shadow:0 16px 34px rgba(42,76,61,.12)!important}.test-card:before{content:"";display:block;height:72px;background:linear-gradient(135deg,#e5eee4,#f7f2e8)!important;border-bottom:1px solid #e1e8df}.test-card:after{position:absolute;top:20px;left:20px;font-size:32px;font-weight:300;color:#4e8c70}.test-card:nth-child(1):after{content:"○"}.test-card:nth-child(2):after{content:"⌁"}.test-card:nth-child(3):after{content:"◇"}.test-card:nth-child(4):after{content:"+"}.test-card:nth-child(5):after{content:"□"}.test-card>*{position:relative;z-index:2}
 
-          /* 기존 섹션 제목에도 작은 그린 포인트를 붙여 전체 화면의 완성도를 높입니다. */
-          .view section>h2,.view section>h3{position:relative!important;padding-left:12px!important}.view section>h2:before,.view section>h3:before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:15px;border-radius:3px;background:#55a782}
-          @media(max-width:760px){.hero:before{left:2%;width:50px;height:50px}.hero-inner{padding:14px 14px 18px!important}.hero-art{height:135px!important;border-radius:17px!important}.hero-art:after{left:7%;top:27%;font-size:22px;max-width:280px}.quick-grid{grid-template-columns:repeat(2,1fr)!important;padding:13px 14px!important;gap:9px!important}.quick-card{min-height:118px!important;padding:14px!important}.quick-card h3,.quick-card strong{font-size:15px!important}.flick-new-intro{padding:0 14px 7px}.flick-new-intro:before{left:14px}.flick-new-intro strong{font-size:18px}.flick-new-strip{grid-template-columns:1fr 1fr;padding:0 14px;margin-bottom:18px;gap:9px}.flick-new-strip>div:first-child{grid-column:1/-1}}
-          @media(max-width:420px){.quick-grid{gap:7px}.quick-card{min-height:108px!important;padding:12px!important}.quick-card:after{font-size:10px;width:58px}.flick-new-strip>div{padding:12px}}
+          .view section>h2,.view section>h3{position:relative!important;padding-left:12px!important}.view section>h2:before,.view section>h3:before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:15px;border-radius:3px;background:var(--green2)}
+          /* 기존 내부 아이콘의 보라색을 모두 그린/아이보리 계열로 덮습니다. */
+          .quick-card svg,.quick-card svg *,.test-card svg,.test-card svg *{stroke:#4b8c70!important;fill:none!important;color:#4b8c70!important}.quick-card img,.test-card img{filter:saturate(.35) hue-rotate(45deg)!important}
+          @media(max-width:760px){.hero-inner{padding:14px!important}.hero-art{height:135px!important;border-radius:17px!important}.hero-art:after{font-size:22px}.quick-grid{grid-template-columns:repeat(2,1fr)!important;padding:13px 14px!important;gap:9px!important}.quick-card{min-height:118px!important;padding:14px!important}.quick-card h3,.quick-card strong{font-size:15px!important}.flick-new-intro{padding:0 14px 7px}.flick-new-intro:before{left:14px}.flick-new-intro strong{font-size:18px}.flick-new-strip{grid-template-columns:1fr 1fr;padding:0 14px;margin-bottom:18px;gap:9px}.flick-new-strip>div:first-child{grid-column:1/-1}}
+          @media(max-width:420px){.quick-card{min-height:108px!important;padding:12px!important}.flick-new-strip>div{padding:12px}}
           </style>'''
 
           js = r'''<script>
@@ -71,12 +72,14 @@ jobs:
             if(!root)return;
             if(!root.querySelector('.flick-new-intro')){const intro=document.createElement('div');intro.className='flick-new-intro';intro.innerHTML='<strong>오늘은 어떤 하루일까요?</strong><span>작은 선택이 오늘의 분위기를 바꿔요</span>';const q=root.querySelector('.quick-grid');if(q)q.before(intro)}
             if(!root.querySelector('.flick-new-strip')){const strip=document.createElement('div');strip.className='flick-new-strip';strip.innerHTML='<div class="featured"><b>오늘의 한마디</b><small>서두르지 않아도 괜찮아요. 오늘의 속도로 충분합니다.</small></div><div><b>오늘의 기운</b><small>차분함 · 집중 · 작은 행운</small></div><div><b>행운 포인트</b><small>초록색 · 오후 3시 · 새로운 대화</small></div>';const tests=root.querySelector('.test-card')?.closest('section')||root.querySelector('.test-card')?.parentElement;if(tests)tests.before(strip);else root.appendChild(strip)}
+            // 기존 HTML에 남아 있는 보라색 스타일을 감지해 그린 계열로 치환합니다.
+            root.querySelectorAll('*').forEach(el=>{const s=getComputedStyle(el);const vals=[s.color,s.backgroundColor,s.borderColor,s.fill,s.stroke];if(vals.some(v=>{const m=v.match(/rgba?\(([^)]+)\)/);if(!m)return false;const p=m[1].split(',').map(x=>parseFloat(x));return p.length>=3&&p[2]>p[1]*1.05&&p[0]>p[1]*.7})){el.style.color='#3d7f64';if(s.backgroundColor!=='rgba(0, 0, 0, 0)')el.style.backgroundColor='#f2eee4';if(s.borderColor!=='rgba(0, 0, 0, 0)')el.style.borderColor='#d8e4d9'}});});
           })();
           </script>'''
 
-          html = html.replace('</head>', css + '</head>', 1)
-          html = html.replace('</body>', js + '</body>', 1)
-          path.write_text(html, encoding='utf-8')
+          html=html.replace('</head>',css+'</head>',1)
+          html=html.replace('</body>',js+'</body>',1)
+          path.write_text(html,encoding='utf-8')
           PY
 
       - name: Commit generated homepage
@@ -87,6 +90,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Add refined green decorative details"
+            git commit -m "Refine ivory green homepage styling"
             git push
           fi
