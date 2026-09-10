@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>심리테스트 | 오늘의 운세</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f7f5ed;color:#173d30;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR","Apple SD Gothic Neo",sans-serif}button{font:inherit;cursor:pointer}.wrap{max-width:760px;margin:auto;padding:22px 16px 50px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.brand{font-weight:900;font-size:18px}.back{border:1px solid #d9e3da;background:#fffdf8;color:#4c705f;border-radius:12px;padding:8px 12px;font-size:11px}.panel{background:#fffdf8;border:1px solid #e4dfd2;border-radius:22px;box-shadow:0 14px 35px rgba(50,68,56,.07);padding:25px}.eyebrow{font-size:9px;letter-spacing:2px;color:#559579;font-weight:900}.title{font-size:27px;font-weight:900;margin:7px 0 6px;letter-spacing:-1.3px}.desc{font-size:12px;color:#85877f;line-height:1.6;margin:0 0 20px}.list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.test{min-height:104px;text-align:left;background:#faf7ee;border:1px solid #e5dfd2;border-radius:15px;padding:14px}.test b{display:block;font-size:13px;margin-bottom:7px}.test small{color:#878a82;font-size:9px;line-height:1.5}.test em{display:block;color:#559579;font-size:8px;font-style:normal;font-weight:800;margin-top:9px}.bar{height:5px;background:#edf0ea;border-radius:9px;overflow:hidden;margin:4px 0 22px}.bar i{display:block;height:100%;width:0;background:#559579;transition:.2s}.qno{font-size:9px;color:#b89a5b;font-weight:900}.question{font-size:21px;line-height:1.35;font-weight:900;margin:9px 0 18px;letter-spacing:-.8px}.answers{display:grid;gap:8px}.answer{width:100%;padding:14px;text-align:left;border:1px solid #e2ded3;background:#fff;border-radius:13px;color:#315b4a;font-size:12px;font-weight:700;transition:.15s}.answer:hover{border-color:#a9c9b5;background:#f5f9f4;transform:translateY(-1px)}.result{text-align:center}.result .type{font-size:12px;color:#559579;font-weight:900;letter-spacing:1px}.result h2{font-size:28px;margin:8px 0}.result p{color:#777d76;font-size:12px;line-height:1.8}.restart{margin-top:15px;border:0;background:#2f7158;color:white;border-radius:13px;padding:12px 20px;font-weight:800}.share{margin-top:8px;border:1px solid #d7e2d9;background:#fff;color:#416a58;border-radius:13px;padding:11px 20px;font-weight:800}.hidden{display:none}@media(max-width:600px){.list{grid-template-columns:1fr}.panel{padding:19px}.title{font-size:23px}.question{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div class="brand">오늘의 운세</div><button class="back" onclick="location.href='/'">메인으로</button></div>
+  <section class="panel" id="home">
+    <span class="eyebrow">PSYCHOLOGY TEST</span><h1 class="title">재미있는 심리테스트</h1><p class="desc">가볍게 선택하고, 마지막에 나만의 유형을 확인해보세요.</p>
+    <div class="list" id="testList"></div>
+  </section>
+  <section class="panel hidden" id="quiz">
+    <div class="qno" id="qno"></div><div class="bar"><i id="progress"></i></div><div class="question" id="question"></div><div class="answers" id="answers"></div>
+  </section>
+  <section class="panel hidden result" id="result"><div class="type">YOUR RESULT</div><h2 id="resultTitle"></h2><p id="resultText"></p><button class="restart" onclick="restart()">다시 테스트하기</button><br><button class="share" onclick="shareResult()">결과 공유하기</button></section>
+</div>
+<script>
+// 테스트 데이터: 각 선택지는 4개 유형 중 하나에 점수를 준다.
+const tests=[
+{id:'zombie',title:'좀비가 나타난다면 나는?',desc:'위기 상황에서 드러나는 생존 스타일',questions:[['좀비가 갑자기 나타났다. 가장 먼저?',['주변 사람부터 챙긴다','무기를 찾는다','숨을 곳부터 찾는다','상황을 분석한다']],[ '안전한 장소를 찾았다. 다음 행동은?',['사람들을 모은다','식량과 장비를 확보한다','조용히 혼자 있는다','탈출 계획을 세운다']],[ '동료가 위험해졌다. 나는?',['구하러 간다','빠르게 해결한다','일단 몸을 숨긴다','최선의 방법을 계산한다']],[ '마지막으로 남은 선택은?',['팀을 만든다','정면 돌파한다','오래 버틴다','새로운 루트를 찾는다']]],results:[['리더 생존형','사람을 모으고 위기에서 중심을 잡는 타입. 혼자보다 함께할 때 강합니다.'],['돌파형','결정이 빠르고 행동력이 강합니다. 위기에서도 과감하게 앞으로 나갑니다.'],['은신 생존형','불필요한 위험을 피하고 오래 버티는 능력이 뛰어납니다.'],['전략가형','감정보다 상황을 먼저 읽고 가장 효율적인 선택을 찾습니다.']]},
+{id:'money',title:'갑자기 100억이 생긴다면?',desc:'돈이 생겼을 때 가장 먼저 드러나는 욕망',questions:[['당첨 사실을 알았다. 가장 먼저?',['가족에게 알린다','비싼 차를 산다','아무에게도 말하지 않는다','투자 계획을 짠다']],[ '100억 중 가장 먼저 쓰고 싶은 것은?',['집과 가족','여행과 취미','내 공간','자산과 사업']],[ '친구가 돈을 빌려달라고 한다.',['도와준다','원하는 만큼 준다','거절한다','조건을 따져본다']],[ '돈이 더 이상 필요 없다면?',['주변 사람과 나눈다','꿈꾸던 삶을 산다','조용히 산다','더 큰 자산을 만든다']]],results:[['관계 중심 부자','돈보다 사람과 관계에서 만족을 얻는 타입입니다.'],['럭셔리 라이프형','원하는 것을 확실하게 누리는 것을 중요하게 생각합니다.'],['자유 추구형','누구에게도 간섭받지 않는 자유로운 삶을 가장 중요하게 여깁니다.'],['자산가형','돈을 소비하기보다 돈이 돈을 벌게 만드는 데 관심이 많습니다.']]},
+{id:'fantasy',title:'내가 판타지 세계에 떨어진다면?',desc:'선택으로 알아보는 나의 판타지 직업 유형',questions:[['처음 발견한 것은?',['마을','검','마법서','보물지도']],[ '위험한 몬스터를 만났다.',['동료를 부른다','검을 든다','마법을 준비한다','약점을 찾는다']],[ '가장 갖고 싶은 능력은?',['회복','압도적인 힘','강력한 마법','시간과 공간']],[ '모험의 목적은?',['사람을 지키기 위해','강해지기 위해','진실을 찾기 위해','세계를 탐험하기 위해']]],results:[['수호자','동료를 지키고 회복시키는 든든한 파티의 중심입니다.'],['전사','정면 승부를 즐기고 압도적인 힘으로 문제를 해결합니다.'],['마법사','지식과 능력을 쌓아 상황을 뒤집는 타입입니다.'],['탐험가','새로운 가능성과 미지의 세계를 누구보다 좋아합니다.']]},
+{id:'villain',title:'내가 악당이라면 어떤 타입?',desc:'숨겨진 성격으로 알아보는 나만의 빌런 유형',questions:[['도시를 장악한다면?',['사람들의 신뢰를 얻는다','힘으로 제압한다','뒤에서 조종한다','혼란을 만든다']],[ '가장 갖고 싶은 것은?',['명성','힘','정보','자유']],[ '주인공이 나타났다.',['설득한다','싸운다','함정을 판다','흥미롭게 지켜본다']],[ '마지막 승부에서?',['계획을 공개한다','압도한다','마지막 수를 숨긴다','예상 밖 행동을 한다']]],results:[['카리스마형 빌런','사람을 끌어당기는 힘이 강하고 명분을 만드는 데 능합니다.'],['정복형 빌런','강한 추진력과 승부욕으로 목표를 밀어붙입니다.'],['계략형 빌런','정보와 심리전을 이용해 상대보다 한 수 앞을 봅니다.'],['혼돈형 빌런','예측하기 어렵고 틀에 얽매이지 않는 자유로운 성향입니다.']]},
+{id:'lottery',title:'로또 1등 당첨 후 첫 행동은?',desc:'첫 선택으로 알아보는 현실 욕망 테스트',questions:[['당첨 확인 직후?',['가족에게 전화한다','바로 여행을 검색한다','혼자 조용히 숨긴다','은행부터 알아본다']],[ '가장 사고 싶은 것은?',['가족의 집','꿈의 자동차','나만의 공간','건물이나 주식']],[ '주변에 알릴까?',['가까운 사람에게만','SNS에 자랑한다','끝까지 비밀','필요한 사람에게만']],[ '10년 뒤에는?',['가족과 편하게 산다','하고 싶은 것을 다 한다','조용하고 자유롭게 산다','자산을 더 키운다']]],results:[['가족 우선형','성공과 행복을 주변 사람과 나누는 것을 중요하게 생각합니다.'],['경험 소비형','돈을 삶의 경험과 즐거움으로 바꾸는 데 적극적입니다.'],['자유 독립형','경제적 자유와 나만의 공간을 가장 중요하게 생각합니다.'],['투자 성장형','현재의 돈보다 미래에 더 큰 가치를 만드는 것을 중시합니다.']]}
+];
+let current=null,index=0,scores=[0,0,0,0];
+const list=document.getElementById('testList');
+tests.forEach(t=>{const b=document.createElement('button');b.className='test';b.innerHTML=`<b>${t.title}</b><small>${t.desc}</small><em>시작하기 · 2~3분</em>`;b.onclick=()=>start(t);list.appendChild(b)});
+function start(t){current=t;index=0;scores=[0,0,0,0];document.getElementById('home').classList.add('hidden');document.getElementById('result').classList.add('hidden');document.getElementById('quiz').classList.remove('hidden');renderQuestion()}
+function renderQuestion(){const q=current.questions[index];document.getElementById('qno').textContent=`QUESTION ${index+1} / ${current.questions.length}`;document.getElementById('progress').style.width=`${(index/current.questions.length)*100}%`;document.getElementById('question').textContent=q[0];const box=document.getElementById('answers');box.innerHTML='';q[1].forEach((text,i)=>{const b=document.createElement('button');b.className='answer';b.textContent=text;b.onclick=()=>choose(i);box.appendChild(b)})}
+function choose(i){scores[i]++;index++;if(index<current.questions.length){renderQuestion()}else{showResult()}}
+function showResult(){const best=scores.indexOf(Math.max(...scores));const r=current.results[best];document.getElementById('quiz').classList.add('hidden');document.getElementById('result').classList.remove('hidden');document.getElementById('resultTitle').textContent=r[0];document.getElementById('resultText').textContent=r[1]}
+function restart(){document.getElementById('result').classList.add('hidden');document.getElementById('home').classList.remove('hidden')}
+async function shareResult(){const text=`오늘의 운세 심리테스트 결과: ${document.getElementById('resultTitle').textContent}`;if(navigator.share){await navigator.share({title:'심리테스트 결과',text,url:location.href})}else{await navigator.clipboard.writeText(text);alert('결과 문구를 복사했습니다.')}}
+</script>
+</body>
+</html>
