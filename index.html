@@ -67,23 +67,32 @@ body{background:var(--fp-bg)!important;color:var(--fp-deep)!important}
 @media(max-width:420px){.fortune-heading{align-items:center}.fortune-date{font-size:8px}.fortune-summary{padding:17px}.fortune-summary h2{font-size:20px}.fortune-metrics{gap:7px}.metric{padding:12px 10px}.quick-card{min-height:105px!important;padding:13px!important}.zodiac-panel{padding:9px}.zodiac-item{padding:7px 1px}}
 </style><style>
 /* FLICK_PURPLE_FIX */
-.quick-card:before,
-.quick-card:after,
+.quick-card::after{
+  content:none!important;
+  display:none!important;
+  background:none!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.quick-card::before{
+  background:#edf4ee!important;
+  border:1px solid #d9e8dd!important;
+  box-shadow:none!important;
+}
 .quick-card .icon,
 .quick-card [class*="icon"],
 .quick-card [class*="Icon"]{
   background:#edf4ee!important;
   color:#2f7158!important;
   border-color:#d9e8dd!important;
+  box-shadow:none!important;
 }
-
 .quick-card svg,
 .quick-card svg *{
   color:#2f7158!important;
   stroke:#2f7158!important;
   fill:none!important;
 }
-
 .quick-card [style*="#7658d8"],
 .quick-card [style*="#7658D8"],
 .quick-card [style*="#f0ebff"],
@@ -91,15 +100,10 @@ body{background:var(--fp-bg)!important;color:var(--fp-deep)!important}
   background:#edf4ee!important;
   color:#2f7158!important;
   border-color:#d9e8dd!important;
+  box-shadow:none!important;
 }
-
-.quick-card h3,
-.quick-card strong{
-  color:#173d30!important;
-}
-
-.quick-card button,
-.quick-card .btn{
+.quick-card h3,.quick-card strong{color:#173d30!important}
+.quick-card button,.quick-card .btn{
   background:#edf4ee!important;
   color:#2f7158!important;
   border-color:#d9e8dd!important;
