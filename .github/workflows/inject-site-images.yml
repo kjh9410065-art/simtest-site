@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Apply unified image styling
+      - name: Apply unified image styling and hero copy
         shell: bash
         run: |
           python3 - <<'PY'
@@ -25,35 +25,44 @@ jobs:
           path = Path('index.html')
           html = path.read_text(encoding='utf-8')
 
-          # 기존에 자동 삽입한 이미지 CSS를 모두 제거하고 하나의 기준으로 다시 적용합니다.
-          for version in ('V1', 'V2', 'V3', 'V4', 'V5', 'V6'):
+          # 이전 자동 삽입 스타일을 제거해 중복/충돌을 막습니다.
+          for version in ('V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7'):
               html = re.sub(r'<style>\s*/\* DIRECT_SITE_IMAGE_FIX_' + version + r' \*/.*?</style>', '', html, flags=re.S)
 
+          # 기존에 삽입된 히어로 문구도 제거한 뒤 한 번만 추가합니다.
+          html = re.sub(r'<div class="flick-hero-copy"[\\s\\S]*?</div>', '', html)
+
           css = '''<style>
-          /* DIRECT_SITE_IMAGE_FIX_V6 */
-          /* 모든 카드 이미지는 같은 선명도로 표시합니다. 이미지 위 흰색 막을 최소화합니다. */
+          /* DIRECT_SITE_IMAGE_FIX_V7 */
+          /* 모든 카드가 같은 방식으로 보이도록 이미지 선명도와 위치를 통일합니다. */
           .quick-card,.test-card{
             background-size:cover !important;
             background-position:center !important;
             background-repeat:no-repeat !important;
           }
 
-          /* 메인 히어로 */
-          .hero-art{
-            background-image:url("/바다를%20품은%20아늑한%20카페%20공간.png") !important;
-            background-size:cover !important;
-            background-position:center !important;
-            background-repeat:no-repeat !important;
-          }
-
-          /* 홈 4개 기능 카드: 선명도 통일 */
+          /* 카드마다 아주 약한 흰색 막만 사용해 글자를 읽기 쉽게 하고 그림은 살립니다. */
           .quick-card:nth-child(1){background-image:linear-gradient(rgba(255,255,255,.15),rgba(255,255,255,.15)),url("/file_000000000bac8209a8781428bf1685be.png") !important;}
           .quick-card:nth-child(2){background-image:linear-gradient(rgba(255,255,255,.15),rgba(255,255,255,.15)),url("/꽃잎%20흩날리는%20호숫가의%20봄%20풍경.png") !important;}
           .quick-card:nth-child(3){background-image:linear-gradient(rgba(255,255,255,.15),rgba(255,255,255,.15)),url("/햇살%20머무는%20바닷가%20작업%20공간.png") !important;}
           .quick-card:nth-child(4){background-image:linear-gradient(rgba(255,255,255,.15),rgba(255,255,255,.15)),url("/따뜻한%20햇살%20아래%20온라인%20커뮤니티%20카페.png") !important;}
+
+          /* 메인 일러스트는 기존 이미지를 그대로 쓰고, 부족했던 공간감은 HTML 문구로 채웁니다. */
+          .hero-art{position:relative;overflow:hidden;background-image:url("/바다를%20품은%20아늑한%20카페%20공간.png") !important;background-size:cover !important;background-position:center !important;background-repeat:no-repeat !important;}
+          .flick-hero-copy{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:32px 42px;pointer-events:none;text-shadow:0 2px 14px rgba(255,255,255,.7);}
+          .flick-hero-copy strong{font-size:clamp(25px,3.2vw,42px);line-height:1.18;letter-spacing:-2px;color:#28243a;font-weight:900;max-width:420px;}
+          .flick-hero-copy strong em{font-style:normal;color:#7658d8;}
+          .flick-hero-copy span{margin-top:12px;font-size:14px;font-weight:700;color:#625c70;}
+          @media(max-width:700px){.flick-hero-copy{padding:24px 28px;justify-content:center}.flick-hero-copy strong{font-size:27px;max-width:270px}.flick-hero-copy span{font-size:12px;max-width:220px;line-height:1.5}}
           </style>'''
 
           html = html.replace('</head>', css + '</head>', 1)
+
+          # 히어로 이미지 위에 실제 HTML 텍스트를 얹어 여백을 채웁니다. 이미지 안에 글자를 새로 그리지 않습니다.
+          marker = '<div class="hero-art">'
+          if marker in html and 'flick-hero-copy' not in html:
+              html = html.replace(marker, marker + '<div class="flick-hero-copy"><strong>오늘도, <em>좋은 하루</em>가 될 거예요 ♡</strong><span>작은 변화가 특별한 하루를 만듭니다.</span></div>', 1)
+
           path.write_text(html, encoding='utf-8')
           PY
 
@@ -65,6 +74,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Unify site image clarity"
+            git commit -m "Improve hero composition and unify card illustrations"
             git push
           fi
