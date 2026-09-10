@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "description": "FLiCK site image intake specification",
+  "input": {
+    "formats": ["png", "jpg", "jpeg", "webp"],
+    "recommended": "webp",
+    "one_image_per_element": true,
+    "no_text_or_ui_in_image": true
+  },
+  "naming": {
+    "hero": "hero.webp",
+    "quick": ["quick-1.webp", "quick-2.webp", "quick-3.webp", "quick-4.webp"],
+    "tests": ["test-1.webp", "test-2.webp", "test-3.webp", "test-4.webp", "test-5.webp"],
+    "pages": ["page-fortune.webp", "page-psychology.webp", "page-mbti.webp", "page-tarot.webp", "page-community.webp"]
+  }
+}
