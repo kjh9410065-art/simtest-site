@@ -34,50 +34,49 @@ jobs:
           css = r'''<style>
           /* FLICK_HOME_REDESIGN */
           :root{
-            --fr-ink:#29253b;--fr-muted:#817c91;--fr-purple:#7758dc;--fr-purple2:#9a7bea;
-            --fr-bg:#faf9fd;--fr-card:#fff;--fr-line:#ece8f3;--fr-shadow:0 18px 45px rgba(63,45,100,.08)
+            --fr-ink:#19342b;--fr-muted:#71827b;--fr-green:#2f8f70;--fr-green2:#62b18f;
+            --fr-bg:#f5f9f6;--fr-card:#fff;--fr-line:#dfece5;--fr-shadow:0 18px 45px rgba(39,86,68,.08)
           }
           body{background:var(--fr-bg)!important;color:var(--fr-ink)!important}
           .hero,.hero-inner,.quick-grid,.quick-card,.test-card{background-image:none!important}
-          .hero{background:linear-gradient(135deg,#f5f0ff 0%,#fbf8ff 48%,#f4effc 100%)!important;border:0!important}
+          .hero{background:linear-gradient(135deg,#eaf6f0 0%,#f8fbf9 48%,#e6f3ec 100%)!important;border:0!important}
           .hero-inner{grid-template-columns:1fr!important;max-width:1080px!important;min-height:0!important;padding:28px 24px 34px!important;gap:18px!important}
           .hero-inner>div:first-child{display:none!important}
-          .hero-art{height:250px!important;border-radius:30px!important;background:linear-gradient(135deg,#ddd1ff 0%,#f7eefa 45%,#d9e8ff 100%)!important;box-shadow:var(--fr-shadow)!important}
-          .hero-art:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 75% 25%,rgba(255,255,255,.9) 0 8%,transparent 9%),radial-gradient(circle at 15% 78%,rgba(255,255,255,.55) 0 11%,transparent 12%),linear-gradient(120deg,transparent 0 52%,rgba(255,255,255,.28) 53% 58%,transparent 59%);}
-          .hero-art:after{content:"오늘도, 좋은 하루가 될 거예요  ♡";position:absolute;left:9%;top:24%;font-size:clamp(25px,4vw,44px);line-height:1.2;font-weight:900;letter-spacing:-2.5px;color:#332c52;max-width:560px;white-space:pre-wrap;}
-          .hero-art{display:flex!important;align-items:flex-end;justify-content:flex-end;padding:0 9% 30px!important}
+          .hero-art{height:250px!important;border-radius:30px!important;background:linear-gradient(135deg,#cce9da 0%,#f2f8f4 45%,#c5e3d3 100%)!important;box-shadow:var(--fr-shadow)!important}
+          .hero-art:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 75% 25%,rgba(255,255,255,.92) 0 8%,transparent 9%),radial-gradient(circle at 15% 78%,rgba(255,255,255,.6) 0 11%,transparent 12%),linear-gradient(120deg,transparent 0 52%,rgba(255,255,255,.3) 53% 58%,transparent 59%);}
+          .hero-art:after{content:"오늘도, 좋은 하루가 될 거예요";position:absolute;left:9%;top:24%;font-size:clamp(25px,4vw,44px);line-height:1.2;font-weight:900;letter-spacing:-2.5px;color:#193d31;max-width:560px;white-space:pre-wrap;}
+          .hero-art{display:flex!important;align-items:flex-end;justify-content:flex-end;padding:0 9% 30px!important;color:#5f766c;font-size:13px;font-weight:700}
           .hero-art>*{display:none!important}
-          .hero-art{color:#665f79;font-size:13px;font-weight:700}
           .hero-art::marker{display:none}
 
-          /* 상단 바로가기 영역을 완전히 새로운 4개 카드 구조로 보이게 합니다. */
+          /* 상단 바로가기 영역을 4개의 미니멀한 그린 카드로 구성합니다. */
           .quick-grid{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:14px!important;max-width:1080px!important;margin:0 auto!important;padding:24px!important;background:transparent!important}
           .quick-card{min-height:190px!important;border:1px solid var(--fr-line)!important;border-radius:26px!important;background:#fff!important;box-shadow:var(--fr-shadow)!important;padding:24px!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;overflow:hidden!important;position:relative!important}
-          .quick-card:before{content:"";position:absolute;width:105px;height:105px;border-radius:50%;right:-28px;top:-25px;background:linear-gradient(135deg,#eee8ff,#faf7ff);}
-          .quick-card:nth-child(1):after{content:"🐭  🐮  🐯  🐰  🐲  🐍  🐴  🐑  🐵  🐔  🐶  🐷"}
-          .quick-card:nth-child(2):after{content:"✦  ✧  ✦  ✧  ✦"}
-          .quick-card:nth-child(3):after{content:"◌  ◇  ○  ◇  ◌"}
-          .quick-card:nth-child(4):after{content:"✦  ♡  ✧  ♡  ✦"}
-          .quick-card:after{display:block;position:absolute;right:17px;top:18px;width:95px;color:#8669dc;font-size:18px;line-height:1.8;text-align:center;letter-spacing:2px;opacity:.8}
+          .quick-card:before{content:"";position:absolute;width:105px;height:105px;border-radius:50%;right:-28px;top:-25px;background:linear-gradient(135deg,#e0f2e8,#f5faf7);}
+          .quick-card:nth-child(1):after{content:"○  ○  ○  ○  ○  ○"}
+          .quick-card:nth-child(2):after{content:"◇  ◇  ◇  ◇  ◇"}
+          .quick-card:nth-child(3):after{content:"—  ○  —  ○  —"}
+          .quick-card:nth-child(4):after{content:"+  ·  +  ·  +"}
+          .quick-card:after{display:block;position:absolute;right:17px;top:18px;width:95px;color:#4b9a79;font-size:18px;line-height:1.8;text-align:center;letter-spacing:2px;opacity:.8}
           .quick-card>*{position:relative;z-index:2}
           .quick-card h3,.quick-card strong{font-size:19px!important;font-weight:900!important;color:var(--fr-ink)!important;margin-top:54px!important}
           .quick-card p{font-size:12px!important;color:var(--fr-muted)!important;line-height:1.55!important}
-          .quick-card button,.quick-card .btn{background:#f2edff!important;color:#7255d3!important;border-radius:14px!important;height:42px!important;font-weight:900!important}
+          .quick-card button,.quick-card .btn{background:#e8f5ee!important;color:#2f805f!important;border-radius:14px!important;height:42px!important;font-weight:900!important}
 
-          /* 인기 테스트를 이미지 없는 아이콘 카드로 전환 */
+          /* 인기 테스트를 이미지와 이모지 없이 타이포그래피와 기하학 아이콘으로 표현합니다. */
           .test-card{background:#fff!important;border:1px solid var(--fr-line)!important;border-radius:24px!important;box-shadow:var(--fr-shadow)!important;overflow:hidden!important;position:relative!important}
-          .test-card:before{content:"";display:block;height:120px;background:linear-gradient(135deg,#eee7ff,#faf7ff);}
-          .test-card:after{position:absolute;top:31px;left:28px;font-size:48px;font-weight:700;color:#8064d9}
-          .test-card:nth-child(1):after{content:"♡"}.test-card:nth-child(2):after{content:"⌁"}.test-card:nth-child(3):after{content:"◇"}.test-card:nth-child(4):after{content:"✦"}.test-card:nth-child(5):after{content:"✉"}
+          .test-card:before{content:"";display:block;height:120px;background:linear-gradient(135deg,#e6f4ed,#f7fbf9);}
+          .test-card:after{position:absolute;top:34px;left:28px;font-size:48px;font-weight:300;color:#3e9473}
+          .test-card:nth-child(1):after{content:"○"}.test-card:nth-child(2):after{content:"⌁"}.test-card:nth-child(3):after{content:"◇"}.test-card:nth-child(4):after{content:"+"}.test-card:nth-child(5):after{content:"□"}
           .test-card>*{position:relative;z-index:2}
 
-          /* 이미지 없이도 메인 화면이 풍성해지도록 장식 요소를 추가합니다. */
+          /* 이미지 없이도 메인 화면이 풍성해지도록 정보 스트립을 추가합니다. */
           .flick-new-intro{max-width:1080px;margin:8px auto 0;padding:0 24px 12px;display:flex;align-items:end;justify-content:space-between}
           .flick-new-intro strong{font-size:26px;letter-spacing:-1.5px}.flick-new-intro span{font-size:12px;color:var(--fr-muted)}
           .flick-new-strip{max-width:1080px;margin:0 auto 34px;padding:0 24px;display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:14px}
           .flick-new-strip>div{min-height:90px;border-radius:22px;padding:20px 22px;background:#fff;border:1px solid var(--fr-line);box-shadow:var(--fr-shadow)}
           .flick-new-strip b{display:block;font-size:15px;margin-bottom:6px}.flick-new-strip small{color:var(--fr-muted);font-size:11px}
-          .flick-new-strip .featured{background:linear-gradient(135deg,#795bdc,#a487ed);color:#fff}.flick-new-strip .featured small{color:#eee9ff}
+          .flick-new-strip .featured{background:linear-gradient(135deg,#318c6d,#5cae8b);color:#fff}.flick-new-strip .featured small{color:#e9f6ef}
           @media(max-width:760px){
             .hero-inner{padding:18px 16px 24px!important}.hero-art{height:225px!important;border-radius:25px!important}.hero-art:after{left:8%;top:25%;font-size:29px;max-width:290px}
             .quick-grid{grid-template-columns:repeat(2,1fr)!important;padding:18px 16px!important;gap:12px!important}.quick-card{min-height:175px!important;padding:19px!important}.quick-card h3,.quick-card strong{font-size:17px!important}
@@ -99,7 +98,7 @@ jobs:
             }
             if(!root.querySelector('.flick-new-strip')){
               const strip=document.createElement('div');strip.className='flick-new-strip';
-              strip.innerHTML='<div class="featured"><b>오늘의 한마디</b><small>서두르지 않아도 괜찮아요. 오늘의 속도로 충분합니다.</small></div><div><b>오늘의 기운</b><small>차분함 · 집중 · 작은 행운</small></div><div><b>행운 포인트</b><small>보라색 · 오후 3시 · 새로운 대화</small></div>';
+              strip.innerHTML='<div class="featured"><b>오늘의 한마디</b><small>서두르지 않아도 괜찮아요. 오늘의 속도로 충분합니다.</small></div><div><b>오늘의 기운</b><small>차분함 · 집중 · 작은 행운</small></div><div><b>행운 포인트</b><small>초록색 · 오후 3시 · 새로운 대화</small></div>';
               const tests=root.querySelector('.test-card')?.closest('section')||root.querySelector('.test-card')?.parentElement;
               if(tests)tests.before(strip);else root.appendChild(strip);
             }
@@ -119,6 +118,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Redesign homepage without image assets"
+            git commit -m "Refine homepage with calm green palette and no emojis"
             git push
           fi
