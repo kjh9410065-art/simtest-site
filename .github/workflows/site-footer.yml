@@ -1,0 +1,80 @@
+name: Add site footer
+
+on:
+  workflow_run:
+    workflows: ["Decorate fortune portal"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  footer:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 2
+
+      - name: Add footer information
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          html = p.read_text(encoding='utf-8')
+
+          # 기존에 이 패치가 들어갔다면 중복으로 만들지 않는다.
+          html = re.sub(r'<!-- FLICK_SITE_FOOTER -->.*?<!-- /FLICK_SITE_FOOTER -->', '', html, flags=re.S)
+
+          footer = '''<!-- FLICK_SITE_FOOTER -->
+          <div class="flick-site-footer-info">
+            <div class="flick-footer-brand">운세·심리테스트</div>
+            <div class="flick-footer-links">
+              <a href="/legal.html#terms">이용약관</a>
+              <a href="/legal.html#privacy">개인정보처리방침</a>
+              <a href="mailto:kjh9410065@gmail.com">문의하기</a>
+              <a href="/legal.html#disclaimer">면책사항</a>
+            </div>
+            <div class="flick-footer-contact">문의: <a href="mailto:kjh9410065@gmail.com">kjh9410065@gmail.com</a></div>
+            <div class="flick-footer-copy">© 2026 운세·심리테스트. All rights reserved.</div>
+          </div>
+          <!-- /FLICK_SITE_FOOTER -->'''
+
+          css = '''<style>
+          /* FLICK_SITE_FOOTER */
+          .flick-site-footer-info{max-width:1180px;margin:0 auto;padding:24px 28px 30px;text-align:center;border-top:1px solid #ddd8cc;color:#7b857e;background:#f7f4eb}
+          .flick-footer-brand{font-size:15px;font-weight:950;color:#173d30;margin-bottom:10px}
+          .flick-footer-links{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-bottom:9px}
+          .flick-footer-links a,.flick-footer-contact a{color:#557a66;text-decoration:none}
+          .flick-footer-links a{font-size:10px}
+          .flick-footer-contact{font-size:10px;margin-bottom:7px}
+          .flick-footer-copy{font-size:9px;color:#9a9f99}
+          @media(max-width:760px){.flick-site-footer-info{padding:20px 12px 25px}.flick-footer-links{gap:11px}.flick-footer-links a,.flick-footer-contact{font-size:9px}.flick-footer-copy{font-size:8px}}
+          </style>'''
+
+          # 기존 footer가 있으면 그 직전에 새 footer를 넣고, 없으면 body 끝에 넣는다.
+          if '<!-- FLICK_SITE_FOOTER -->' not in html:
+              if re.search(r'</body>', html, flags=re.I):
+                  html = re.sub(r'</body>', css + footer + '</body>', html, count=1, flags=re.I)
+              else:
+                  html += css + footer
+
+          p.write_text(html, encoding='utf-8')
+          PY
+
+      - name: Commit footer
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No footer changes"
+          else
+            git commit -m "Show contact email and legal links in footer"
+            git push
+          fi
