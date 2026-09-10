@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Replace homepage image CSS directly
+      - name: Rearrange existing site images
         shell: bash
         run: |
           python3 - <<'PY'
@@ -25,14 +25,16 @@ jobs:
           path = Path('index.html')
           html = path.read_text(encoding='utf-8')
 
-          # 이전 이미지 고정 CSS가 있으면 제거해 새 매핑으로 교체합니다.
-          html = re.sub(r'<style>\s*/\* DIRECT_SITE_IMAGE_FIX_V1 \*/.*?</style>', '', html, flags=re.S)
-          html = re.sub(r'<style>\s*/\* DIRECT_SITE_IMAGE_FIX_V2 \*/.*?</style>', '', html, flags=re.S)
-          html = re.sub(r'<style>\s*/\* DIRECT_SITE_IMAGE_FIX_V3 \*/.*?</style>', '', html, flags=re.S)
+          # 이전에 자동으로 삽입한 이미지 매핑을 제거한 뒤 현재 홈 구조에 맞춰 다시 배치합니다.
+          for version in ('V1', 'V2', 'V3', 'V4'):
+              html = re.sub(r'<style>\s*/\* DIRECT_SITE_IMAGE_FIX_' + version + r' \*/.*?</style>', '', html, flags=re.S)
 
           css = '''<style>
-          /* DIRECT_SITE_IMAGE_FIX_V3 */
-          .hero-art{background-image:url("/꿈결%20같은%20태양%20오라클%20카드%20정원.png") !important;background-size:cover !important;background-position:center !important;background-repeat:no-repeat !important;}
+          /* DIRECT_SITE_IMAGE_FIX_V4 */
+          /* 메인 히어로: 밝고 편안한 카페 풍경을 사용합니다. */
+          .hero-art{background-image:url("/바다를%20품은%20아늑한%20카페%20공간.png") !important;background-size:cover !important;background-position:center !important;background-repeat:no-repeat !important;}
+
+          /* 홈의 4개 기능 카드: 기존 이미지 중 각 기능의 분위기에 맞춰 재배치합니다. */
           .quick-card{background-size:cover !important;background-position:center !important;background-repeat:no-repeat !important;}
           .quick-card:nth-child(1){background-image:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55)),url("/햇살%20가득한%20카페의%20즐거운%20모임.png") !important;}
           .quick-card:nth-child(2){background-image:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55)),url("/꽃잎%20흩날리는%20호숫가의%20봄%20풍경.png") !important;}
@@ -40,7 +42,6 @@ jobs:
           .quick-card:nth-child(4){background-image:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55)),url("/따뜻한%20햇살%20아래%20온라인%20커뮤니티%20카페.png") !important;}
           </style>'''
 
-          # 실제 존재하는 홈 화면 요소에만 이미지를 적용합니다.
           html = html.replace('</head>', css + '</head>', 1)
           path.write_text(html, encoding='utf-8')
           PY
@@ -53,6 +54,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Remove unused community image injection"
+            git commit -m "Rearrange existing images for homepage"
             git push
           fi
