@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="행운의 기운 장식">
+<defs><radialGradient id="g"><stop offset="0" stop-color="#fffdf5"/><stop offset="1" stop-color="#dbeadf"/></radialGradient></defs>
+<circle cx="160" cy="160" r="150" fill="#f8f4e8"/>
+<circle cx="160" cy="160" r="112" fill="url(#g)" stroke="#b8d0c0" stroke-width="2"/>
+<circle cx="160" cy="160" r="88" fill="none" stroke="#d2b56c" stroke-width="2" stroke-dasharray="2 10"/>
+<g fill="#6f9e83"><circle cx="160" cy="34" r="5"/><circle cx="286" cy="160" r="5"/><circle cx="160" cy="286" r="5"/><circle cx="34" cy="160" r="5"/></g>
+<g fill="none" stroke="#6f9e83" stroke-width="6" stroke-linecap="round"><path d="M160 72v176M72 160h176" opacity=".35"/><path d="M112 112l96 96M208 112l-96 96" opacity=".2"/></g>
+<path d="M160 92c-16 25-42 35-42 64 0 25 18 45 42 45s42-20 42-45c0-29-26-39-42-64Z" fill="#d5b86d" opacity=".9"/>
+<circle cx="160" cy="155" r="18" fill="#fffaf0"/>
+<text x="160" y="236" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="800" fill="#315e4b">TODAY'S LUCK</text>
+</svg>
