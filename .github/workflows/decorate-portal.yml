@@ -30,98 +30,37 @@ jobs:
           html=re.sub(r'<script>\s*/\* FLICK_DECORATE_PORTAL_JS \*/.*?</script>','',html,flags=re.S)
           css=r'''<style>
           /* FLICK_DECORATE_PORTAL */
-          /* 기하학적인 장식을 추가하지 않고 기존 일러스트, 타이포그래피, 색감과 여백으로 포털 느낌을 강화합니다. */
           body{background:#f7f4eb!important}
           .header{background:rgba(255,253,248,.96)!important;border-bottom-color:#ded8ca!important}
-          .brand strong{color:#173d30!important;font-weight:950!important}
-          .brand small{color:#7f8b82!important}
-          .nav{gap:22px!important}
-          .nav button{color:#7b837d!important}
-          .nav button.active{color:#173d30!important;border-bottom-color:#559579!important}
+          .brand strong{color:#173d30!important;font-weight:950!important}.brand small{color:#7f8b82!important}
+          .nav{gap:22px!important}.nav button{color:#7b837d!important}.nav button.active{color:#173d30!important;border-bottom-color:#559579!important}
           .head-actions button{background:#fffdf8!important;border-color:#ded8ca!important}
           .flick-fortune-wrap{background:linear-gradient(180deg,#faf7ef 0%,#f7f4eb 100%)!important}
-          .fortune-heading{border-bottom:1px solid #ddd7c9!important}
-          .fortune-heading h1{color:#173d30!important;letter-spacing:-1.6px!important}
+          .fortune-heading{border-bottom:1px solid #ddd7c9!important}.fortune-heading h1{color:#173d30!important;letter-spacing:-1.6px!important}
           .fortune-date{background:#edf4ee!important;border-color:#d5e3d8!important;color:#4e8067!important}
-          .fortune-main{align-items:stretch!important}
-          .fortune-summary,.fortune-luck{border:1px solid #dcd8cc!important;border-radius:16px!important;background:#fffdf8!important;box-shadow:0 9px 24px rgba(53,67,57,.06)!important}
-          .fortune-summary{position:relative!important;overflow:hidden!important}
-          .fortune-summary:after{content:"";position:absolute;right:0;top:0;width:145px;height:100%;background:url('assets/fortune-orbit.svg') right center/310px auto no-repeat;opacity:.11;pointer-events:none}
-          .fortune-summary>*{position:relative;z-index:1}
-          .fortune-summary h2{color:#173d30!important;font-weight:950!important}
-          .fortune-summary p{color:#69756d!important}
-          .fortune-luck h3{color:#315e4b!important}
-          .luck-item{border-bottom-color:#e9e4d9!important}
-          .luck-item b{color:#315e4b!important}
-          .metric{border:1px solid #e1ddd2!important;background:linear-gradient(145deg,#fffdf8,#f3f7f1)!important;box-shadow:none!important}
-          .metric b{color:#315e4b!important}
-          .metric i{color:#9a8b6a!important}
-          .fortune-section-title{display:flex!important;align-items:center!important;justify-content:space-between!important;border-bottom:1px solid #e0dbcf!important;padding-bottom:5px!important}
-          .fortune-section-title:after{content:"TODAY'S PICKS";font-size:7px;font-weight:900;letter-spacing:1.4px;color:#a08b5b}
-          .quick-card{background:#fffdf8!important;border:1px solid #ded9cd!important;box-shadow:0 8px 18px rgba(55,70,58,.045)!important}
-          .quick-card:hover{border-color:#b9d1c1!important;box-shadow:0 12px 24px rgba(55,70,58,.08)!important;transform:translateY(-2px)!important}
-          .quick-card strong{color:#173d30!important}
-          .quick-card span{color:#7d857e!important}
-          .quick-card .card-action{background:#eef4ee!important;color:#4e8067!important;border-color:#d5e3d8!important}
-          .zodiac-panel{background:#fffdf8!important;border:1px solid #ddd8cb!important;border-radius:15px!important;box-shadow:0 8px 18px rgba(55,70,58,.04)!important}
-          .zodiac-item{border-right-color:#e9e4da!important}
-          .zodiac-item b{color:#315e4b!important}
-          .keyword-panel{border-top:1px solid #ded9cd!important;padding-top:7px!important}
-          .keyword{background:#f1f5ef!important;border-color:#dce7df!important;color:#557a66!important}
-          .flick-static-visual .visual-frame{border-color:#d6e1d8!important;box-shadow:0 12px 28px rgba(55,75,61,.08)!important}
-          .flick-static-visual .visual-copy b{font-weight:950!important;color:#173d30!important}
-          .flick-static-note{color:#8a8d86!important}
-          .flick-psychology-rich{background:#faf7ef!important;border-top:1px solid #e1dbce!important;border-bottom:1px solid #e1dbce!important}
-          .psych-rich-head{border-bottom-color:#ddd7ca!important}
-          .psych-rich-head h2{color:#173d30!important;font-weight:950!important}
-          .psych-rich-head p{color:#7f867f!important}
-          .psych-count{background:#f1eadb!important;border-color:#dfd2b8!important;color:#887349!important}
-          .psych-category-tabs button{background:#fffdf8!important;border-color:#ddd8cc!important}
-          .psych-category-tabs button.active{background:#edf4ee!important;border-color:#cfe1d5!important;color:#3f7b5f!important}
-          .psych-rich-card{background:#fffdf8!important;border-color:#ded9cd!important;box-shadow:0 8px 18px rgba(55,70,58,.045)!important}
-          .psych-rich-card b{color:#173d30!important;font-weight:900!important}
-          .psych-rich-card small{color:#7d857e!important}
-          .psych-rich-card em{color:#559579!important}
-          .psych-rich-card:hover{border-color:#bfd5c7!important}
-          /* 심리테스트 영역에는 실제 기존 일러스트를 카드의 한쪽에 크게 보여줍니다. */
-          .psych-rich-card:nth-child(3n+1)::before{background-image:url('assets/햇살 가득한 MBTI 아지트.png')!important}
-          .psych-rich-card:nth-child(3n+2)::before{background-image:url('assets/따뜻한 햇살 아래 온라인 커뮤니티 카페.png')!important}
-          .psych-rich-card:nth-child(3n)::before{background-image:url('assets/바다를 품은 아늑한 카페 공간.png')!important}
-          .psych-rich-card::before{right:-15px!important;bottom:-12px!important;width:130px!important;height:90px!important;background-size:cover!important;background-position:center!important;opacity:.18!important;border-radius:14px!important}
-          .psych-rich-card>*{position:relative!important;z-index:2!important}
-          @media(max-width:760px){
-            .nav{gap:13px!important}.nav button{font-size:10px!important}
-            .fortune-summary:after{width:105px;height:100%;background-size:230px auto}
-            .fortune-section-title:after{font-size:6px}
-            .psych-rich-card::before{width:100px!important;height:70px!important;opacity:.16!important}
-          }
+          .fortune-main{align-items:stretch!important}.fortune-summary,.fortune-luck{border:1px solid #dcd8cc!important;border-radius:16px!important;background:#fffdf8!important;box-shadow:0 9px 24px rgba(53,67,57,.06)!important}
+          .fortune-summary{position:relative!important;overflow:hidden!important}.fortune-summary:after{content:"";position:absolute;right:0;top:0;width:145px;height:100%;background:url('assets/fortune-orbit.svg') right center/310px auto no-repeat;opacity:.11;pointer-events:none}.fortune-summary>*{position:relative;z-index:1}
+          .fortune-summary h2{color:#173d30!important;font-weight:950!important}.fortune-summary p{color:#69756d!important}.fortune-luck h3,.luck-item b,.metric b{color:#315e4b!important}
+          .luck-item{border-bottom-color:#e9e4d9!important}.metric{border:1px solid #e1ddd2!important;background:linear-gradient(145deg,#fffdf8,#f3f7f1)!important;box-shadow:none!important}.metric i{color:#9a8b6a!important}
+          .fortune-section-title{display:flex!important;align-items:center!important;justify-content:space-between!important;border-bottom:1px solid #e0dbcf!important;padding-bottom:5px!important}.fortune-section-title:after{content:"TODAY'S PICKS";font-size:7px;font-weight:900;letter-spacing:1.4px;color:#a08b5b}
+          .quick-card{background:#fffdf8!important;border:1px solid #ded9cd!important;box-shadow:0 8px 18px rgba(55,70,58,.045)!important}.quick-card:hover{border-color:#b9d1c1!important;box-shadow:0 12px 24px rgba(55,70,58,.08)!important;transform:translateY(-2px)!important}.quick-card strong{color:#173d30!important}.quick-card span{color:#7d857e!important}.quick-card .card-action{background:#eef4ee!important;color:#4e8067!important;border-color:#d5e3d8!important}
+          .zodiac-panel{background:#fffdf8!important;border:1px solid #ddd8cb!important;border-radius:15px!important;box-shadow:0 8px 18px rgba(55,70,58,.04)!important}.zodiac-item{border-right-color:#e9e4da!important}.zodiac-item b{color:#315e4b!important}
+          .keyword-panel{border-top:1px solid #ded9cd!important;padding-top:7px!important}.keyword{background:#f1f5ef!important;border-color:#dce7df!important;color:#557a66!important}
+          .flick-static-visual .visual-frame{border-color:#d6e1d8!important;box-shadow:0 12px 28px rgba(55,75,61,.08)!important}.flick-static-visual .visual-copy b{font-weight:950!important;color:#173d30!important}.flick-static-note{color:#8a8d86!important}
+          .flick-psychology-rich{background:#faf7ef!important;border-top:1px solid #e1dbce!important;border-bottom:1px solid #e1dbce!important}.psych-rich-head{border-bottom-color:#ddd7ca!important}.psych-rich-head h2{color:#173d30!important;font-weight:950!important}.psych-rich-head p{color:#7f867f!important}
+          .psych-count{background:#f1eadb!important;border-color:#dfd2b8!important;color:#887349!important}.psych-category-tabs button{background:#fffdf8!important;border-color:#ddd8cc!important}.psych-category-tabs button.active{background:#edf4ee!important;border-color:#cfe1d5!important;color:#3f7b5f!important}
+          .psych-rich-card{background:#fffdf8!important;border-color:#ded9cd!important;box-shadow:0 8px 18px rgba(55,70,58,.045)!important}.psych-rich-card b{color:#173d30!important;font-weight:900!important}.psych-rich-card small{color:#7d857e!important}.psych-rich-card em{color:#559579!important}.psych-rich-card:hover{border-color:#bfd5c7!important}
+          .psych-rich-card:nth-child(3n+1)::before{background-image:url('assets/햇살 가득한 MBTI 아지트.png')!important}.psych-rich-card:nth-child(3n+2)::before{background-image:url('assets/따뜻한 햇살 아래 온라인 커뮤니티 카페.png')!important}.psych-rich-card:nth-child(3n)::before{background-image:url('assets/바다를 품은 아늑한 카페 공간.png')!important}.psych-rich-card::before{right:-15px!important;bottom:-12px!important;width:130px!important;height:90px!important;background-size:cover!important;background-position:center!important;opacity:.18!important;border-radius:14px!important}.psych-rich-card>*{position:relative!important;z-index:2!important}
+          @media(max-width:760px){.nav{gap:13px!important}.nav button{font-size:10px!important}.fortune-summary:after{width:105px;height:100%;background-size:230px auto}.fortune-section-title:after{font-size:6px}.psych-rich-card::before{width:100px!important;height:70px!important;opacity:.16!important}}
           </style>'''
           js=r'''<script>
           /* FLICK_DECORATE_PORTAL_JS */
-          document.addEventListener('DOMContentLoaded',()=>{
-            const root=document.querySelector('.flick-fortune-wrap');
-            if(!root)return;
-            // 현재 사용 중인 운세 일러스트를 활용한 얇은 이미지 띠를 주요 콘텐츠 사이에 배치합니다.
-            const quick=root.querySelector('.quick-grid');
-            if(quick&&!root.querySelector('.flick-visual-divider')){
-              const d=document.createElement('div');
-              d.className='flick-visual-divider';
-              d.innerHTML='<img src="assets/fortune-orbit.svg" alt="오늘의 운세 일러스트"><div><small>FLICK FORTUNE GUIDE</small><b>오늘의 흐름을 한눈에</b><span>운세 · 행운 · 성향을 가볍게 살펴보세요.</span></div>';
-              quick.parentNode.insertBefore(d,quick);
-            }
-          });
+          document.addEventListener('DOMContentLoaded',()=>{const root=document.querySelector('.flick-fortune-wrap');if(!root)return;const quick=root.querySelector('.quick-grid');if(quick&&!root.querySelector('.flick-visual-divider')){const d=document.createElement('div');d.className='flick-visual-divider';d.innerHTML='<img src="assets/fortune-orbit.svg" alt="오늘의 운세 일러스트"><div><small>FLICK FORTUNE GUIDE</small><b>오늘의 흐름을 한눈에</b><span>운세 · 행운 · 성향을 가볍게 살펴보세요.</span></div>';quick.parentNode.insertBefore(d,quick);}});
           </script>'''
           divcss=r'''<style>
-          .flick-visual-divider{max-width:1180px;margin:8px auto 7px;padding:0 28px;position:relative}
-          .flick-visual-divider>div{position:relative;height:76px;border:1px solid #d9e3da;border-radius:14px;overflow:hidden;background:#f0f5f0;display:flex;flex-direction:column;justify-content:center;padding-left:22px;box-shadow:0 7px 18px rgba(50,72,57,.05)}
-          .flick-visual-divider img{position:absolute;right:28px;top:-65px;width:210px;height:98px;object-fit:cover;object-position:center;opacity:.78;mix-blend-mode:multiply;pointer-events:none}
-          .flick-visual-divider small{font-size:7px;letter-spacing:1.7px;font-weight:900;color:#659077}
-          .flick-visual-divider b{font-size:15px;color:#244c3c;margin-top:3px}
-          .flick-visual-divider span{font-size:8px;color:#77827b;margin-top:2px}
-          @media(max-width:760px){.flick-visual-divider{padding:0 10px;margin:6px auto}.flick-visual-divider>div{height:65px;padding-left:15px}.flick-visual-divider img{right:8px;width:155px;top:-42px}.flick-visual-divider b{font-size:12px}.flick-visual-divider span{font-size:7px}}
+          .flick-visual-divider{max-width:1180px;margin:8px auto 7px;padding:0 28px;position:relative}.flick-visual-divider>div{position:relative;height:76px;border:1px solid #d9e3da;border-radius:14px;overflow:hidden;background:#f0f5f0;display:flex;flex-direction:column;justify-content:center;padding-left:22px;box-shadow:0 7px 18px rgba(50,72,57,.05)}.flick-visual-divider img{position:absolute;right:28px;top:-65px;width:210px;height:98px;object-fit:cover;object-position:center;opacity:.78;mix-blend-mode:multiply;pointer-events:none}.flick-visual-divider small{font-size:7px;letter-spacing:1.7px;font-weight:900;color:#659077}.flick-visual-divider b{font-size:15px;color:#244c3c;margin-top:3px}.flick-visual-divider span{font-size:8px;color:#77827b;margin-top:2px}@media(max-width:760px){.flick-visual-divider{padding:0 10px;margin:6px auto}.flick-visual-divider>div{height:65px;padding-left:15px}.flick-visual-divider img{right:8px;width:155px;top:-42px}.flick-visual-divider b{font-size:12px}.flick-visual-divider span{font-size:7px}}
           </style>'''
-          html=html.replace('</head>',css+divcss+'</head>',1)
-          html=html.replace('</body>',js+'</body>',1)
+          html=html.replace('</head>',css+divcss+'</head>',1).replace('</body>',js+'</body>',1)
           p.write_text(html,encoding='utf-8')
           PY
 
