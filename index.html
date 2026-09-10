@@ -204,8 +204,8 @@ const SEARCH_DATA=[...ZODIAC.map((x,i)=>({name:x,type:'띠 운세',view:'zodiac'
 </script><script>
 /* FLICK_PSYCHOLOGY_RICH_JS */
 document.addEventListener('DOMContentLoaded',()=>{const grid=document.querySelector('.quick-grid');if(!grid)return;grid.insertAdjacentHTML('afterend',`<section class="flick-psychology-rich" aria-label="심리테스트">
-  <div class="psych-rich-head"><div><span class="psych-eyebrow">PSYCHOLOGY TEST</span><h2>심리테스트</h2><p>가볍게 골라보는 나의 성향과 마음</p></div><span class="psych-count">8가지 테스트</span></div>
-  <div class="psych-category-tabs"><button class="active" data-psych-filter="all">전체</button><button data-psych-filter="love">연애</button><button data-psych-filter="personality">성격</button><button data-psych-filter="mind">마음</button><button data-psych-filter="life">생활</button></div>
+  <div class="psych-rich-head"><div><span class="psych-eyebrow">PSYCHOLOGY TEST</span><h2>심리테스트</h2><p>가볍게 골라보는 나의 성향과 마음</p></div><span class="psych-count">13가지 테스트</span></div>
+  <div class="psych-category-tabs"><button class="active" data-psych-filter="all">전체</button><button data-psych-filter="love">연애</button><button data-psych-filter="personality">성격</button><button data-psych-filter="mind">마음</button><button data-psych-filter="life">생활</button><button data-psych-filter="fun">재미</button></div>
   <div class="psych-rich-grid">
     <button class="psych-rich-card" data-psych-cat="love"><span class="psych-no">01</span><b>연애할 때 나는?</b><small>사랑 앞에서 드러나는 나의 연애 성향</small><em>연애 · 3분</em></button>
     <button class="psych-rich-card" data-psych-cat="personality"><span class="psych-no">02</span><b>나도 몰랐던 성격</b><small>평소 선택으로 알아보는 숨은 성격</small><em>성격 · 3분</em></button>
@@ -215,6 +215,11 @@ document.addEventListener('DOMContentLoaded',()=>{const grid=document.querySelec
     <button class="psych-rich-card" data-psych-cat="mind"><span class="psych-no">06</span><b>나의 스트레스 신호</b><small>무심코 하는 행동으로 알아보는 스트레스 유형</small><em>마음 · 2분</em></button>
     <button class="psych-rich-card" data-psych-cat="life"><span class="psych-no">07</span><b>나의 소비 성향은?</b><small>돈을 쓸 때 드러나는 나만의 선택 패턴</small><em>생활 · 3분</em></button>
     <button class="psych-rich-card" data-psych-cat="life"><span class="psych-no">08</span><b>나는 계획형일까 즉흥형일까?</b><small>일상 속 선택으로 알아보는 행동 스타일</small><em>생활 · 2분</em></button>
+    <button class="psych-rich-card" data-psych-cat="fun"><span class="psych-no">09</span><b>좀비가 나타난다면 나는?</b><small>갑작스러운 위기에서 드러나는 생존 스타일</small><em>재미 · 2분</em></button>
+    <button class="psych-rich-card" data-psych-cat="fun"><span class="psych-no">10</span><b>갑자기 100억이 생긴다면?</b><small>돈이 생겼을 때 가장 먼저 드러나는 욕망</small><em>재미 · 2분</em></button>
+    <button class="psych-rich-card" data-psych-cat="fun"><span class="psych-no">11</span><b>내가 판타지 세계에 떨어진다면?</b><small>선택으로 알아보는 나의 판타지 직업 유형</small><em>재미 · 3분</em></button>
+    <button class="psych-rich-card" data-psych-cat="fun"><span class="psych-no">12</span><b>내가 악당이라면 어떤 타입?</b><small>숨겨진 성격으로 알아보는 나만의 빌런 유형</small><em>재미 · 2분</em></button>
+    <button class="psych-rich-card" data-psych-cat="fun"><span class="psych-no">13</span><b>로또 1등 당첨 후 첫 행동은?</b><small>첫 선택으로 알아보는 현실 욕망 테스트</small><em>재미 · 2분</em></button>
   </div>
 </section>`);const root=document.querySelector('.flick-psychology-rich');if(!root)return;root.querySelectorAll('[data-psych-filter]').forEach(tab=>tab.addEventListener('click',()=>{root.querySelectorAll('[data-psych-filter]').forEach(x=>x.classList.remove('active'));tab.classList.add('active');const f=tab.dataset.psychFilter;root.querySelectorAll('.psych-rich-card').forEach(card=>card.classList.toggle('is-hidden',f!=='all'&&card.dataset.psychCat!==f));}));});
 </script></body></html>
