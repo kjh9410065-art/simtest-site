@@ -26,17 +26,18 @@ jobs:
           html = path.read_text(encoding='utf-8')
 
           # 이전에 자동으로 삽입한 이미지 매핑을 제거한 뒤 현재 홈 구조에 맞춰 다시 배치합니다.
-          for version in ('V1', 'V2', 'V3', 'V4'):
+          for version in ('V1', 'V2', 'V3', 'V4', 'V5'):
               html = re.sub(r'<style>\s*/\* DIRECT_SITE_IMAGE_FIX_' + version + r' \*/.*?</style>', '', html, flags=re.S)
 
           css = '''<style>
-          /* DIRECT_SITE_IMAGE_FIX_V4 */
-          /* 메인 히어로: 밝고 편안한 카페 풍경을 사용합니다. */
+          /* DIRECT_SITE_IMAGE_FIX_V5 */
+          /* 메인 히어로 */
           .hero-art{background-image:url("/바다를%20품은%20아늑한%20카페%20공간.png") !important;background-size:cover !important;background-position:center !important;background-repeat:no-repeat !important;}
 
-          /* 홈의 4개 기능 카드: 기존 이미지 중 각 기능의 분위기에 맞춰 재배치합니다. */
+          /* 홈의 4개 기능 카드 */
           .quick-card{background-size:cover !important;background-position:center !important;background-repeat:no-repeat !important;}
-          .quick-card:nth-child(1){background-image:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55)),url("/햇살%20가득한%20카페의%20즐거운%20모임.png") !important;}
+          /* 띠 운세는 12지 동물 이미지로 고정합니다. */
+          .quick-card:nth-child(1){background-image:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55)),url("/file_000000000bac8209a8781428bf1685be.png") !important;}
           .quick-card:nth-child(2){background-image:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55)),url("/꽃잎%20흩날리는%20호숫가의%20봄%20풍경.png") !important;}
           .quick-card:nth-child(3){background-image:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55)),url("/햇살%20머무는%20바닷가%20작업%20공간.png") !important;}
           .quick-card:nth-child(4){background-image:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55)),url("/따뜻한%20햇살%20아래%20온라인%20커뮤니티%20카페.png") !important;}
@@ -54,6 +55,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Rearrange existing images for homepage"
+            git commit -m "Fix zodiac image mapping"
             git push
           fi
