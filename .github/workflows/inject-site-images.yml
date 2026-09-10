@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Apply unified homepage image styling
+      - name: Rebuild homepage presentation
         shell: bash
         run: |
           python3 - <<'PY'
@@ -25,89 +25,93 @@ jobs:
           path = Path('index.html')
           html = path.read_text(encoding='utf-8')
 
-          # 과거 자동 삽입 버전을 모두 제거해 CSS 충돌을 막습니다.
+          # 이전에 반복 삽입된 이미지 패치/리디자인을 모두 제거합니다.
+          html = re.sub(r'<style>\s*/\* FLICK_HOME_REDESIGN \*/.*?</style>', '', html, flags=re.S)
+          html = re.sub(r'<script>\s*/\* FLICK_HOME_REDESIGN_JS \*/.*?</script>', '', html, flags=re.S)
           for version in ('V1','V2','V3','V4','V5','V6','V7','V8'):
               html = re.sub(r'<style>\s*/\* DIRECT_SITE_IMAGE_FIX_' + version + r' \*/.*?</style>', '', html, flags=re.S)
 
-          # 기존 히어로 문구가 여러 번 들어갔다면 전부 정리합니다.
-          html = re.sub(r'<div class="flick-hero-copy">.*?</div>', '', html, flags=re.S)
+          css = r'''<style>
+          /* FLICK_HOME_REDESIGN */
+          :root{
+            --fr-ink:#29253b;--fr-muted:#817c91;--fr-purple:#7758dc;--fr-purple2:#9a7bea;
+            --fr-bg:#faf9fd;--fr-card:#fff;--fr-line:#ece8f3;--fr-shadow:0 18px 45px rgba(63,45,100,.08)
+          }
+          body{background:var(--fr-bg)!important;color:var(--fr-ink)!important}
+          .hero,.hero-inner,.quick-grid,.quick-card,.test-card{background-image:none!important}
+          .hero{background:linear-gradient(135deg,#f5f0ff 0%,#fbf8ff 48%,#f4effc 100%)!important;border:0!important}
+          .hero-inner{grid-template-columns:1fr!important;max-width:1080px!important;min-height:0!important;padding:28px 24px 34px!important;gap:18px!important}
+          .hero-inner>div:first-child{display:none!important}
+          .hero-art{height:250px!important;border-radius:30px!important;background:linear-gradient(135deg,#ddd1ff 0%,#f7eefa 45%,#d9e8ff 100%)!important;box-shadow:var(--fr-shadow)!important}
+          .hero-art:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 75% 25%,rgba(255,255,255,.9) 0 8%,transparent 9%),radial-gradient(circle at 15% 78%,rgba(255,255,255,.55) 0 11%,transparent 12%),linear-gradient(120deg,transparent 0 52%,rgba(255,255,255,.28) 53% 58%,transparent 59%);}
+          .hero-art:after{content:"오늘도, 좋은 하루가 될 거예요  ♡";position:absolute;left:9%;top:24%;font-size:clamp(25px,4vw,44px);line-height:1.2;font-weight:900;letter-spacing:-2.5px;color:#332c52;max-width:560px;white-space:pre-wrap;}
+          .hero-art{display:flex!important;align-items:flex-end;justify-content:flex-end;padding:0 9% 30px!important}
+          .hero-art>*{display:none!important}
+          .hero-art{color:#665f79;font-size:13px;font-weight:700}
+          .hero-art::marker{display:none}
 
-          css = '''<style>
-          /* DIRECT_SITE_IMAGE_FIX_V8 */
-          /* 실제 카드 이미지 자체의 색과 선명도를 그대로 보여줍니다. */
-          .quick-card,.test-card{
-            background-size:cover !important;
-            background-position:center !important;
-            background-repeat:no-repeat !important;
-            filter:none !important;
-          }
+          /* 상단 바로가기 영역을 완전히 새로운 4개 카드 구조로 보이게 합니다. */
+          .quick-grid{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:14px!important;max-width:1080px!important;margin:0 auto!important;padding:24px!important;background:transparent!important}
+          .quick-card{min-height:190px!important;border:1px solid var(--fr-line)!important;border-radius:26px!important;background:#fff!important;box-shadow:var(--fr-shadow)!important;padding:24px!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;overflow:hidden!important;position:relative!important}
+          .quick-card:before{content:"";position:absolute;width:105px;height:105px;border-radius:50%;right:-28px;top:-25px;background:linear-gradient(135deg,#eee8ff,#faf7ff);}
+          .quick-card:nth-child(1):after{content:"🐭  🐮  🐯  🐰  🐲  🐍  🐴  🐑  🐵  🐔  🐶  🐷"}
+          .quick-card:nth-child(2):after{content:"✦  ✧  ✦  ✧  ✦"}
+          .quick-card:nth-child(3):after{content:"◌  ◇  ○  ◇  ◌"}
+          .quick-card:nth-child(4):after{content:"✦  ♡  ✧  ♡  ✦"}
+          .quick-card:after{display:block;position:absolute;right:17px;top:18px;width:95px;color:#8669dc;font-size:18px;line-height:1.8;text-align:center;letter-spacing:2px;opacity:.8}
+          .quick-card>*{position:relative;z-index:2}
+          .quick-card h3,.quick-card strong{font-size:19px!important;font-weight:900!important;color:var(--fr-ink)!important;margin-top:54px!important}
+          .quick-card p{font-size:12px!important;color:var(--fr-muted)!important;line-height:1.55!important}
+          .quick-card button,.quick-card .btn{background:#f2edff!important;color:#7255d3!important;border-radius:14px!important;height:42px!important;font-weight:900!important}
 
-          /* 홈의 4개 바로가기 카드 매칭 */
-          .quick-card:nth-child(1){background-image:url("/file_000000000bac8209a8781428bf1685be.png") !important;}
-          .quick-card:nth-child(2){background-image:url("/꽃잎%20흩날리는%20호숫가의%20봄%20풍경.png") !important;}
-          .quick-card:nth-child(3){background-image:url("/햇살%20머무는%20바닷가%20작업%20공간.png") !important;}
-          .quick-card:nth-child(4){background-image:url("/꿈결%20같은%20태양%20오라클%20카드%20정원.png") !important;}
+          /* 인기 테스트를 이미지 없는 아이콘 카드로 전환 */
+          .test-card{background:#fff!important;border:1px solid var(--fr-line)!important;border-radius:24px!important;box-shadow:var(--fr-shadow)!important;overflow:hidden!important;position:relative!important}
+          .test-card:before{content:"";display:block;height:120px;background:linear-gradient(135deg,#eee7ff,#faf7ff);}
+          .test-card:after{position:absolute;top:31px;left:28px;font-size:48px;font-weight:700;color:#8064d9}
+          .test-card:nth-child(1):after{content:"♡"}.test-card:nth-child(2):after{content:"⌁"}.test-card:nth-child(3):after{content:"◇"}.test-card:nth-child(4):after{content:"✦"}.test-card:nth-child(5):after{content:"✉"}
+          .test-card>*{position:relative;z-index:2}
 
-          /* 메인 영역: 기존 일러스트를 선명하게 사용하고 실제 HTML 문구를 겹칩니다. */
-          .hero-art{
-            position:relative !important;
-            overflow:hidden !important;
-            background-image:url("/바다를%20품은%20아늑한%20카페%20공간.png") !important;
-            background-size:cover !important;
-            background-position:center !important;
-            background-repeat:no-repeat !important;
-            filter:none !important;
+          /* 이미지 없이도 메인 화면이 풍성해지도록 장식 요소를 추가합니다. */
+          .flick-new-intro{max-width:1080px;margin:8px auto 0;padding:0 24px 12px;display:flex;align-items:end;justify-content:space-between}
+          .flick-new-intro strong{font-size:26px;letter-spacing:-1.5px}.flick-new-intro span{font-size:12px;color:var(--fr-muted)}
+          .flick-new-strip{max-width:1080px;margin:0 auto 34px;padding:0 24px;display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:14px}
+          .flick-new-strip>div{min-height:90px;border-radius:22px;padding:20px 22px;background:#fff;border:1px solid var(--fr-line);box-shadow:var(--fr-shadow)}
+          .flick-new-strip b{display:block;font-size:15px;margin-bottom:6px}.flick-new-strip small{color:var(--fr-muted);font-size:11px}
+          .flick-new-strip .featured{background:linear-gradient(135deg,#795bdc,#a487ed);color:#fff}.flick-new-strip .featured small{color:#eee9ff}
+          @media(max-width:760px){
+            .hero-inner{padding:18px 16px 24px!important}.hero-art{height:225px!important;border-radius:25px!important}.hero-art:after{left:8%;top:25%;font-size:29px;max-width:290px}
+            .quick-grid{grid-template-columns:repeat(2,1fr)!important;padding:18px 16px!important;gap:12px!important}.quick-card{min-height:175px!important;padding:19px!important}.quick-card h3,.quick-card strong{font-size:17px!important}
+            .flick-new-intro{padding:0 16px 10px}.flick-new-intro strong{font-size:22px}.flick-new-strip{grid-template-columns:1fr 1fr;padding:0 16px;margin-bottom:24px}.flick-new-strip>div:first-child{grid-column:1/-1}
           }
-          .flick-hero-copy{
-            position:absolute;
-            inset:0;
-            display:flex;
-            flex-direction:column;
-            justify-content:center;
-            align-items:flex-start;
-            padding:30px 42px;
-            pointer-events:none;
-            z-index:5;
-          }
-          .flick-hero-copy strong{
-            font-size:clamp(24px,3.1vw,40px);
-            line-height:1.22;
-            letter-spacing:-1.8px;
-            color:#28243a;
-            font-weight:900;
-            max-width:390px;
-            text-shadow:0 2px 12px rgba(255,255,255,.75);
-          }
-          .flick-hero-copy strong em{font-style:normal;color:#7658d8;}
-          .flick-hero-copy span{
-            margin-top:10px;
-            font-size:14px;
-            font-weight:700;
-            color:#625c70;
-            text-shadow:0 1px 8px rgba(255,255,255,.8);
-          }
-          @media(max-width:700px){
-            .flick-hero-copy{padding:24px 28px;justify-content:center;}
-            .flick-hero-copy strong{font-size:25px;max-width:250px;}
-            .flick-hero-copy span{font-size:12px;max-width:220px;line-height:1.5;}
-          }
+          @media(max-width:420px){.quick-grid{gap:9px!important}.quick-card{min-height:160px!important;padding:16px!important}.quick-card:after{font-size:14px;width:75px}.flick-new-strip{gap:9px}.flick-new-strip>div{padding:16px}}
           </style>'''
 
+          js = r'''<script>
+          /* FLICK_HOME_REDESIGN_JS */
+          (()=>{
+            const root=document.querySelector('.view.active')||document.querySelector('.view');
+            if(!root)return;
+            if(!root.querySelector('.flick-new-intro')){
+              const intro=document.createElement('div');intro.className='flick-new-intro';
+              intro.innerHTML='<strong>오늘은 어떤 하루일까요?</strong><span>작은 선택이 오늘의 분위기를 바꿔요</span>';
+              const q=root.querySelector('.quick-grid');
+              if(q)q.before(intro);
+            }
+            if(!root.querySelector('.flick-new-strip')){
+              const strip=document.createElement('div');strip.className='flick-new-strip';
+              strip.innerHTML='<div class="featured"><b>오늘의 한마디</b><small>서두르지 않아도 괜찮아요. 오늘의 속도로 충분합니다.</small></div><div><b>오늘의 기운</b><small>차분함 · 집중 · 작은 행운</small></div><div><b>행운 포인트</b><small>보라색 · 오후 3시 · 새로운 대화</small></div>';
+              const tests=root.querySelector('.test-card')?.closest('section')||root.querySelector('.test-card')?.parentElement;
+              if(tests)tests.before(strip);else root.appendChild(strip);
+            }
+          })();
+          </script>'''
+
           html = html.replace('</head>', css + '</head>', 1)
-
-          # 이미지 안에 글자를 굽지 않고 실제 HTML 요소로 문구를 표시합니다.
-          marker = '<div class="hero-art">'
-          if marker in html:
-              html = html.replace(
-                  marker,
-                  marker + '<div class="flick-hero-copy"><strong>오늘도, <em>좋은 하루</em>가 될 거예요 ♡</strong><span>작은 변화가 특별한 하루를 만듭니다.</span></div>',
-                  1
-              )
-
+          html = html.replace('</body>', js + '</body>', 1)
           path.write_text(html, encoding='utf-8')
           PY
 
-      - name: Commit generated index
+      - name: Commit generated homepage
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -115,6 +119,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Unify homepage illustrations and hero copy"
+            git commit -m "Redesign homepage without image assets"
             git push
           fi
