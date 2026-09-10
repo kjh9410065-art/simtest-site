@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Remove remaining purple accents
+      - name: Remove all remaining purple styling
         shell: bash
         run: |
           python3 - <<'PY'
@@ -25,53 +25,51 @@ jobs:
           path = Path('index.html')
           html = path.read_text(encoding='utf-8')
 
+          # 이전 수정 블록을 제거한 뒤 다시 하나만 삽입합니다.
           html = re.sub(r'<style>\s*/\* FLICK_PURPLE_FIX \*/.*?</style>', '', html, flags=re.S)
 
-          # 카드의 기존 pseudo-element가 보라색 선/도형을 만들고 있어
-          # 아이콘 배경은 초록색으로 남기고 보라색 도형 자체는 제거합니다.
+          # 기존 페이지에 남아 있는 보라색 팔레트도 실제 색상값 자체를 교체합니다.
+          # 이렇게 하면 quick-card뿐 아니라 TODAY 라벨, 전체 운세 링크 등에도 보라색이 남지 않습니다.
+          purple_map = {
+            '#7658d8':'#2f7158', '#7658D8':'#2f7158',
+            '#f0ebff':'#edf4ee', '#F0EBFF':'#edf4ee',
+            '#8065d5':'#559579', '#7354d6':'#2f7158', '#9b82e8':'#559579',
+            '#8469d8':'#559579', '#684dc8':'#2f7158', '#674bc9':'#2f7158',
+            '#6044c6':'#245d49', '#9279db':'#559579', '#a28ce9':'#78a88f',
+            '#b9a8f4':'#a9c5b4', '#eee8ff':'#edf4ee',
+            '#f5f1ff':'#f3f7ef', '#eee9ff':'#edf4ee', '#fbf3f5':'#faf6ec',
+            '#ece7f2':'#e5e0d3', '#ded9e9':'#d9e8dd', '#f2effb':'#edf4ee',
+            '#f1edff':'#edf4ee', '#f3efff':'#edf4ee', '#f1edff':'#edf4ee',
+            '#f4f0ff':'#edf4ee', '#f7f5fa':'#f6f4ed', '#f5f2fa':'#f6f4ed',
+            '#30275a':'#173d30', '#4a3970':'#285b48', '#29224c':'#173d30',
+            '#55407d':'#356d58', '#252044':'#173d30'
+          }
+          for old, new in purple_map.items():
+            html = html.replace(old, new)
+
+          # 보라색 계열 rgba도 함께 정리합니다.
+          html = html.replace('rgba(120,94,184,.12)', 'rgba(47,113,88,.12)')
+          html = html.replace('rgba(87,69,131,.1)', 'rgba(50,68,56,.08)')
+          html = html.replace('rgba(111,80,205,.2)', 'rgba(47,113,88,.12)')
+          html = html.replace('rgba(120,88,211,.12)', 'rgba(47,113,88,.12)')
+          html = html.replace('rgba(59,44,91,.08)', 'rgba(50,68,56,.07)')
+          html = html.replace('rgba(56,44,91,.13)', 'rgba(50,68,56,.11)')
+          html = html.replace('rgba(56,44,91,.045)', 'rgba(50,68,56,.04)')
+
           css = r'''<style>
           /* FLICK_PURPLE_FIX */
-          .quick-card::after{
-            content:none!important;
-            display:none!important;
-            background:none!important;
-            border:0!important;
-            box-shadow:none!important;
-          }
-          .quick-card::before{
-            background:#edf4ee!important;
-            border:1px solid #d9e8dd!important;
-            box-shadow:none!important;
-          }
-          .quick-card .icon,
-          .quick-card [class*="icon"],
-          .quick-card [class*="Icon"]{
-            background:#edf4ee!important;
-            color:#2f7158!important;
-            border-color:#d9e8dd!important;
-            box-shadow:none!important;
-          }
-          .quick-card svg,
-          .quick-card svg *{
-            color:#2f7158!important;
-            stroke:#2f7158!important;
-            fill:none!important;
-          }
-          .quick-card [style*="#7658d8"],
-          .quick-card [style*="#7658D8"],
-          .quick-card [style*="#f0ebff"],
-          .quick-card [style*="#F0EBFF"]{
-            background:#edf4ee!important;
-            color:#2f7158!important;
-            border-color:#d9e8dd!important;
-            box-shadow:none!important;
-          }
+          /* 카드 아이콘과 내부 장식은 모두 세이지 그린으로 통일합니다. */
+          .quick-card::after{content:none!important;display:none!important;background:none!important;border:0!important;box-shadow:none!important}
+          .quick-card::before{background:#edf4ee!important;border:1px solid #d9e8dd!important;box-shadow:none!important}
+          .quick-card .card-mark{background:#edf4ee!important;border-color:#d9e8dd!important}
+          .quick-card .card-mark::before{border-color:#559579!important}
+          .quick-card .card-mark.dot::after{background:#559579!important}
+          .quick-card .icon,.quick-card [class*="icon"],.quick-card [class*="Icon"]{background:#edf4ee!important;color:#2f7158!important;border-color:#d9e8dd!important;box-shadow:none!important}
+          .quick-card svg,.quick-card svg *{color:#2f7158!important;stroke:#2f7158!important;fill:none!important}
+          .quick-card button,.quick-card .btn,.quick-card .card-action{background:#edf4ee!important;color:#2f7158!important;border-color:#d9e8dd!important}
           .quick-card h3,.quick-card strong{color:#173d30!important}
-          .quick-card button,.quick-card .btn{
-            background:#edf4ee!important;
-            color:#2f7158!important;
-            border-color:#d9e8dd!important;
-          }
+          /* 홈의 다른 보라색 텍스트도 그린으로 통일합니다. */
+          .section-head .more,.more,.fortune-card small,.test-card .type,.lucky-banner small{color:#559579!important}
           </style>'''
 
           html = html.replace('</head>', css + '</head>', 1)
@@ -86,6 +84,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Force remove purple quick card icons"
+            git commit -m "Remove all remaining purple styling"
             git push
           fi
