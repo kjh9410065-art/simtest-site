@@ -26,6 +26,8 @@ jobs:
           html=re.sub(r'<style>\s*/\* FLICK_COMPACT_PORTAL \*/.*?</style>','',html,flags=re.S)
           html=re.sub(r'<style>\s*/\* FLICK_PSYCHOLOGY_RICH \*/.*?</style>','',html,flags=re.S)
           html=re.sub(r'<script>\s*/\* FLICK_PSYCHOLOGY_RICH_JS \*/.*?</script>','',html,flags=re.S)
+          html=re.sub(r'<style>\s*/\* FLICK_STATIC_VISUALS \*/.*?</style>','',html,flags=re.S)
+          html=re.sub(r'<script>\s*/\* FLICK_STATIC_VISUALS_JS \*/.*?</script>','',html,flags=re.S)
           css=r'''<style>
           /* FLICK_COMPACT_PORTAL */
           .flick-fortune-wrap{padding-top:18px!important;padding-bottom:22px!important}.fortune-heading{padding-bottom:10px!important;margin-bottom:8px!important}.fortune-main{margin-bottom:7px!important;gap:7px!important}.fortune-summary{min-height:145px!important;padding:17px 19px!important}.fortune-summary h2{margin:5px 0 4px!important;font-size:22px!important}.fortune-summary p{line-height:1.5!important}.fortune-score{margin-top:9px!important}.fortune-luck{min-height:145px!important;padding:14px 16px!important}.fortune-luck h3{margin-bottom:6px!important}.luck-list{gap:3px!important}.luck-item{padding:5px 2px!important}.fortune-section-title{margin:10px 0 6px!important}.fortune-section-title b{font-size:14px!important}.fortune-metrics{gap:6px!important}.metric{padding:10px 11px!important;border-radius:12px!important}.metric b{margin-top:3px!important;font-size:12px!important}.metric i{margin-top:1px!important;font-size:8px!important}.quick-grid{gap:6px!important}.quick-card{min-height:104px!important;padding:12px!important;border-radius:14px!important}.quick-card .card-mark{width:34px!important;height:34px!important;margin-bottom:6px!important}.quick-card .card-mark:before{left:8px!important;top:8px!important;width:17px!important;height:17px!important}.quick-card .card-mark.dot:after{left:15px!important;top:15px!important}.quick-card strong{font-size:13px!important;margin-bottom:2px!important}.quick-card span{font-size:8px!important;line-height:1.35!important}.quick-card .card-action{height:26px!important;margin-top:5px!important;font-size:9px!important}.zodiac-panel{padding:9px!important;gap:2px!important}.zodiac-item{padding:5px 1px!important}.zodiac-item b{font-size:14px!important;margin-bottom:1px!important}.keyword-panel{gap:5px!important}.keyword{padding:5px 8px!important;font-size:8px!important}.test-grid{gap:6px!important}.test-card{min-height:145px!important;padding:13px!important}.section{padding-top:30px!important;padding-bottom:30px!important}.section-head{margin-bottom:9px!important}.section-head h2{font-size:20px!important}.section-head p{margin-top:3px!important}.fortune-grid{gap:7px!important}.fortune-card{min-height:135px!important;padding:17px!important}.lucky-banner{padding:22px!important}
@@ -58,8 +60,17 @@ jobs:
           /* FLICK_PSYCHOLOGY_RICH_JS */
           document.addEventListener('DOMContentLoaded',()=>{const grid=document.querySelector('.quick-grid');if(!grid)return;grid.insertAdjacentHTML('afterend',`''' + psychology.replace('`','\\`') + r'''`);const root=document.querySelector('.flick-psychology-rich');if(!root)return;root.querySelectorAll('[data-psych-filter]').forEach(tab=>tab.addEventListener('click',()=>{root.querySelectorAll('[data-psych-filter]').forEach(x=>x.classList.remove('active'));tab.classList.add('active');const f=tab.dataset.psychFilter;root.querySelectorAll('.psych-rich-card').forEach(card=>card.classList.toggle('is-hidden',f!=='all'&&card.dataset.psychCat!==f));}));});
           </script>'''
-          html=html.replace('</head>',css+psych_css+'</head>',1)
-          html=html.replace('</body>',psych_js+'</body>',1)
+          visual_css=r'''<style>
+          /* FLICK_STATIC_VISUALS */
+          .flick-static-visual{max-width:1180px;margin:0 auto 9px;padding:0 28px}.flick-static-visual .visual-frame{position:relative;overflow:hidden;border:1px solid #dce6de;border-radius:20px;background:#eef4ef;box-shadow:0 10px 28px rgba(48,78,62,.07)}.flick-static-visual img{display:block;width:100%;height:150px;object-fit:cover;object-position:center 55%}.flick-static-visual .visual-copy{position:absolute;left:28px;top:50%;transform:translateY(-50%);max-width:390px;color:#173d30;text-shadow:0 1px 12px rgba(255,255,255,.9)}.flick-static-visual .visual-copy small{display:block;font-size:8px;letter-spacing:2px;font-weight:900;color:#5b9277;margin-bottom:5px}.flick-static-visual .visual-copy b{display:block;font-size:22px;letter-spacing:-1.2px}.flick-static-visual .visual-copy span{display:block;margin-top:5px;font-size:10px;color:#68766e}.fortune-luck{position:relative;overflow:hidden}.fortune-luck:after{content:"";position:absolute;right:-28px;bottom:-45px;width:150px;height:150px;background:url('assets/lucky-orbit.svg') center/contain no-repeat;opacity:.18;pointer-events:none}.flick-static-note{max-width:1180px;margin:0 auto;padding:8px 28px 0;color:#8b8e87;font-size:8px;text-align:right}
+          @media(max-width:760px){.flick-static-visual{padding:0 12px;margin-bottom:7px}.flick-static-visual img{height:110px}.flick-static-visual .visual-copy{left:17px}.flick-static-visual .visual-copy b{font-size:17px}.flick-static-visual .visual-copy span{font-size:8px}.flick-static-visual .visual-copy small{font-size:7px}.fortune-luck:after{width:105px;height:105px;right:-22px;bottom:-30px}.flick-static-note{padding:6px 12px 0;font-size:7px}}
+          </style>'''
+          visual_js=r'''<script>
+          /* FLICK_STATIC_VISUALS_JS */
+          document.addEventListener('DOMContentLoaded',()=>{const wrap=document.querySelector('.flick-fortune-wrap');if(!wrap)return;const anchor=wrap.querySelector('.fortune-main')||wrap.firstElementChild;const box=document.createElement('div');box.className='flick-static-visual';box.innerHTML='<div class="visual-frame"><img src="assets/fortune-orbit.svg" alt="오늘의 운세 장식"><div class="visual-copy"><small>FLICK DAILY FORTUNE</small><b>오늘도, 조금 더 행복해져도 괜찮아</b><span>작은 운세가 오늘의 흐름을 가볍게 알려드려요.</span></div></div>';wrap.insertBefore(box,anchor||null);const note=document.createElement('div');note.className='flick-static-note';note.textContent='운세는 전통적인 해석을 바탕으로 한 콘텐츠입니다.';wrap.appendChild(note);});
+          </script>'''
+          html=html.replace('</head>',css+psych_css+visual_css+'</head>',1)
+          html=html.replace('</body>',psych_js+visual_js+'</body>',1)
           path.write_text(html,encoding='utf-8')
           PY
 
@@ -71,6 +82,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Add fun psychology tests"
+            git commit -m "Polish fortune portal with static illustrations"
             git push
           fi
