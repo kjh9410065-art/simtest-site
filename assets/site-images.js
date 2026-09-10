@@ -15,7 +15,7 @@
       '일곱 계절의 환상 아치홀.png',
       '햇살 가득한 카페의 즐거운 모임.png'
     ],
-    // 히어로는 현재 저장된 사이트 이미지 중 가장 차분한 카페 공간을 사용합니다.
+    // 히어로 이미지
     hero: '바다를 품은 아늑한 카페 공간.png'
   };
 
@@ -23,7 +23,7 @@
   const url = (name) => '/' + encodeURIComponent(name);
 
   function applyImages() {
-    // 히어로 오른쪽 빈 영역을 실제 이미지로 채웁니다.
+    // 히어로 이미지는 선명하게 표시합니다.
     const hero = document.querySelector('.hero-art');
     if (hero) {
       hero.style.backgroundImage = `url("${url(images.hero)}")`;
@@ -32,22 +32,24 @@
       hero.style.backgroundRepeat = 'no-repeat';
     }
 
-    // 상단 바로가기 카드 4개에 각각 다른 이미지를 연결합니다.
+    // 상단 4개 카드의 이미지 밝기/선명도를 동일하게 맞춥니다.
     document.querySelectorAll('.quick-card').forEach((card, index) => {
       const file = images.quick[index];
       if (!file) return;
-      card.style.backgroundImage = `linear-gradient(rgba(255,255,255,.80), rgba(255,255,255,.80)), url("${url(file)}")`;
+      card.style.backgroundImage = `linear-gradient(rgba(255,255,255,.15), rgba(255,255,255,.15)), url("${url(file)}")`;
       card.style.backgroundSize = 'cover';
       card.style.backgroundPosition = 'center';
+      card.style.backgroundRepeat = 'no-repeat';
     });
 
-    // 인기 심리테스트 카드는 동적으로 생성되므로 현재 DOM에 생길 때마다 적용합니다.
+    // 인기 테스트 카드도 동일한 선명도로 맞춥니다.
     document.querySelectorAll('.test-card').forEach((card, index) => {
       const file = images.tests[index];
       if (!file) return;
-      card.style.backgroundImage = `linear-gradient(rgba(255,255,255,.78), rgba(255,255,255,.78)), url("${url(file)}")`;
+      card.style.backgroundImage = `linear-gradient(rgba(255,255,255,.15), rgba(255,255,255,.15)), url("${url(file)}")`;
       card.style.backgroundSize = 'cover';
       card.style.backgroundPosition = 'center';
+      card.style.backgroundRepeat = 'no-repeat';
     });
   }
 
@@ -58,7 +60,7 @@
     applyImages();
   }
 
-  // 인기 테스트 카드처럼 나중에 생성되는 요소도 자동으로 연결합니다.
+  // 동적으로 생성되는 테스트 카드에도 같은 이미지 스타일을 적용합니다.
   new MutationObserver(applyImages).observe(document.documentElement, {
     childList: true,
     subtree: true
