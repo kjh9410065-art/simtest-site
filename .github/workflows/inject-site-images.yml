@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Rebuild fortune portal homepage
+      - name: Remove remaining purple accents
         shell: bash
         run: |
           python3 - <<'PY'
@@ -25,100 +25,52 @@ jobs:
           path = Path('index.html')
           html = path.read_text(encoding='utf-8')
 
-          # 기존 리디자인 블록을 제거하고 이번 디자인만 다시 삽입합니다.
-          html = re.sub(r'<style>\s*/\* FLICK_HOME_REDESIGN \*/.*?</style>', '', html, flags=re.S)
-          html = re.sub(r'<script>\s*/\* FLICK_HOME_REDESIGN_JS \*/.*?</script>', '', html, flags=re.S)
-          html = re.sub(r'<style>\s*/\* FLICK_FORTUNE_PORTAL \*/.*?</style>', '', html, flags=re.S)
-          html = re.sub(r'<script>\s*/\* FLICK_FORTUNE_PORTAL_JS \*/.*?</script>', '', html, flags=re.S)
+          # 이전 보라색 제거 블록이 있으면 먼저 삭제해 중복 삽입을 막습니다.
+          html = re.sub(r'<style>\s*/\* FLICK_PURPLE_FIX \*/.*?</style>', '', html, flags=re.S)
 
+          # 기존 카드 내부의 보라색 아이콘/배경까지 강제로 그린 계열로 통일합니다.
           css = r'''<style>
-          /* FLICK_FORTUNE_PORTAL */
-          :root{
-            --fp-bg:#f4f0e7;--fp-paper:#fffdf7;--fp-paper2:#faf6ec;--fp-green:#2f7158;
-            --fp-green2:#559579;--fp-deep:#173d30;--fp-muted:#7d847d;--fp-line:#e5e0d3;
-            --fp-gold:#b89a5b;--fp-shadow:0 10px 30px rgba(50,68,56,.07)
+          /* FLICK_PURPLE_FIX */
+          .quick-card:before,
+          .quick-card:after,
+          .quick-card .icon,
+          .quick-card [class*="icon"],
+          .quick-card [class*="Icon"]{
+            background:#edf4ee!important;
+            color:#2f7158!important;
+            border-color:#d9e8dd!important;
           }
-          body{background:var(--fp-bg)!important;color:var(--fp-deep)!important}
-          .hero{display:none!important}
-          .header{background:rgba(255,253,247,.95)!important;border-bottom:1px solid var(--fp-line)!important}
-          .brand strong,.nav button.active{color:var(--fp-deep)!important}
-          .nav button.active{border-bottom-color:var(--fp-green)!important}
-          .head-actions button{background:var(--fp-paper)!important;border-color:var(--fp-line)!important}
 
-          .flick-fortune-wrap{max-width:980px;margin:0 auto;padding:24px 20px 44px}
-          .fortune-heading{display:flex;justify-content:space-between;align-items:end;margin-bottom:13px}
-          .fortune-heading .eyebrow{display:block;margin:0 0 5px;color:var(--fp-green);font-size:10px;font-weight:900;letter-spacing:1.7px}
-          .fortune-heading h1{margin:0;font-size:27px;letter-spacing:-1.5px;font-weight:900}
-          .fortune-date{font-size:10px;color:var(--fp-muted);text-align:right;line-height:1.6}
-
-          .fortune-main{display:grid;grid-template-columns:1.18fr .82fr;gap:11px;margin-bottom:12px}
-          .fortune-card{background:var(--fp-paper);border:1px solid var(--fp-line);border-radius:20px;box-shadow:var(--fp-shadow);overflow:hidden;position:relative}
-          .fortune-summary{padding:21px 22px;min-height:178px;background:linear-gradient(135deg,#fffdf7,#f3f7ef)}
-          .fortune-summary:before{content:"";position:absolute;right:-35px;top:-38px;width:135px;height:135px;border:1px solid rgba(47,113,88,.13);border-radius:50%}
-          .fortune-summary:after{content:"";position:absolute;right:20px;top:27px;width:42px;height:42px;border:1px solid rgba(184,154,91,.35);transform:rotate(45deg)}
-          .fortune-summary small{font-size:10px;color:var(--fp-muted)}
-          .fortune-summary h2{font-size:23px;margin:8px 0 7px;letter-spacing:-1.2px}
-          .fortune-summary p{font-size:11px;line-height:1.7;color:#6e786f;margin:0;max-width:440px}
-          .fortune-score{display:flex;align-items:center;gap:10px;margin-top:14px}
-          .score-ring{width:42px;height:42px;border-radius:50%;border:3px solid #d9e6dd;border-top-color:var(--fp-green);display:grid;place-items:center;font-size:11px;font-weight:900;color:var(--fp-green)}
-          .score-copy b{display:block;font-size:11px}.score-copy span{font-size:9px;color:var(--fp-muted)}
-
-          .fortune-luck{padding:17px 18px;min-height:178px}
-          .fortune-luck h3{margin:0 0 12px;font-size:13px}.luck-list{display:grid;gap:8px}.luck-item{display:flex;justify-content:space-between;align-items:center;border-bottom:1px dashed #e5e0d5;padding-bottom:7px;font-size:10px}.luck-item:last-child{border-bottom:0}.luck-item span{color:var(--fp-muted)}.luck-item b{color:var(--fp-green);font-size:11px}
-
-          .fortune-section-title{display:flex;align-items:center;gap:9px;margin:22px 0 9px}.fortune-section-title:before{content:"";width:3px;height:15px;border-radius:3px;background:var(--fp-green2)}.fortune-section-title b{font-size:15px}.fortune-section-title span{font-size:9px;color:var(--fp-muted)}
-
-          .fortune-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
-          .metric{background:var(--fp-paper);border:1px solid var(--fp-line);border-radius:15px;padding:14px 13px;box-shadow:var(--fp-shadow);position:relative;overflow:hidden}.metric:after{content:"";position:absolute;right:-14px;bottom:-18px;width:48px;height:48px;border:1px solid rgba(47,113,88,.11);border-radius:50%}.metric span{font-size:9px;color:var(--fp-muted)}.metric b{display:block;margin-top:5px;font-size:13px;color:var(--fp-green)}.metric i{display:block;font-style:normal;font-size:8px;color:#a0a69f;margin-top:3px}
-
-          .quick-grid{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:9px!important;max-width:none!important;margin:0!important;padding:0!important;background:transparent!important}
-          .quick-card{min-height:112px!important;border:1px solid var(--fp-line)!important;border-radius:17px!important;background:var(--fp-paper)!important;box-shadow:var(--fp-shadow)!important;padding:15px!important;justify-content:flex-end!important;position:relative!important;overflow:hidden!important;transition:transform .2s,box-shadow .2s!important}
-          .quick-card:hover{transform:translateY(-3px)!important;box-shadow:0 15px 32px rgba(50,68,56,.11)!important}
-          .quick-card:before{width:58px!important;height:58px!important;right:-15px!important;top:-15px!important;background:#edf3ed!important;border:1px solid #dce9df!important}
-          .quick-card:after{color:#6b9c84!important;right:7px!important;top:8px!important;font-size:11px!important}
-          .quick-card h3,.quick-card strong{font-size:14px!important;color:var(--fp-deep)!important;margin:0 0 4px!important}.quick-card p{font-size:9px!important;color:var(--fp-muted)!important;margin:0!important}.quick-card button,.quick-card .btn{height:29px!important;margin-top:7px!important;border-radius:9px!important;background:#edf4ee!important;color:var(--fp-green)!important;border:1px solid #d9e8dd!important;font-size:10px!important}
-
-          .zodiac-panel{background:var(--fp-paper);border:1px solid var(--fp-line);border-radius:18px;box-shadow:var(--fp-shadow);padding:13px;display:grid;grid-template-columns:repeat(12,1fr);gap:4px}.zodiac-item{text-align:center;padding:8px 2px;border-radius:10px;color:#7e877f;font-size:9px}.zodiac-item b{display:block;font-family:serif;font-size:15px;color:var(--fp-green);margin-bottom:3px}.zodiac-item:first-child{background:#edf4ee;color:var(--fp-green)}
-
-          .keyword-panel{display:flex;gap:7px;flex-wrap:wrap}.keyword{background:#fffaf0;border:1px solid #e9dfca;color:#7c6a46;border-radius:20px;padding:7px 11px;font-size:9px}.keyword.green{background:#edf5ef;border-color:#dce9df;color:var(--fp-green)}
-
-          .flick-new-intro{display:none!important}.flick-new-strip{display:none!important}
-          .test-card{background:var(--fp-paper)!important;border:1px solid var(--fp-line)!important;border-radius:17px!important;box-shadow:var(--fp-shadow)!important}.test-card:before{height:64px!important;background:linear-gradient(135deg,#edf4ee,#faf6ec)!important;border-bottom:1px solid #e7e2d8}.test-card:after{color:var(--fp-green)!important;font-size:29px!important}
-          .view section>h2,.view section>h3{color:var(--fp-deep)!important}.view section>h2:before,.view section>h3:before{background:var(--fp-green2)!important}
-
-          @media(max-width:760px){
-            .flick-fortune-wrap{padding:18px 14px 32px}.fortune-heading h1{font-size:23px}.fortune-main{grid-template-columns:1fr}.fortune-summary,.fortune-luck{min-height:0}.fortune-metrics{grid-template-columns:repeat(2,1fr)}.quick-grid{grid-template-columns:repeat(2,1fr)!important}.zodiac-panel{grid-template-columns:repeat(6,1fr);gap:3px}.zodiac-item:nth-child(n+7){margin-top:1px}
+          .quick-card svg,
+          .quick-card svg *{
+            color:#2f7158!important;
+            stroke:#2f7158!important;
+            fill:none!important;
           }
-          @media(max-width:420px){.fortune-heading{align-items:center}.fortune-date{font-size:8px}.fortune-summary{padding:17px}.fortune-summary h2{font-size:20px}.fortune-metrics{gap:7px}.metric{padding:12px 10px}.quick-card{min-height:105px!important;padding:13px!important}.zodiac-panel{padding:9px}.zodiac-item{padding:7px 1px}}
+
+          .quick-card [style*="#7658d8"],
+          .quick-card [style*="#7658D8"],
+          .quick-card [style*="#f0ebff"],
+          .quick-card [style*="#F0EBFF"]{
+            background:#edf4ee!important;
+            color:#2f7158!important;
+            border-color:#d9e8dd!important;
+          }
+
+          .quick-card h3,
+          .quick-card strong{
+            color:#173d30!important;
+          }
+
+          .quick-card button,
+          .quick-card .btn{
+            background:#edf4ee!important;
+            color:#2f7158!important;
+            border-color:#d9e8dd!important;
+          }
           </style>'''
 
-          js = r'''<script>
-          /* FLICK_FORTUNE_PORTAL_JS */
-          (()=>{
-            const root=document.querySelector('.view.active')||document.querySelector('.view');
-            if(!root)return;
-            const old=root.querySelector('.flick-fortune-wrap'); if(old)old.remove();
-            const wrap=document.createElement('div');wrap.className='flick-fortune-wrap';
-            wrap.innerHTML=`
-              <div class="fortune-heading"><div><span class="eyebrow">TODAY'S FORTUNE</span><h1>오늘의 운세</h1></div><div class="fortune-date">2026년 9월 10일<br>목요일 · 오늘의 흐름</div></div>
-              <div class="fortune-main">
-                <div class="fortune-card fortune-summary"><small>오늘의 종합운</small><h2>천천히, 그러나 확실하게</h2><p>서두르기보다 지금 할 수 있는 일에 집중하면 좋은 흐름을 만들 수 있는 날입니다. 작은 기회가 자연스럽게 이어질 수 있어요.</p><div class="fortune-score"><div class="score-ring">82</div><div class="score-copy"><b>오늘의 운세 점수</b><span>안정적인 흐름 속 작은 행운</span></div></div></div>
-                <div class="fortune-card fortune-luck"><h3>오늘의 행운 정보</h3><div class="luck-list"><div class="luck-item"><span>행운의 색</span><b>세이지 그린</b></div><div class="luck-item"><span>행운의 숫자</span><b>7</b></div><div class="luck-item"><span>행운의 시간</span><b>15:00</b></div><div class="luck-item"><span>추천 방향</span><b>동쪽</b></div><div class="luck-item"><span>오늘의 키워드</span><b>집중</b></div></div></div>
-              </div>
-              <div class="fortune-section-title"><b>분야별 운세</b><span>오늘 하루를 조금 더 자세하게</span></div>
-              <div class="fortune-metrics"><div class="metric"><span>재물운</span><b>좋음</b><i>계획적인 소비</i></div><div class="metric"><span>애정운</span><b>상승</b><i>대화가 중요해요</i></div><div class="metric"><span>직장운</span><b>안정</b><i>집중력이 강해요</i></div><div class="metric"><span>건강운</span><b>양호</b><i>휴식을 챙겨요</i></div></div>
-              <div class="fortune-section-title"><b>운세 바로가기</b><span>많이 찾는 운세를 한곳에서</span></div>
-            `;
-            const q=root.querySelector('.quick-grid');
-            if(q){q.parentNode.insertBefore(wrap,q)}else{root.prepend(wrap)}
-            const zodiac=document.createElement('div');zodiac.innerHTML='<div class="fortune-section-title"><b>오늘의 띠별 흐름</b><span>12가지 띠로 살펴보는 오늘</span></div><div class="zodiac-panel">'+[['子','쥐'],['丑','소'],['寅','호랑이'],['卯','토끼'],['辰','용'],['巳','뱀'],['午','말'],['未','양'],['申','원숭이'],['酉','닭'],['戌','개'],['亥','돼지']].map(x=>`<div class="zodiac-item"><b>${x[0]}</b>${x[1]}</div>`).join('')+'</div>';
-            wrap.appendChild(zodiac);
-            const keys=document.createElement('div');keys.innerHTML='<div class="fortune-section-title"><b>오늘의 키워드</b><span>가볍게 참고해보세요</span></div><div class="keyword-panel"><span class="keyword green">균형</span><span class="keyword">새로운 대화</span><span class="keyword green">집중</span><span class="keyword">작은 기회</span><span class="keyword green">차분함</span><span class="keyword">계획적인 선택</span></div>';wrap.appendChild(keys);
-          })();
-          </script>'''
-
           html = html.replace('</head>', css + '</head>', 1)
-          html = html.replace('</body>', js + '</body>', 1)
           path.write_text(html, encoding='utf-8')
           PY
 
@@ -130,6 +82,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Redesign homepage like a modern fortune portal"
+            git commit -m "Remove remaining purple card accents"
             git push
           fi
