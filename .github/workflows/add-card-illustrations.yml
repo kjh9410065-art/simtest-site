@@ -1,0 +1,95 @@
+name: Add static card illustrations
+
+on:
+  workflow_run:
+    workflows: ["Inject site images"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_commit.message != 'Add static card illustrations'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 2
+
+      - name: Add illustrated card visuals
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+
+          # 같은 패치를 여러 번 실행해도 중복되지 않도록 기존 패치를 제거합니다.
+          html = re.sub(r'<style>\s*/\* FLICK_CARD_ILLUSTRATIONS \*/.*?</style>', '', html, flags=re.S)
+
+          # 카드마다 사용할 정적 SVG 일러스트를 데이터 URI로 넣습니다.
+          # 외부 이미지/API를 사용하지 않아 항상 같은 이미지가 표시됩니다.
+          def svg(bg, body):
+              raw = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 150"><rect width="240" height="150" rx="24" fill="{bg}"/>{body}</svg>'
+              import urllib.parse
+              return 'data:image/svg+xml,' + urllib.parse.quote(raw, safe='')
+
+          imgs = [
+            svg('#edf5ef','<circle cx="174" cy="43" r="28" fill="#d5e9da"/><circle cx="174" cy="43" r="13" fill="#fff8d9"/><path d="M35 118c18-45 52-63 92-76-12 38-39 66-92 76Z" fill="#79a98b"/><path d="M52 105c28-22 49-38 73-51" stroke="#4f8065" stroke-width="5" fill="none"/>'),
+            svg('#f8f1df','<circle cx="169" cy="72" r="37" fill="#e8d6a6"/><circle cx="169" cy="72" r="27" fill="#f4e6bf"/><path d="M64 112c12-44 39-60 70-72-8 34-29 57-70 72Z" fill="#86b697"/><circle cx="169" cy="72" r="8" fill="#b99545"/>'),
+            svg('#eef5fa','<path d="M34 111c21-42 53-62 99-73-13 38-45 65-99 73Z" fill="#9ec6d5"/><circle cx="174" cy="49" r="25" fill="#d8ebf1"/><path d="M174 29l7 14 15 3-11 11 3 15-14-7-14 7 3-15-11-11 15-3Z" fill="#8cb8ca"/>'),
+            svg('#faecee','<path d="M120 115C92 91 61 78 61 52c0-16 22-25 35-9 9-16 35-7 35 9 0 26-28 39-11 63Z" fill="#e7a3ae"/><circle cx="177" cy="42" r="25" fill="#f7d5da"/><path d="M177 25v34M160 42h34" stroke="#c97885" stroke-width="4"/>'),
+            svg('#f0f5e9','<rect x="54" y="61" width="112" height="62" rx="12" fill="#c8dcbf"/><rect x="69" y="45" width="82" height="30" rx="8" fill="#9fbd92"/><path d="M82 91h56M82 106h38" stroke="#668a5c" stroke-width="7" stroke-linecap="round"/><circle cx="187" cy="39" r="22" fill="#dcebcf"/>'),
+            svg('#eeeef8','<circle cx="172" cy="70" r="37" fill="#d7d7ed"/><path d="M185 35c-26 7-37 30-28 52 9 22 32 27 49 17-25 2-40-20-35-39 3-13 9-22 14-30Z" fill="#8f90bd"/><circle cx="65" cy="45" r="5" fill="#b8b8d6"/><circle cx="88" cy="27" r="3" fill="#b8b8d6"/>'),
+            svg('#f6efe3','<path d="M64 111l20-49 29 20 31-45 25 74Z" fill="#d8c18f"/><path d="M82 112l19-45 20 17 25-34 14 62Z" fill="#9db99f"/><circle cx="181" cy="37" r="19" fill="#e7d8b8"/>'),
+            svg('#eef3f0','<circle cx="81" cy="89" r="39" fill="#d5e6dc"/><circle cx="81" cy="77" r="27" fill="#c2d9ca"/><path d="M57 78c7-24 31-25 45-11-4 25-19 40-45 42Z" fill="#5f8b72"/><path d="M74 67c6 10 12 17 25 23" stroke="#eef7ef" stroke-width="4" fill="none"/><circle cx="175" cy="46" r="22" fill="#f4dfb1"/>')
+          ]
+
+          def q(x):
+              return '"' + x.replace('"', '%22') + '"'
+
+          # 카드 종류별로 서로 다른 정적 일러스트를 순환 적용합니다.
+          css = '''<style>
+          /* FLICK_CARD_ILLUSTRATIONS */
+          .quick-card,.psych-rich-card,.fortune-card,.test-card,.metric,.luck-item,.zodiac-item{position:relative;overflow:hidden}
+          .quick-card::before,.psych-rich-card::before,.fortune-card::before,.test-card::before,.metric::before,.luck-item::before,.zodiac-item::before{content:"";position:absolute;pointer-events:none;background-position:center;background-repeat:no-repeat;background-size:contain;opacity:1;z-index:0}
+          .quick-card>*,.psych-rich-card>* ,.fortune-card>* ,.test-card>* ,.metric>* ,.luck-item>* ,.zodiac-item>*{position:relative;z-index:1}
+          .quick-card{padding-right:86px!important}.quick-card::before{right:5px;top:7px;width:78px;height:60px}
+          .psych-rich-card{padding-right:92px!important}.psych-rich-card::before{right:5px;bottom:7px;width:82px;height:62px}
+          .fortune-card{padding-right:105px!important}.fortune-card::before{right:7px;bottom:8px;width:96px;height:65px}
+          .test-card{padding-right:92px!important}.test-card::before{right:6px;top:8px;width:82px;height:62px}
+          .metric{padding-right:48px!important}.metric::before{right:4px;bottom:4px;width:43px;height:43px;opacity:.72}
+          .luck-item{padding-right:42px!important}.luck-item::before{right:3px;bottom:3px;width:38px;height:38px;opacity:.7}
+          .zodiac-item::before{right:2px;bottom:2px;width:34px;height:30px;opacity:.28}
+          .quick-card:nth-child(8n+1)::before,.psych-rich-card:nth-child(8n+1)::before,.fortune-card:nth-child(8n+1)::before,.test-card:nth-child(8n+1)::before,.metric:nth-child(8n+1)::before,.luck-item:nth-child(8n+1)::before,.zodiac-item:nth-child(8n+1)::before{background-image:url(''' + q(imgs[0]) + ''')}
+          .quick-card:nth-child(8n+2)::before,.psych-rich-card:nth-child(8n+2)::before,.fortune-card:nth-child(8n+2)::before,.test-card:nth-child(8n+2)::before,.metric:nth-child(8n+2)::before,.luck-item:nth-child(8n+2)::before,.zodiac-item:nth-child(8n+2)::before{background-image:url(''' + q(imgs[1]) + ''')}
+          .quick-card:nth-child(8n+3)::before,.psych-rich-card:nth-child(8n+3)::before,.fortune-card:nth-child(8n+3)::before,.test-card:nth-child(8n+3)::before,.metric:nth-child(8n+3)::before,.luck-item:nth-child(8n+3)::before,.zodiac-item:nth-child(8n+3)::before{background-image:url(''' + q(imgs[2]) + ''')}
+          .quick-card:nth-child(8n+4)::before,.psych-rich-card:nth-child(8n+4)::before,.fortune-card:nth-child(8n+4)::before,.test-card:nth-child(8n+4)::before,.metric:nth-child(8n+4)::before,.luck-item:nth-child(8n+4)::before,.zodiac-item:nth-child(8n+4)::before{background-image:url(''' + q(imgs[3]) + ''')}
+          .quick-card:nth-child(8n+5)::before,.psych-rich-card:nth-child(8n+5)::before,.fortune-card:nth-child(8n+5)::before,.test-card:nth-child(8n+5)::before,.metric:nth-child(8n+5)::before,.luck-item:nth-child(8n+5)::before,.zodiac-item:nth-child(8n+5)::before{background-image:url(''' + q(imgs[4]) + ''')}
+          .quick-card:nth-child(8n+6)::before,.psych-rich-card:nth-child(8n+6)::before,.fortune-card:nth-child(8n+6)::before,.test-card:nth-child(8n+6)::before,.metric:nth-child(8n+6)::before,.luck-item:nth-child(8n+6)::before,.zodiac-item:nth-child(8n+6)::before{background-image:url(''' + q(imgs[5]) + ''')}
+          .quick-card:nth-child(8n+7)::before,.psych-rich-card:nth-child(8n+7)::before,.fortune-card:nth-child(8n+7)::before,.test-card:nth-child(8n+7)::before,.metric:nth-child(8n+7)::before,.luck-item:nth-child(8n+7)::before,.zodiac-item:nth-child(8n+7)::before{background-image:url(''' + q(imgs[6]) + ''')}
+          .quick-card:nth-child(8n)::before,.psych-rich-card:nth-child(8n)::before,.fortune-card:nth-child(8n)::before,.test-card:nth-child(8n)::before,.metric:nth-child(8n)::before,.luck-item:nth-child(8n)::before,.zodiac-item:nth-child(8n)::before{background-image:url(''' + q(imgs[7]) + ''')}
+          @media(max-width:760px){.quick-card{padding-right:70px!important}.quick-card::before{width:62px;height:48px}.psych-rich-card{padding-right:74px!important}.psych-rich-card::before{width:67px;height:50px}.fortune-card{padding-right:82px!important}.fortune-card::before{width:74px;height:52px}.test-card{padding-right:74px!important}.test-card::before{width:66px;height:50px}.metric{padding-right:39px!important}.metric::before{width:35px;height:35px}.luck-item{padding-right:34px!important}.luck-item::before{width:31px;height:31px}.zodiac-item::before{width:27px;height:25px}}
+          </style>'''
+
+          html = html.replace('</head>', css + '</head>', 1)
+          path.write_text(html, encoding='utf-8')
+          PY
+
+      - name: Commit illustrated homepage
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Add static card illustrations"
+            git push
+          fi
