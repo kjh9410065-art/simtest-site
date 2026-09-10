@@ -27,9 +27,9 @@ jobs:
 
           # 이전 수정 블록을 제거한 뒤 다시 하나만 삽입합니다.
           html = re.sub(r'<style>\s*/\* FLICK_PURPLE_FIX \*/.*?</style>', '', html, flags=re.S)
+          html = re.sub(r'<style>\s*/\* FLICK_RICH_PORTAL \*/.*?</style>', '', html, flags=re.S)
 
           # 기존 페이지에 남아 있는 보라색 팔레트도 실제 색상값 자체를 교체합니다.
-          # 이렇게 하면 quick-card뿐 아니라 TODAY 라벨, 전체 운세 링크 등에도 보라색이 남지 않습니다.
           purple_map = {
             '#7658d8':'#2f7158', '#7658D8':'#2f7158',
             '#f0ebff':'#edf4ee', '#F0EBFF':'#edf4ee',
@@ -39,7 +39,7 @@ jobs:
             '#b9a8f4':'#a9c5b4', '#eee8ff':'#edf4ee',
             '#f5f1ff':'#f3f7ef', '#eee9ff':'#edf4ee', '#fbf3f5':'#faf6ec',
             '#ece7f2':'#e5e0d3', '#ded9e9':'#d9e8dd', '#f2effb':'#edf4ee',
-            '#f1edff':'#edf4ee', '#f3efff':'#edf4ee', '#f1edff':'#edf4ee',
+            '#f1edff':'#edf4ee', '#f3efff':'#edf4ee',
             '#f4f0ff':'#edf4ee', '#f7f5fa':'#f6f4ed', '#f5f2fa':'#f6f4ed',
             '#30275a':'#173d30', '#4a3970':'#285b48', '#29224c':'#173d30',
             '#55407d':'#356d58', '#252044':'#173d30'
@@ -58,7 +58,6 @@ jobs:
 
           css = r'''<style>
           /* FLICK_PURPLE_FIX */
-          /* 카드 아이콘과 내부 장식은 모두 세이지 그린으로 통일합니다. */
           .quick-card::after{content:none!important;display:none!important;background:none!important;border:0!important;box-shadow:none!important}
           .quick-card::before{background:#edf4ee!important;border:1px solid #d9e8dd!important;box-shadow:none!important}
           .quick-card .card-mark{background:#edf4ee!important;border-color:#d9e8dd!important}
@@ -68,11 +67,81 @@ jobs:
           .quick-card svg,.quick-card svg *{color:#2f7158!important;stroke:#2f7158!important;fill:none!important}
           .quick-card button,.quick-card .btn,.quick-card .card-action{background:#edf4ee!important;color:#2f7158!important;border-color:#d9e8dd!important}
           .quick-card h3,.quick-card strong{color:#173d30!important}
-          /* 홈의 다른 보라색 텍스트도 그린으로 통일합니다. */
           .section-head .more,.more,.fortune-card small,.test-card .type,.lucky-banner small{color:#559579!important}
           </style>'''
 
-          html = html.replace('</head>', css + '</head>', 1)
+          # 운세 포털 느낌을 강화하는 장식 레이어입니다. 이미지는 사용하지 않고 CSS만 사용합니다.
+          rich = r'''<style>
+          /* FLICK_RICH_PORTAL */
+          body{background:
+            radial-gradient(circle at 8% 10%,rgba(85,149,121,.08),transparent 22%),
+            radial-gradient(circle at 92% 18%,rgba(184,154,91,.08),transparent 20%),
+            linear-gradient(180deg,#f7f3e9 0%,#f1ede3 48%,#f7f3e9 100%)!important}
+          .header{position:sticky!important;box-shadow:0 4px 18px rgba(50,68,56,.045)!important}
+          .header:after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:linear-gradient(90deg,transparent,#b89a5b 18%,#559579 50%,#b89a5b 82%,transparent);opacity:.45}
+          .flick-fortune-wrap{position:relative;overflow:visible;padding-top:30px!important}
+          .flick-fortune-wrap:before,.flick-fortune-wrap:after{content:"";position:absolute;pointer-events:none;border:1px solid rgba(184,154,91,.18);border-radius:50%}
+          .flick-fortune-wrap:before{width:230px;height:230px;right:-130px;top:55px}
+          .flick-fortune-wrap:after{width:110px;height:110px;left:-75px;top:285px}
+          .fortune-heading{position:relative;padding:0 2px 17px;border-bottom:1px solid rgba(184,154,91,.22)}
+          .fortune-heading:after{content:"";position:absolute;bottom:-2px;left:0;width:42px;height:3px;border-radius:3px;background:linear-gradient(90deg,#2f7158,#b89a5b)}
+          .fortune-heading .eyebrow{letter-spacing:2.4px!important}
+          .fortune-heading h1{font-size:30px!important}
+          .fortune-date{padding:6px 10px;border:1px solid #e5dfd1;border-radius:12px;background:rgba(255,253,247,.72)}
+          .fortune-main{gap:13px!important}
+          .fortune-card{box-shadow:0 13px 32px rgba(50,68,56,.075)!important}
+          .fortune-summary{min-height:195px!important;padding:25px 25px!important;background:
+            radial-gradient(circle at 92% 12%,rgba(184,154,91,.13),transparent 20%),
+            linear-gradient(135deg,#fffef9,#edf5ee)!important}
+          .fortune-summary small{display:inline-flex!important;align-items:center;gap:6px;padding:5px 9px;border-radius:20px;background:#edf4ee;color:#2f7158!important;font-weight:800}
+          .fortune-summary small:before{content:"";width:5px;height:5px;border-radius:50%;background:#b89a5b}
+          .fortune-summary h2{font-size:25px!important}
+          .fortune-summary p{max-width:480px!important}
+          .fortune-score{margin-top:18px!important}
+          .score-ring{width:49px!important;height:49px!important;border-width:4px!important;box-shadow:inset 0 0 0 4px #fffdf7,0 4px 12px rgba(47,113,88,.08)}
+          .fortune-luck{padding:20px 20px!important;background:linear-gradient(180deg,#fffdf7,#faf6ec)!important}
+          .fortune-luck h3{display:flex;align-items:center;gap:7px;font-size:14px!important}
+          .fortune-luck h3:before{content:"";width:7px;height:7px;border-radius:50%;background:#b89a5b;box-shadow:0 0 0 4px #f1eadb}
+          .luck-item{padding:9px 2px!important}
+          .luck-item b{padding:4px 8px;border-radius:8px;background:#edf4ee}
+          .fortune-section-title{margin:25px 0 11px!important}
+          .fortune-section-title b{font-size:16px!important}
+          .fortune-section-title span{background:#eee9dc;padding:4px 7px;border-radius:8px}
+          .fortune-metrics{gap:10px!important}
+          .metric{padding:16px 14px!important;transition:transform .18s,box-shadow .18s!important}
+          .metric:hover{transform:translateY(-2px);box-shadow:0 12px 25px rgba(50,68,56,.09)}
+          .metric b{font-size:14px!important}
+          .metric i{font-size:9px!important}
+          .quick-grid{gap:10px!important}
+          .quick-card{min-height:126px!important;padding:17px!important;box-shadow:0 11px 27px rgba(50,68,56,.065)!important}
+          .quick-card:before{width:70px!important;height:70px!important;right:-22px!important;top:-22px!important;opacity:.8}
+          .quick-card .card-mark{width:40px!important;height:40px!important;border-radius:12px!important;margin-bottom:10px!important;display:grid!important;place-items:center!important}
+          .quick-card .card-mark:before{left:10px!important;top:10px!important}
+          .quick-card strong{font-size:15px!important}
+          .quick-card span{font-size:9px!important}
+          .quick-card .card-action{margin-top:9px!important;height:31px!important;font-size:10px!important}
+          .quick-card:hover{transform:translateY(-4px)!important;box-shadow:0 17px 34px rgba(50,68,56,.11)!important}
+          .zodiac-panel{padding:15px!important;gap:5px!important;background:linear-gradient(180deg,#fffdf7,#fbf7ed)!important}
+          .zodiac-item{position:relative;transition:.15s!important}
+          .zodiac-item:hover{background:#edf4ee;color:#2f7158;transform:translateY(-1px)}
+          .zodiac-item:first-child{box-shadow:inset 0 0 0 1px #d9e8dd}
+          .keyword-panel{padding-bottom:3px}
+          .keyword{box-shadow:0 3px 10px rgba(50,68,56,.04)}
+          .keyword.green{position:relative}
+          .keyword.green:before{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:#b89a5b;margin:0 5px 1px 0}
+          .test-card{box-shadow:0 10px 27px rgba(50,68,56,.055)!important}
+          .test-card:hover{transform:translateY(-3px);box-shadow:0 16px 32px rgba(50,68,56,.09)!important}
+          @media(max-width:760px){
+            .flick-fortune-wrap{padding-top:23px!important}
+            .fortune-heading h1{font-size:25px!important}
+            .fortune-summary{min-height:180px!important}
+            .fortune-summary h2{font-size:22px!important}
+            .flick-fortune-wrap:before{width:150px;height:150px;right:-100px;top:40px}
+            .flick-fortune-wrap:after{display:none}
+          }
+          </style>'''
+
+          html = html.replace('</head>', css + rich + '</head>', 1)
           path.write_text(html, encoding='utf-8')
           PY
 
@@ -84,6 +153,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Remove all remaining purple styling"
+            git commit -m "Add richer fortune portal decorations"
             git push
           fi
