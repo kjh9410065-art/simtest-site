@@ -1,15 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-label="FLiCK 오늘의 운세 장식 일러스트">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-label="오늘의 운세 장식 일러스트">
 <defs>
   <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eaf3ee"/><stop offset="1" stop-color="#fff7e7"/></linearGradient>
   <radialGradient id="moon"><stop offset="0" stop-color="#fffdf4"/><stop offset="1" stop-color="#e6d7a8"/></radialGradient>
 </defs>
 <rect width="900" height="420" rx="36" fill="url(#sky)"/>
 <circle cx="690" cy="115" r="62" fill="url(#moon)" opacity=".95"/>
-<circle cx="690" cy="115" r="86" fill="none" stroke="#c5d9cc" stroke-width="2" stroke-dasharray="3 12"/>
 <path d="M80 330 C230 230 330 270 450 330 S680 410 830 300" fill="none" stroke="#b7d1bf" stroke-width="3" opacity=".75"/>
 <g fill="#5b9277" opacity=".9"><circle cx="160" cy="100" r="4"/><circle cx="230" cy="170" r="3"/><circle cx="560" cy="70" r="4"/><circle cx="780" cy="205" r="3"/><circle cx="410" cy="95" r="3"/></g>
 <g fill="none" stroke="#7aa58d" stroke-width="3" stroke-linecap="round"><path d="M120 300 C105 250 118 220 150 195"/><path d="M155 285 C180 250 190 220 182 185"/><path d="M790 315 C760 275 755 240 770 210"/></g>
 <g fill="#d4b875"><circle cx="150" cy="195" r="7"/><circle cx="182" cy="185" r="6"/><circle cx="770" cy="210" r="7"/></g>
 <g transform="translate(310 230)"><ellipse cx="0" cy="75" rx="130" ry="35" fill="#d7e5da" opacity=".8"/><path d="M-80 40 Q-115 -10 -80 -60 Q-45 -95 0 -62 Q45 -95 80 -60 Q115 -10 80 40 Q55 70 0 68 Q-55 70 -80 40Z" fill="#fffdf8" stroke="#c9d8ce" stroke-width="3"/><circle cx="-35" cy="-5" r="5" fill="#263e35"/><circle cx="35" cy="-5" r="5" fill="#263e35"/><path d="M-14 18 Q0 28 14 18" fill="none" stroke="#9d6d68" stroke-width="4" stroke-linecap="round"/><path d="M-58 -65 Q-75 -110 -45 -122 Q-15 -112 -18 -76" fill="#fffdf8" stroke="#c9d8ce" stroke-width="3"/><path d="M58 -65 Q75 -110 45 -122 Q15 -112 18 -76" fill="#fffdf8" stroke="#c9d8ce" stroke-width="3"/></g>
-<text x="450" y="365" text-anchor="middle" font-family="sans-serif" font-size="20" font-weight="700" fill="#315e4b">오늘도, 좋은 흐름이 찾아오고 있어요</text>
 </svg>
