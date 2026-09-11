@@ -1,0 +1,48 @@
+name: Apply Mira redesign
+
+on:
+  push:
+    paths:
+      - 'assets/mira-redesign.css'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Apply redesign stylesheet
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          html=p.read_text(encoding='utf-8')
+          # 이전에 삽입된 동일한 링크가 있으면 먼저 제거해 중복 로딩을 막는다.
+          html=re.sub(r'\s*<link[^>]+assets/mira-redesign\.css[^>]*>', '', html)
+          # 새 디자인 CSS를 기존 스타일보다 나중에 읽어 최종 디자인이 우선되게 한다.
+          html=html.replace('</head>', '<link rel="stylesheet" href="/assets/mira-redesign.css?v=1">\n</head>', 1)
+          # 사이트에서 사용하지 않는 브랜드 표기를 정리한다.
+          html=html.replace('FLICK DAILY FORTUNE','TODAY\'S FORTUNE')
+          html=html.replace('FLICK FORTUNE GUIDE','FORTUNE GUIDE')
+          html=html.replace('FLiCK 오늘의 운세','오늘의 운세')
+          p.write_text(html, encoding='utf-8')
+          PY
+
+      - name: Commit applied design
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Apply Mira homepage redesign"
+            git push
+          fi
