@@ -18,8 +18,8 @@
     const score=document.getElementById('score');
     if(birthCopy)birthCopy.textContent='생년월일을 입력하면 나의 오늘의 운세를 확인할 수 있어요.';
 
-    // 날짜 입력을 버튼처럼 보이는 하나의 큰 영역으로 교체합니다.
-    oldInput.outerHTML='<button type="button" class="birth-date-trigger" aria-label="생년월일 선택"><span class="birth-date-icon">▣</span><span class="birth-date-value">생년월일 선택</span><span class="birth-date-arrow">⌄</span><input id="birthDate" type="date" min="1900-01-01" max="'+new Date().toISOString().slice(0,10)+'" tabindex="-1" aria-hidden="true"></button>';
+    // label 자체가 날짜 input을 호출하도록 만들어 박스 어느 곳을 눌러도 작동하게 합니다.
+    oldInput.outerHTML='<label class="birth-date-trigger" for="birthDate"><span class="birth-date-icon">▣</span><span class="birth-date-value">생년월일 선택</span><span class="birth-date-arrow">⌄</span><input id="birthDate" type="date" min="1900-01-01" max="'+new Date().toISOString().slice(0,10)+'" aria-label="생년월일"></label>';
 
     const trigger=document.querySelector('.birth-date-trigger');
     const input=document.getElementById('birthDate');
@@ -36,27 +36,6 @@
         valueText.classList.remove('has-value');
       }
     }
-
-    // 버튼 전체 클릭을 브라우저의 실제 날짜 선택창 호출로 연결합니다.
-    function openPicker(){
-      input.focus({preventScroll:true});
-      try{
-        if(typeof input.showPicker==='function') input.showPicker();
-        else input.click();
-      }catch(e){
-        input.click();
-      }
-    }
-    trigger.addEventListener('click',openPicker);
-
-    // 날짜를 선택하면 즉시 표시와 운세 결과를 갱신합니다.
-    input.addEventListener('change',function(){
-      renderDate();
-      if(input.value){
-        localStorage.setItem('mira_birth_date',input.value);
-        applyBirthDate(input.value);
-      }
-    });
 
     const saved=localStorage.getItem('mira_birth_date');
     if(saved)input.value=saved;
@@ -80,12 +59,21 @@
       if(score)score.textContent=personal;
     }
 
-    // 기존 운세 확인 버튼도 생년월일을 기준으로 작동하게 합니다.
+    // 날짜 선택 즉시 화면에 표시하고 저장합니다.
+    input.addEventListener('change',function(){
+      renderDate();
+      if(input.value){
+        localStorage.setItem('mira_birth_date',input.value);
+        applyBirthDate(input.value);
+      }
+    });
+
+    // 운세 확인 버튼도 생년월일 기준으로 동작하게 합니다.
     form.addEventListener('submit',function(e){
       e.preventDefault();
       if(!input.value){
         result.textContent='생년월일을 선택해주세요.';
-        openPicker();
+        input.focus();
         return;
       }
       localStorage.setItem('mira_birth_date',input.value);
@@ -105,14 +93,15 @@
 (function(){
   const style=document.createElement('style');
   style.textContent=`
-    .birth-date-trigger{position:relative;width:230px;height:48px;display:flex;align-items:center;gap:0;margin:0;padding:0 12px;background:#f8f5ed;border:1px solid #d7d0c1;border-radius:12px;color:#89928a;cursor:pointer;overflow:hidden;text-align:left;font:inherit}
+    .birth-date-trigger{position:relative;width:230px;height:48px;display:flex;align-items:center;gap:0;margin:0;padding:0 12px;background:#f8f5ed;border:1px solid #d7d0c1;border-radius:12px;color:#89928a;cursor:pointer;overflow:hidden;text-align:left;font:inherit;box-sizing:border-box}
     .birth-date-trigger:hover{border-color:#a9bda9;background:#fbf9f3}
-    .birth-date-trigger:focus{outline:none;border-color:#5c8d71;box-shadow:0 0 0 4px rgba(92,141,113,.12);background:#fffdf8}
+    .birth-date-trigger:focus-within{outline:none;border-color:#5c8d71;box-shadow:0 0 0 4px rgba(92,141,113,.12);background:#fffdf8}
     .birth-date-icon{width:28px;flex:0 0 28px;text-align:left;font-size:13px;color:#aa8f59;pointer-events:none}
     .birth-date-value{font-size:14px;font-weight:700;line-height:1;pointer-events:none;user-select:none}
     .birth-date-value.has-value{color:#244638}
     .birth-date-arrow{margin-left:auto;font-size:19px;line-height:1;color:#66736a;pointer-events:none;transform:translateY(-2px)}
-    .birth-date-trigger input{position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none}
+    /* 실제 날짜 input이 라벨 전체를 덮으므로 아이콘·글씨·빈 공간 어디든 클릭할 수 있습니다. */
+    .birth-date-trigger input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer;border:0}
     @media(max-width:760px) and (hover:none) and (pointer:coarse){.birth-date-trigger{width:auto;flex:1;height:46px}.birth-date-icon{width:26px;flex-basis:26px}}
   `;
   document.head.appendChild(style);
