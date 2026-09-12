@@ -24,16 +24,28 @@ const IMAGE_SCRIPT = `<script>
   const quickUrls=${JSON.stringify(IMAGE_MAP.quick.map(assetUrl))};
   function applyImages(){
     const hero=document.querySelector('.hero-art');
-    if(hero) hero.style.setProperty('background-image','url("'+heroUrl+'")','important');
+    if(hero) hero.style.setProperty('background-image','url(\"'+heroUrl+'\")','important');
     document.querySelectorAll('.quick-card').forEach(function(card,index){
       if(!quickUrls[index]) return;
-      card.style.setProperty('background-image','linear-gradient(rgba(255,255,255,.56),rgba(255,255,255,.56)),url("'+quickUrls[index]+'")','important');
+      card.style.setProperty('background-image','linear-gradient(rgba(255,255,255,.56),rgba(255,255,255,.56)),url(\"'+quickUrls[index]+'\")','important');
       card.style.setProperty('background-size','cover','important');
       card.style.setProperty('background-position','center','important');
     });
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applyImages,{once:true});
   else applyImages();
+})();
+</script>`;
+
+// 홈페이지의 인라인 스크립트가 ID를 전역 변수처럼 참조해도 안전하게 동작하도록
+// 실제 DOM 요소를 명시적으로 window 속성에 연결합니다.
+const DOM_BRIDGE_SCRIPT = `<script>
+(function(){
+  const ids=['summaryTitle','summaryText','score','luckyColor','luckyNumber','luckyTime','luckyDirection','luckyItem','money','moneyText','love','loveText','work','workText','health','healthText','zodiacList','categoryTabs','categoryName','categoryCount','testGrid'];
+  ids.forEach(function(id){
+    const el=document.getElementById(id);
+    if(el && !(id in window)) window[id]=el;
+  });
 })();
 </script>`;
 
@@ -132,7 +144,7 @@ export default {
     if(response.status!==200 || !html.includes('</head>')) {
       return new Response(html,{status:response.status,statusText:response.statusText,headers:new Headers(response.headers)});
     }
-    const updated=html.replace('</head>',IMAGE_SCRIPT+'</head>');
+    const updated=html.replace('</head>',IMAGE_SCRIPT+DOM_BRIDGE_SCRIPT+'</head>');
     return new Response(updated,{status:response.status,statusText:response.statusText,headers:new Headers(response.headers)});
   }
 };
