@@ -1,5 +1,5 @@
 /* 한 문제씩 보여주는 공통 심리테스트 엔진입니다. 추가 데이터도 함께 사용합니다. */
-const ALL_TEST_DATA=Object.assign({},typeof TEST_DATA!=='undefined'?TEST_DATA:{},typeof EXTRA_TEST_DATA!=='undefined'?EXTRA_TEST_DATA:{},typeof FEAR_TEST_DATA!=='undefined'?FEAR_TEST_DATA:{});
+const ALL_TEST_DATA=Object.assign({},typeof TEST_DATA!=='undefined'?TEST_DATA:{},typeof EXTRA_TEST_DATA!=='undefined'?EXTRA_TEST_DATA:{});
 const d=ALL_TEST_DATA[TEST_ID];
 let n=0,answers=[];
 const $=id=>document.getElementById(id);
