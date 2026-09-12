@@ -1,6 +1,8 @@
 // TCFLiCK 운세·심리테스트 사이트의 Cloudflare Worker입니다.
-// 정적 파일은 ASSETS에서 제공하고, 필요한 API만 Worker에서 처리합니다.
-// 이미지 브리지에는 현재 저장소(mira)만 사용합니다.
+// 정적 파일은 우선 ASSETS에서 제공하고, ASSETS 바인딩이 없는 환경에서는
+// 현재 GitHub 저장소의 raw 파일로 자동 대체하여 빈 화면을 방지합니다.
+
+const REPO_RAW = 'https://raw.githubusercontent.com/kjh9410065-art/mira/main';
 
 const IMAGE_MAP = {
   hero: '햇살 머무는 바닷가 작업 공간.png',
@@ -16,7 +18,6 @@ function assetUrl(name) {
   return encodeURI('/' + name);
 }
 
-// 홈페이지에만 이미지 보정 스크립트를 주입합니다.
 const IMAGE_SCRIPT = `<script>
 (function(){
   const heroUrl=${JSON.stringify(assetUrl(IMAGE_MAP.hero))};
@@ -35,6 +36,47 @@ const IMAGE_SCRIPT = `<script>
   else applyImages();
 })();
 </script>`;
+
+function contentType(path) {
+  if (path.endsWith('.html')) return 'text/html; charset=utf-8';
+  if (path.endsWith('.css')) return 'text/css; charset=utf-8';
+  if (path.endsWith('.js')) return 'application/javascript; charset=utf-8';
+  if (path.endsWith('.json')) return 'application/json; charset=utf-8';
+  if (path.endsWith('.svg')) return 'image/svg+xml';
+  if (path.endsWith('.png')) return 'image/png';
+  if (path.endsWith('.jpg') || path.endsWith('.jpeg')) return 'image/jpeg';
+  if (path.endsWith('.webp')) return 'image/webp';
+  if (path.endsWith('.ico')) return 'image/x-icon';
+  return 'application/octet-stream';
+}
+
+// ASSETS가 정상 작동하면 그대로 사용하고, 실패하면 GitHub 원본으로 대체합니다.
+async function getStaticAsset(request, env) {
+  const url = new URL(request.url);
+  let path = decodeURIComponent(url.pathname);
+  if (path === '/') path = '/index.html';
+  else if (path.endsWith('/')) path += 'index.html';
+
+  if (env?.ASSETS?.fetch) {
+    try {
+      const response = await env.ASSETS.fetch(request.url === url.href && path === '/index.html'
+        ? new Request(new URL('/index.html', request.url), request)
+        : request);
+      if (response.status !== 404) return response;
+    } catch (error) {
+      console.error('ASSETS fetch failed:', error);
+    }
+  }
+
+  const rawUrl = REPO_RAW + encodeURI(path);
+  const rawResponse = await fetch(rawUrl);
+  if (!rawResponse.ok) return rawResponse;
+
+  const headers = new Headers(rawResponse.headers);
+  headers.set('Content-Type', contentType(path));
+  headers.set('Cache-Control', 'public, max-age=300');
+  return new Response(rawResponse.body, { status: 200, headers });
+}
 
 async function generateGeminiImage(request, env, forcedPrompt = '') {
   if (!env.GEMINI_API_KEY) return jsonResponse({ error: 'GEMINI_API_KEY가 Cloudflare Secret에 등록되어 있지 않습니다.' }, 500);
@@ -82,24 +124,10 @@ export default {
       try{return await generateGeminiImage(request,env);}catch(e){console.error(e);return jsonResponse({error:'이미지 생성 중 서버 오류가 발생했습니다.'},500);}
     }
 
-    // 루트 요청은 index.html을 명시적으로 요청해 정적 자산 라우팅 문제를 방지합니다.
-    const assetRequest = url.pathname === '/'
-      ? new Request(new URL('/index.html', request.url), request)
-      : request;
-
-    // 정적 파일은 ASSETS에서 직접 제공합니다.
-    let response;
-    try {
-      response = await env.ASSETS.fetch(assetRequest);
-    } catch (error) {
-      console.error('ASSETS fetch failed:', error);
-      return new Response('MIRA assets unavailable', { status: 503 });
-    }
-
+    const response = await getStaticAsset(request, env);
     const type=response.headers.get('content-type')||'';
     if(!type.includes('text/html')) return response;
 
-    // HTML 응답일 때만 이미지 보정 스크립트를 삽입합니다.
     const html=await response.text();
     if(response.status!==200 || !html.includes('</head>')) {
       return new Response(html,{status:response.status,statusText:response.statusText,headers:new Headers(response.headers)});
