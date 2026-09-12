@@ -21,7 +21,7 @@
     const originalOverview=overview?overview.innerHTML:'';
     const originalFour=four?four.innerHTML:'';
 
-    // 입력 전에도 결과 화면과 같은 카드 구조와 크기를 사용하고 내용만 안내 문구로 바꿉니다.
+    // 입력 전에는 결과 카드와 같은 구조와 크기로 안내 문구만 보여줍니다.
     function renderEmptyState(){
       if(!overview||!four)return;
       overview.innerHTML=`
@@ -47,7 +47,7 @@
       four.style.display='grid';
     }
 
-    // 운세 보기 후에는 처음 페이지에 있던 실제 결과 카드 내용을 복원합니다.
+    // 운세 보기 후 원래 결과 카드 구조를 복원합니다.
     function restoreResultState(){
       if(!overview||!four)return;
       overview.innerHTML=originalOverview;
@@ -147,7 +147,7 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',patchHome);else patchHome();
 })();
 
-// 날짜 선택 UI와 입력 전 운세 카드가 결과 카드와 정확히 같은 크기로 보이도록 스타일을 적용합니다.
+// 날짜 선택 UI와 입력 전 운세 카드가 결과 카드와 같은 크기로 보이도록 스타일을 적용합니다.
 (function(){
   const style=document.createElement('style');
   style.textContent=`
@@ -169,4 +169,67 @@
 }
 `;
   document.head.appendChild(style);
+})();
+
+// 결과 카드에 실제 운세 문구와 행운 정보를 채웁니다.
+(function(){
+  function bind(){
+    const form=document.getElementById('birthForm');
+    if(!form||form.dataset.resultPatch==='1'){if(!form)setTimeout(bind,100);return;}
+    form.dataset.resultPatch='1';
+
+    const colors=['연한 초록','아이보리','하늘색','베이지','연보라','세이지 그린'];
+    const times=['09:00~11:00','11:00~13:00','13:00~15:00','15:00~17:00','17:00~19:00','19:00~21:00'];
+    const directions=['동쪽','남동쪽','남쪽','서쪽','북서쪽','북쪽'];
+    const items=['작은 지갑','손목시계','노트','향수','텀블러','이어폰'];
+    const money=['계획했던 지출부터 정리하면 금전 흐름이 안정됩니다.','작은 절약이 생각보다 좋은 결과로 이어지는 날입니다.','충동구매만 피하면 무난하게 흐름을 지킬 수 있습니다.','미뤄둔 정산이나 금전 계획을 확인하기 좋은 날입니다.','새로운 지출보다 현재 가진 것을 정리하는 데 집중해보세요.','가벼운 기회가 들어오지만 결정은 한 번 더 확인하는 게 좋습니다.'];
+    const love=['가까운 사람에게 먼저 따뜻하게 말을 건네면 분위기가 좋아집니다.','상대의 말을 끝까지 들어주는 것이 좋은 인상을 만듭니다.','작은 표현 하나가 관계를 부드럽게 만들어줍니다.','오늘은 서두르기보다 편안한 대화를 나누는 것이 좋습니다.','혼자 판단하기보다 상대의 입장을 한 번 생각해보세요.','새로운 만남보다 현재 관계를 다지는 데 좋은 흐름입니다.'];
+    const work=['한 가지 일에 집중하면 생각보다 빠르게 결과를 만들 수 있습니다.','미뤄둔 일을 하나씩 끝내면 전체 흐름이 깔끔해집니다.','동료와의 짧은 소통이 업무 진행에 도움이 됩니다.','중요한 결정은 서두르지 말고 마지막 조건을 확인하세요.','작은 아이디어라도 메모해두면 다음 기회로 이어질 수 있습니다.','오늘은 속도보다 실수를 줄이는 것이 더 중요한 날입니다.'];
+    const health=['무리해서 일정을 채우기보다 충분한 휴식을 챙겨주세요.','물을 자주 마시고 가볍게 몸을 움직이면 좋습니다.','오래 앉아 있었다면 중간중간 스트레칭을 해주세요.','오늘은 수면 시간을 평소보다 조금 더 챙기는 게 좋습니다.','식사 시간을 너무 늦추지 않는 것이 컨디션 유지에 도움이 됩니다.','몸이 보내는 작은 피로 신호를 무시하지 않는 것이 좋습니다.'];
+    const grades=['좋음','매우 좋음','안정','좋음','상승','안정'];
+
+    form.addEventListener('submit',function(){
+      // 기존 운세 계산이 먼저 끝난 다음 카드 내용을 채우기 위해 한 박자 뒤에 실행합니다.
+      setTimeout(function(){
+        const input=document.getElementById('birthDate');
+        if(!input||!input.value)return;
+        const p=input.value.split('-').map(Number);
+        if(p.length!==3||p.some(Number.isNaN))return;
+        const [y,m,d]=p;
+        const seed=(y*31+m*17+d*13+new Date().getDate()*7)%6;
+        const scoreEl=document.getElementById('score');
+        const score=scoreEl?Number(scoreEl.textContent)||76:76;
+
+        // 행운 포인트 5개를 현재 결과 카드에 표시합니다.
+        const luckRows=document.querySelectorAll('#fortune .lucky .luckrow b');
+        const luck=[colors[seed],String((y+m+d)%9+1),times[(seed+1)%times.length],directions[(seed+2)%directions.length],items[(seed+3)%items.length]];
+        luckRows.forEach((el,i)=>{if(luck[i])el.textContent=luck[i];});
+
+        // 재물/애정/직장/건강 카드를 점수와 생년월일을 기준으로 채웁니다.
+        const texts=[money,love,work,health];
+        const cards=document.querySelectorAll('#fortune .four .fortune');
+        cards.forEach((card,i)=>{
+          const value=Math.max(72,Math.min(96,score+((seed+i*2)%7)-3));
+          const strong=card.querySelector('strong'),small=card.querySelector('small');
+          if(strong)strong.textContent=value+'점 · '+grades[(seed+i)%grades.length];
+          if(small)small.textContent=texts[i][(seed+i)%texts[i].length];
+        });
+      },0);
+    });
+
+    // 초기화하면 결과 카드의 동적 내용도 다시 비워집니다.
+    const reset=form.querySelector('.birth-reset');
+    if(reset)reset.addEventListener('click',function(){
+      setTimeout(function(){
+        const rows=document.querySelectorAll('#fortune .lucky .luckrow b');
+        rows.forEach((el,i)=>el.textContent=i===0?'설정 후 확인':'—');
+        document.querySelectorAll('#fortune .four .fortune').forEach(card=>{
+          const strong=card.querySelector('strong'),small=card.querySelector('small');
+          if(strong)strong.textContent='—';
+          if(small)small.textContent='생년월일을 설정하면 확인할 수 있어요.';
+        });
+      },0);
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
 })();
