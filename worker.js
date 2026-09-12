@@ -1,90 +1,36 @@
 // TCFLiCK 운세·심리테스트 사이트 Worker
-// 정적 파일을 안정적으로 제공하고, 홈페이지의 ID 전역변수 오류를 보정합니다.
+// 정적 파일을 안정적으로 제공하고, 홈페이지 동적 데이터가 비어도 자체적으로 복구합니다.
 
-const REPO_RAW = 'https://raw.githubusercontent.com/kjh9410065-art/mira/main';
+const REPO_RAW='https://raw.githubusercontent.com/kjh9410065-art/mira/main';
+const TYPES={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.ico':'image/x-icon'};
+function typeOf(path){const key=Object.keys(TYPES).find(x=>path.toLowerCase().endsWith(x));return TYPES[key]||'application/octet-stream'}
 
-const TYPES = {
-  '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8',
-  '.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg',
-  '.jpeg':'image/jpeg','.webp':'image/webp','.ico':'image/x-icon'
-};
-
-function typeOf(path){
-  const key=Object.keys(TYPES).find(x=>path.toLowerCase().endsWith(x));
-  return TYPES[key]||'application/octet-stream';
+// 홈페이지 기존 스크립트에 오류가 있어도 화면을 복구하는 독립 실행 코드입니다.
+const HOME_RESCUE=`<script>(function(){
+function run(){
+ const $=id=>document.getElementById(id);if(!$('summaryTitle'))return;
+ const day=new Date(),key=day.getFullYear()+''+(day.getMonth()+1)+''+day.getDate();
+ let s=0;for(let i=0;i<key.length;i++)s=(s*31+key.charCodeAt(i))>>>0;
+ const pick=a=>a[s++%a.length];
+ const summaries=[['작은 변화가 좋은 흐름을 만들어요.','눈앞의 일을 하나씩 정리하면 생각보다 수월하게 풀리는 날이에요.'],['차분함이 행운을 부르는 날이에요.','사람과 상황을 여유 있게 바라보면 좋은 흐름이 들어와요.'],['움직일수록 흐름이 좋아져요.','미뤄둔 일을 하나 꺼내 시작해보세요.'],['뜻밖의 기회가 눈에 들어오는 날이에요.','평소라면 지나쳤을 작은 제안에도 귀를 기울여보세요.'],['오늘은 균형을 잡아보세요.','해야 할 일과 쉬어야 할 시간을 적당히 나눠보세요.']];
+ const f=pick(summaries);$('summaryTitle').textContent=f[0];$('summaryText').textContent=f[1];$('score').textContent=70+(s%27);
+ const colors=['세이지 그린','아이보리','차분한 블루','웜 베이지','올리브','라벤더'],times=['오전 8~10시','오전 9~11시','오전 11~13시','오후 1~3시','오후 2~4시','오후 4~6시','오후 7~9시'],dirs=['동쪽','남동쪽','남쪽','남서쪽','서쪽','북서쪽','북쪽'],items=['작은 노트','실버 액세서리','좋아하는 펜','초록색 소품','따뜻한 머그컵','책갈피','키링','스니커즈'];
+ $('luckyColor').textContent=pick(colors);$('luckyNumber').textContent=1+(s%9);$('luckyTime').textContent=pick(times);$('luckyDirection').textContent=pick(dirs);$('luckyItem').textContent=pick(items);
+ const fortunes=[['좋음','필요한 곳에만 지출하면 만족도가 높아요.'],['상승','먼저 건네는 한마디가 좋은 분위기를 만들어요.'],['안정','우선순위를 정하면 일의 속도가 붙어요.'],['양호','짧은 휴식을 사이사이에 넣어보세요.']];[['money','moneyText'],['love','loveText'],['work','workText'],['health','healthText']].forEach((x,i)=>{const q=fortunes[(s+i)%fortunes.length];$(x[0]).textContent=q[0];$(x[1]).textContent=q[1]});
+ if($('today'))$('today').textContent=day.getFullYear()+'.'+String(day.getMonth()+1).padStart(2,'0')+'.'+String(day.getDate()).padStart(2,'0');
+ const animals=[['쥐','子'],['소','丑'],['호랑이','寅'],['토끼','卯'],['용','辰'],['뱀','巳'],['말','午'],['양','未'],['원숭이','申'],['닭','酉'],['개','戌'],['돼지','亥']];
+ const stars=[['양자리','♈','3.21–4.19'],['황소자리','♉','4.20–5.20'],['쌍둥이자리','♊','5.21–6.21'],['게자리','♋','6.22–7.22'],['사자자리','♌','7.23–8.22'],['처녀자리','♍','8.23–9.22'],['천칭자리','♎','9.23–10.22'],['전갈자리','♏','10.23–11.22'],['사수자리','♐','11.23–12.21'],['염소자리','♑','12.22–1.19'],['물병자리','♒','1.20–2.18'],['물고기자리','♓','2.19–3.20']];
+ const words=['작은 계획을 지키면 흐름이 좋아져요.','새로운 제안에 귀를 기울여보세요.','가까운 사람과의 대화가 행운을 가져와요.','미뤄둔 일을 정리하기 좋은 날이에요.','충동적인 결정은 한 번 더 생각해보세요.'];
+ function zodiac(type){const box=$('zodiacList');if(!box)return;box.innerHTML='';(type==='star'?stars:animals).forEach((a,i)=>{const e=document.createElement('article');e.className='z';e.innerHTML=type==='star'?'<i>'+a[1]+'</i><b>'+a[0]+'</b><small>'+a[2]+'</small><div class="z-line"></div><div class="z-desc">'+words[(s+i)%words.length]+'</div>':'<i>'+a[1]+'</i><b>'+a[0]+'띠</b><small>오늘의 흐름</small><div class="z-line"></div><div class="z-desc">'+words[(s+i)%words.length]+'</div>';box.appendChild(e)})}
+ zodiac('animal');document.querySelectorAll('.tab').forEach(b=>b.onclick=function(){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');zodiac(b.dataset.type)});
+ const cats=[['성격·성향',[['01','숨겨진 성향','나도 몰랐던 성격의 한 면'],['04','첫인상 테스트','사람들이 보는 나의 첫인상'],['07','감정 표현','감정을 표현하는 나의 방식'],['08','결정 스타일','선택의 순간 나는 어떻게 움직일까?']]],['연애·관계',[['02','연애 스타일','사랑할 때 드러나는 나의 모습'],['05','친구 관계','나에게 잘 맞는 친구의 유형']]],['스트레스·멘탈',[['03','스트레스 유형','나는 스트레스를 어떻게 풀까?'],['11','자존감 테스트','나는 나를 얼마나 믿고 있을까?']]],['일·능력',[['06','리더십 테스트','내가 발휘하는 리더십 스타일'],['10','직장 성향','일할 때 드러나는 나의 특징']]],['라이프스타일',[['09','여행 성향','여행에서 가장 중요한 것은?'],['12','소비 성향','돈을 쓸 때 드러나는 나의 선택 방식'],['13','휴식 성향','쉬는 순간 가장 편안한 나의 방식']]]];
+ function tests(n){const c=cats[n||0];$('categoryName').textContent=c[0];$('categoryCount').textContent=c[1].length+'개 테스트';$('testGrid').innerHTML=c[1].map(t=>'<article class="test"><small>'+t[0]+' / TEST</small><h3>'+t[1]+'</h3><p>'+t[2]+'</p><a href="/test/'+t[0]+'/">테스트 시작 →</a></article>').join('')}
+ $('categoryTabs').innerHTML=cats.map((c,i)=>'<button class="cat '+(i?'':'active')+'" data-i="'+i+'">'+c[0]+'</button>').join('');$('categoryTabs').onclick=e=>{const b=e.target.closest('.cat');if(!b)return;document.querySelectorAll('.cat').forEach(x=>x.classList.remove('active'));b.classList.add('active');tests(+b.dataset.i)};tests(0);
 }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+})();</script>`;
 
-// 기존 홈페이지 JS가 summaryTitle 같은 ID를 변수로 직접 참조해도 동작하도록 getter를 먼저 등록합니다.
-const DOM_BRIDGE=`<script>(function(){
-['summaryTitle','summaryText','score','luckyColor','luckyNumber','luckyTime','luckyDirection','luckyItem','money','moneyText','love','loveText','work','workText','health','healthText','zodiacList','categoryTabs','categoryName','categoryCount','testGrid','today'].forEach(function(id){
-try{Object.defineProperty(window,id,{configurable:true,get:function(){return document.getElementById(id)}})}catch(e){}
-});})();</script>`;
-
-async function asset(request,env){
-  const incoming=new URL(request.url);
-  let path=decodeURIComponent(incoming.pathname);
-  if(path==='/')path='/index.html';
-  if(path.endsWith('/'))path+='index.html';
-
-  // Cloudflare Assets를 먼저 사용합니다.
-  if(env?.ASSETS?.fetch){
-    try{
-      const r=await env.ASSETS.fetch(new Request(new URL(path,incoming.origin),request));
-      if(r.status!==404)return r;
-    }catch(e){console.error('ASSETS',e)}
-  }
-
-  // Assets가 없거나 파일을 못 찾으면 현재 mira 저장소를 직접 사용합니다.
-  try{
-    const r=await fetch(REPO_RAW+encodeURI(path),{cf:{cacheTtl:0,cacheEverything:false}});
-    if(!r.ok)return r;
-    const h=new Headers(r.headers);
-    h.set('Content-Type',typeOf(path));
-    h.set('Cache-Control',path.endsWith('.html')?'no-store':'public, max-age=300');
-    return new Response(r.body,{status:r.status,headers:h});
-  }catch(e){
-    console.error('GitHub fallback',e);
-    return new Response('MIRA static asset unavailable',{status:503});
-  }
-}
-
-function json(data,status=200){
-  return new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Access-Control-Allow-Origin':'*'}});
-}
-
-async function generateImage(request,env){
-  if(!env.GEMINI_API_KEY)return json({error:'GEMINI_API_KEY가 Cloudflare Secret에 등록되어 있지 않습니다.'},500);
-  let body={};
-  try{body=await request.json()}catch{return json({error:'요청 형식이 올바르지 않습니다.'},400)}
-  const prompt=typeof body.prompt==='string'?body.prompt.trim():'';
-  if(!prompt)return json({error:'prompt가 필요합니다.'},400);
-  const r=await fetch('https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash-image:generateContent',{
-    method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':env.GEMINI_API_KEY},
-    body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseModalities:['IMAGE']}})
-  });
-  const data=await r.json();
-  if(!r.ok)return json({error:'Gemini 이미지 생성에 실패했습니다.',detail:data?.error?.message||'Gemini API 오류'},r.status);
-  const part=(data?.candidates?.[0]?.content?.parts||[]).find(x=>x?.inlineData?.data);
-  if(!part)return json({error:'생성된 이미지를 찾지 못했습니다.'},502);
-  return json({success:true,mimeType:part.inlineData.mimeType||'image/png',imageBase64:part.inlineData.data});
-}
-
-export default{async fetch(request,env){
-  const url=new URL(request.url);
-  if(url.pathname==='/api/generate-image'){
-    if(request.method!=='POST')return json({error:'POST 요청만 사용할 수 있습니다.'},405);
-    try{return await generateImage(request,env)}catch(e){console.error(e);return json({error:'이미지 생성 중 서버 오류가 발생했습니다.'},500)}
-  }
-
-  const response=await asset(request,env);
-  const contentType=response.headers.get('content-type')||'';
-  if(response.status!==200||!contentType.includes('text/html'))return response;
-
-  const html=await response.text();
-  const headers=new Headers(response.headers);
-  headers.set('Content-Type','text/html; charset=utf-8');
-  headers.set('Cache-Control','no-store');
-  // 반드시 <head> 안에 넣어 기존 inline script보다 먼저 실행되게 합니다.
-  const fixed=html.includes('</head>')?html.replace('</head>',DOM_BRIDGE+'</head>'):html;
-  return new Response(fixed,{status:200,headers});
-}};
+async function asset(request,env){const incoming=new URL(request.url);let path=decodeURIComponent(incoming.pathname);if(path==='/')path='/index.html';if(path.endsWith('/'))path+='index.html';if(env?.ASSETS?.fetch){try{const r=await env.ASSETS.fetch(new Request(new URL(path,incoming.origin),request));if(r.status!==404)return r}catch(e){console.error('ASSETS',e)}}try{const r=await fetch(REPO_RAW+encodeURI(path),{cf:{cacheTtl:0,cacheEverything:false}});if(!r.ok)return r;const h=new Headers(r.headers);h.set('Content-Type',typeOf(path));h.set('Cache-Control',path.endsWith('.html')?'no-store':'public, max-age=300');return new Response(r.body,{status:r.status,headers:h})}catch(e){console.error('GitHub fallback',e);return new Response('MIRA static asset unavailable',{status:503})}}
+function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Access-Control-Allow-Origin':'*'}})}
+async function generateImage(request,env){if(!env.GEMINI_API_KEY)return json({error:'GEMINI_API_KEY가 Cloudflare Secret에 등록되어 있지 않습니다.'},500);let body={};try{body=await request.json()}catch{return json({error:'요청 형식이 올바르지 않습니다.'},400)}const prompt=typeof body.prompt==='string'?body.prompt.trim():'';if(!prompt)return json({error:'prompt가 필요합니다.'},400);const r=await fetch('https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash-image:generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':env.GEMINI_API_KEY},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseModalities:['IMAGE']}})});const data=await r.json();if(!r.ok)return json({error:'Gemini 이미지 생성에 실패했습니다.',detail:data?.error?.message||'Gemini API 오류'},r.status);const part=(data?.candidates?.[0]?.content?.parts||[]).find(x=>x?.inlineData?.data);if(!part)return json({error:'생성된 이미지를 찾지 못했습니다.'},502);return json({success:true,mimeType:part.inlineData.mimeType||'image/png',imageBase64:part.inlineData.data})}
+export default{async fetch(request,env){const url=new URL(request.url);if(url.pathname==='/api/generate-image'){if(request.method!=='POST')return json({error:'POST 요청만 사용할 수 있습니다.'},405);try{return await generateImage(request,env)}catch(e){console.error(e);return json({error:'이미지 생성 중 서버 오류가 발생했습니다.'},500)}}const response=await asset(request,env);const contentType=response.headers.get('content-type')||'';if(response.status!==200||!contentType.includes('text/html'))return response;const html=await response.text();const headers=new Headers(response.headers);headers.set('Content-Type','text/html; charset=utf-8');headers.set('Cache-Control','no-store');const fixed=html.includes('</body>')?html.replace('</body>',HOME_RESCUE+'</body>'):html+HOME_RESCUE;return new Response(fixed,{status:200,headers})}};
