@@ -1,4 +1,4 @@
-name: Patch birth date
+name: Patch zodiac detail navigation
 on:
   push:
     paths:
@@ -10,35 +10,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Update birth date input
+      - name: Load zodiac detail script
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          old='<form class="birth-form" id="birthForm"><input id="birthYear" type="number" inputmode="numeric" min="1900" max="2026" placeholder="출생년도" aria-label="출생년도"><button type="submit">운세 확인</button></form>'
-          new='<form class="birth-form" id="birthForm"><input id="birthDate" type="date" min="1900-01-01" max="2026-12-31" aria-label="생년월일"><button type="submit">운세 확인</button></form>'
+          old='<script src="/assets/test-data.js"></script>'
+          new=old+'<script src="/assets/zodiac-links.js"></script>'
           if old not in s:
-              raise SystemExit('birth input pattern not found')
-          s=s.replace(old,new,1)
-          s=s.replace('출생년도를 입력하면 나의 띠를 기준으로 운세를 확인할 수 있어요.','생년월일을 입력하면 나의 띠와 생일을 기준으로 오늘의 운세를 확인할 수 있어요.',1)
-          pattern=r"const yearInput=\$\('birthYear'\),form=\$\('birthForm'\),result=\$\('birthResult'\),badge=document\.querySelector\('#fortune \.badge'\);.*?form\.addEventListener\('submit',e=>\{e\.preventDefault\(\);const y=\+yearInput\.value;.*?\}\)"
-          replacement="const birthDateInput=$('birthDate'),form=$('birthForm'),result=$('birthResult'),badge=document.querySelector('#fortune .badge');function applyBirthDate(value){const [y,m,d]=value.split('-').map(Number);const a=[['쥐','子'],['소','丑'],['호랑이','寅'],['토끼','卯'],['용','辰'],['뱀','巳'],['말','午'],['양','未'],['원숭이','申'],['닭','酉'],['개','戌'],['돼지','亥']],animal=a[(y-2020+120)%12],personal=76+((y*37+m*101+d*1009)%20);result.textContent=`${y}.${String(m).padStart(2,'0')}.${String(d).padStart(2,'0')} · ${animal[0]}`;badge.innerHTML=`오늘의 ${animal[0]} 운세 <span class=\"personal-badge\">PERSONAL</span>`;$('summaryTitle').textContent=personal>=90?'오늘은 흐름을 적극적으로 잡아보세요.':personal>=84?'차분하게 움직이면 좋은 흐름이 이어져요.':'작은 선택 하나가 오늘의 분위기를 바꿔요.';$('score').textContent=personal;$('summaryText').textContent=`생년월일의 흐름을 바탕으로 오늘의 운세를 확인했어요. ${m}월 ${d}일의 기운을 가볍게 참고해보세요.`}const saved=localStorage.getItem('mira_birth_date');if(saved){birthDateInput.value=saved;applyBirthDate(saved)}form.addEventListener('submit',e=>{e.preventDefault();const value=birthDateInput.value;if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)){result.textContent='생년월일을 입력해주세요.';return}const [y,m,d]=value.split('-').map(Number);if(y<1900||y>2026||m<1||m>12||d<1||d>31){result.textContent='올바른 생년월일을 입력해주세요.';return}localStorage.setItem('mira_birth_date',value);applyBirthDate(value)})"
-          n=s.count('const yearInput=$(\'birthYear\')')
-          if n != 1:
-              raise SystemExit(f'old birth logic count={n}')
-          s2=re.sub(pattern,replacement,s,count=1,flags=re.S)
-          if s2==s:
-              raise SystemExit('birth logic pattern not found')
-          p.write_text(s2,encoding='utf-8')
+              raise SystemExit('script insertion point not found')
+          if '/assets/zodiac-links.js' not in s:
+              s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
           PY
       - name: Commit patch
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git commit -m 'feat: 생년월일 기반 개인 운세 입력' || exit 0
+          git commit -m 'feat: 띠·별자리 목록을 상세 페이지로 연결'
           git push
       - name: Remove temporary workflow
         run: |
