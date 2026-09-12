@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="재미로 알아보는 다양한 심리테스트 목록">
+<title>심리테스트 | 운세·심리테스트</title>
+<style>
+:root{--bg:#f5f0e4;--paper:#fffdf8;--green:#5c8d71;--deep:#244638;--soft:#eaf2eb;--gold:#aa8f59;--line:#ddd6c7;--muted:#7d877f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--deep);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR","Apple SD Gothic Neo",sans-serif;letter-spacing:-.035em}.wrap{width:min(1080px,calc(100% - 36px));margin:auto}.top{padding:22px 0}.back{display:inline-flex;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--paper);font-size:12px;font-weight:900;color:#63736a}.hero{padding:18px 0 22px}.k{font-size:10px;letter-spacing:2.3px;font-weight:900;color:var(--green)}h1{font:700 42px Georgia,"Noto Serif KR",serif;letter-spacing:-3px;margin:9px 0}.hero p{font-size:13px;color:var(--muted);line-height:1.7}.tabs{display:flex;gap:7px;overflow:auto;padding:0 0 12px}.tab{flex:0 0 auto;border:1px solid #d7d1c5;background:#fbf9f2;color:#7a837c;border-radius:99px;padding:9px 14px;font-size:11px;font-weight:900;cursor:pointer}.tab.active{background:var(--green);border-color:var(--green);color:#fff}.head{display:flex;align-items:end;border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:10px}.head h2{font-size:21px;margin:0}.count{margin-left:auto;font-size:10px;color:#89754a;background:#f3ead8;border:1px solid #dfd1b2;border-radius:99px;padding:7px 10px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.card{display:block;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:17px 17px 44px;min-height:150px;position:relative;transition:.16s;cursor:pointer}.card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(42,60,47,.08)}.card small{font-size:10px;color:var(--gold);letter-spacing:1.3px;font-weight:900}.card h3{font-size:19px;margin:15px 0 7px;line-height:1.35}.card p{font-size:12px;color:#707a72;margin:0;line-height:1.65}.start{position:absolute;left:17px;bottom:13px;color:#4e7b63;font-size:12px;font-weight:900}footer{padding:35px 0 45px;color:#879088;font-size:11px}
+@media(max-width:760px){.wrap{width:calc(100% - 24px)}h1{font-size:34px}.grid{grid-template-columns:repeat(2,1fr)}.card{padding:14px 14px 40px;min-height:140px}.card h3{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a class="back" href="/">← 홈으로</a></div>
+  <header class="hero">
+    <div class="k">PSYCHOLOGY</div>
+    <h1>심리테스트</h1>
+    <p>재미로 알아보는 나의 성향과 연애, 스트레스 유형을 확인해보세요.</p>
+  </header>
+  <div class="tabs" id="tabs"></div>
+  <div class="head"><h2 id="categoryName">추천 테스트</h2><span class="count" id="count"></span></div>
+  <main class="grid" id="grid"></main>
+  <footer>오늘의 운세와 심리테스트는 재미와 참고를 위한 콘텐츠입니다.</footer>
+</div>
+<script src="/assets/test-data.js"></script>
+<script>
+// 테스트 데이터를 카테고리별로 필터링하고 카드 목록을 그립니다.
+const tests=typeof TEST_DATA!=='undefined'?Object.entries(TEST_DATA):[];
+const tabs=document.getElementById('tabs'),grid=document.getElementById('grid'),name=document.getElementById('categoryName'),count=document.getElementById('count');
+const cats=['전체',...new Set(tests.map(([id,t])=>t.cat))];
+let active='전체';
+function render(){
+  const list=active==='전체'?tests:tests.filter(([,t])=>t.cat===active);
+  name.textContent=active==='전체'?'추천 테스트':active;
+  count.textContent=list.length+'개';
+  // 각 테스트 카드를 클릭하면 해당 테스트의 실제 페이지로 이동합니다.
+  grid.innerHTML=list.map(([id,t])=>`<a class="card" href="/test/${id}/"><small>${t.cat}</small><h3>${t.title}</h3><p>${t.intro||'재미로 알아보는 나의 성향 테스트'}</p><span class="start">테스트 시작 →</span></a>`).join('');
+}
+tabs.innerHTML=cats.map(c=>`<button class="tab ${c===active?'active':''}" data-cat="${c}">${c}</button>`).join('');
+tabs.addEventListener('click',e=>{const b=e.target.closest('.tab');if(!b)return;active=b.dataset.cat;tabs.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));render()});
+render();
+</script>
+</body>
+</html>
