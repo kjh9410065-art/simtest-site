@@ -1,18 +1,12 @@
-// 띠·별자리 목록 카드를 클릭하면 상세 페이지로 이동하도록 연결합니다.
+// 홈 화면의 메뉴 구조를 정리합니다.
+// 띠·별자리 카드는 홈에서 클릭하면 기존 모달이 열리도록 그대로 둡니다.
 document.addEventListener('DOMContentLoaded',function(){
-  const list=document.getElementById('zodiacList');
-  if(!list)return;
-  const sync=()=>list.querySelectorAll('.z').forEach(card=>{
-    if(card.tagName==='A')return;
-    const type=card.dataset.ztype||'animal';
-    const index=card.dataset.zindex||'0';
-    const link=document.createElement('a');
-    link.className=card.className;
-    link.href=`/zodiac/?type=${encodeURIComponent(type)}&index=${encodeURIComponent(index)}`;
-    link.innerHTML=card.innerHTML;
-    [...card.attributes].forEach(a=>{if(a.name!=='class')link.setAttribute(a.name,a.value)});
-    card.replaceWith(link);
+  // 심리테스트 목록은 홈에서 숨기고 별도 목록 페이지로 이동합니다.
+  const tests=document.getElementById('tests');
+  if(tests)tests.style.display='none';
+
+  // 사이드 메뉴와 상단 메뉴의 심리테스트 버튼을 별도 페이지로 연결합니다.
+  document.querySelectorAll('a[href="#tests"]').forEach(link=>{
+    link.href='/test/';
   });
-  new MutationObserver(sync).observe(list,{childList:true});
-  sync();
 });
