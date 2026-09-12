@@ -1,7 +1,6 @@
 // 홈 화면의 메뉴와 개인 운세 입력 UI를 보정합니다.
 (function(){
   function patchHome(){
-    // 심리테스트 목록은 홈에서 숨기고 별도 목록 페이지로 이동합니다.
     const tests=document.getElementById('tests');
     if(tests)tests.style.display='none';
     document.querySelectorAll('a[href="#tests"]').forEach(link=>{link.href='/test/';});
@@ -14,60 +13,43 @@
     const score=document.getElementById('score');
     const birthCopy=document.querySelector('#fortune .birth-copy span');
 
-    // 홈의 기존 스크립트가 입력칸을 만든 뒤 한 번만 패치합니다.
+    // 기존 홈 스크립트가 입력칸을 만든 뒤 한 번만 패치합니다.
     if(!form||!oldInput||!result){setTimeout(patchHome,50);return;}
     if(document.getElementById('birthDate'))return;
 
-    // 안내 문구를 생년월일 기준으로 변경합니다.
     if(birthCopy)birthCopy.textContent='생년월일을 입력하면 나의 오늘의 운세를 확인할 수 있어요.';
 
-    // 기존 연도 입력칸을 깔끔한 커스텀 날짜 선택 UI로 교체합니다.
-    oldInput.outerHTML='<div class="birth-date-wrap" role="button" tabindex="0" aria-label="생년월일 선택"><span class="birth-date-icon" aria-hidden="true"></span><input id="birthDate" type="date" min="1900-01-01" max="'+new Date().toISOString().slice(0,10)+'" aria-label="생년월일"><span class="birth-date-value">생년월일 선택</span><span class="birth-date-arrow" aria-hidden="true"></span></div>';
-
+    // 실제 date input을 박스 전체에 투명하게 덮어씌워 어느 곳을 눌러도
+    // 브라우저의 기본 날짜 선택창이 열리도록 합니다.
+    oldInput.outerHTML='<div class="birth-date-wrap" tabindex="0" aria-label="생년월일 선택"><span class="birth-date-icon">▣</span><span class="birth-date-value">생년월일 선택</span><input id="birthDate" type="date" min="1900-01-01" max="'+new Date().toISOString().slice(0,10)+'" aria-label="생년월일"></div>';
     const wrap=document.querySelector('.birth-date-wrap');
     const input=document.getElementById('birthDate');
     const valueText=wrap&&wrap.querySelector('.birth-date-value');
-    if(!input||!wrap||!valueText)return;
+    if(!input||!wrap)return;
 
-    // 날짜 박스 전체를 눌러도 실제 날짜 선택창이 열리도록 합니다.
-    function openDatePicker(){
-      input.focus();
-      if(typeof input.showPicker==='function'){
-        try{input.showPicker();}catch(e){}
-      }
-    }
-    wrap.addEventListener('click',function(e){
-      if(e.target!==input)openDatePicker();
-    });
-    wrap.addEventListener('keydown',function(e){
-      if(e.key==='Enter'||e.key===' '){e.preventDefault();openDatePicker();}
-    });
-
-    // 선택된 날짜는 네이티브 입력창 대신 깔끔한 텍스트로 보여줍니다.
-    function updateDateText(value){
-      if(!value){
+    function renderDate(){
+      if(input.value){
+        const [y,m,d]=input.value.split('-');
+        valueText.textContent=y+'.'+m+'.'+d;
+        valueText.classList.add('has-value');
+      }else{
         valueText.textContent='생년월일 선택';
-        wrap.classList.remove('has-value');
-        return;
-      }
-      const parts=value.split('-');
-      if(parts.length===3){
-        valueText.textContent=parts[0]+'.'+parts[1]+'.'+parts[2];
-        wrap.classList.add('has-value');
+        valueText.classList.remove('has-value');
       }
     }
 
     // 저장된 생년월일을 다시 불러옵니다.
     const saved=localStorage.getItem('mira_birth_date');
-    if(saved){input.value=saved;updateDateText(saved);}
+    if(saved)input.value=saved;
+    renderDate();
 
     // 생년월일의 연도를 기준으로 띠를 계산합니다.
     const animals=[['쥐','子'],['소','丑'],['호랑이','寅'],['토끼','卯'],['용','辰'],['뱀','巳'],['말','午'],['양','未'],['원숭이','申'],['닭','酉'],['개','戌'],['돼지','亥']];
     function getAnimal(year){return animals[(year-2020+120)%12];}
 
     // 생년월일 전체를 사용해 개인 운세 점수를 계산합니다.
-    function applyBirthDate(value){
-      const parts=value.split('-').map(Number);
+    function applyBirthDate(dateValue){
+      const parts=dateValue.split('-').map(Number);
       if(parts.length!==3||parts.some(Number.isNaN))return;
       const [year,month,day]=parts;
       const animal=getAnimal(year);
@@ -79,16 +61,15 @@
       if(score)score.textContent=personal;
     }
 
-    // 날짜를 선택하면 바로 저장하고 결과를 갱신합니다.
+    // 날짜가 선택되면 즉시 저장하고 운세 결과를 갱신합니다.
     input.addEventListener('change',function(){
+      renderDate();
       if(input.value){
         localStorage.setItem('mira_birth_date',input.value);
-        updateDateText(input.value);
         applyBirthDate(input.value);
       }
     });
 
-    // 버튼을 누르면 생년월일을 저장하고 개인 운세를 갱신합니다.
     form.addEventListener('submit',function(e){
       e.preventDefault();
       const value=input.value;
@@ -97,40 +78,38 @@
         return;
       }
       localStorage.setItem('mira_birth_date',value);
-      updateDateText(value);
+      renderDate();
       applyBirthDate(value);
     });
 
-    // 저장된 생년월일이 있으면 자동으로 개인 운세를 복원합니다.
-    if(saved)applyBirthDate(saved);
+    // 접근성: 키보드로도 날짜 선택 영역을 열 수 있습니다.
+    wrap.addEventListener('keydown',function(e){
+      if(e.key==='Enter'||e.key===' '){
+        e.preventDefault();
+        input.focus();
+        if(typeof input.showPicker==='function'){
+          try{input.showPicker();}catch(err){input.click();}
+        }else input.click();
+      }
+    });
   }
 
-  // DOM이 준비되면 패치를 적용합니다.
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',patchHome);
   else patchHome();
 })();
 
-// 날짜 입력 UI의 실제 디자인을 추가합니다.
+// 날짜 입력칸을 깔끔하게 만들고 실제 input을 박스 전체에 배치합니다.
 (function(){
   const style=document.createElement('style');
   style.textContent=`
-    .birth-date-wrap{position:relative;width:230px;height:48px;display:flex;align-items:center;box-sizing:border-box;background:#faf7ef;border:1px solid #d8d1c3;border-radius:12px;overflow:hidden;cursor:pointer;transition:border-color .18s ease,box-shadow .18s ease,background .18s ease}
-    .birth-date-wrap:hover{border-color:#b8c8bb;background:#fcfaf5}
-    .birth-date-wrap:focus{outline:none;border-color:#5c8d71;box-shadow:0 0 0 3px rgba(92,141,113,.12)}
-    .birth-date-wrap:focus-within{border-color:#5c8d71;box-shadow:0 0 0 3px rgba(92,141,113,.12)}
-    .birth-date-icon{position:relative;flex:0 0 18px;width:18px;height:17px;margin-left:15px;border:1.7px solid #b29a6b;border-radius:3px;box-sizing:border-box;pointer-events:none}
-    .birth-date-icon:before{content:"";position:absolute;left:-1.7px;right:-1.7px;top:4px;border-top:1.7px solid #b29a6b}
-    .birth-date-icon:after{content:"";position:absolute;left:4px;top:-4px;width:2px;height:5px;background:#b29a6b;border-radius:2px;box-shadow:7px 0 #b29a6b}
-    .birth-date-wrap input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0!important;background:transparent!important;opacity:0;cursor:pointer;z-index:2}
-    .birth-date-value{margin-left:11px;font-size:14px;font-weight:700;line-height:1;color:#7f8981;pointer-events:none;white-space:nowrap}
-    .birth-date-wrap.has-value .birth-date-value{color:#244638}
-    .birth-date-arrow{position:absolute;right:15px;top:50%;width:8px;height:8px;border-right:1.5px solid #777e79;border-bottom:1.5px solid #777e79;transform:translateY(-65%) rotate(45deg);pointer-events:none}
-    @media(max-width:760px) and (hover:none) and (pointer:coarse){
-      .birth-date-wrap{width:auto;flex:1;height:46px}
-      .birth-date-icon{margin-left:13px}
-      .birth-date-value{margin-left:10px}
-      .birth-date-arrow{right:13px}
-    }
+    .birth-date-wrap{position:relative;width:230px;height:48px;display:flex;align-items:center;background:#f8f5ed;border:1px solid #d7d0c1;border-radius:12px;overflow:hidden;cursor:pointer;transition:.18s ease}
+    .birth-date-wrap:hover{border-color:#a9bda9;background:#fbf9f3}
+    .birth-date-wrap:focus-within{border-color:#5c8d71;box-shadow:0 0 0 4px rgba(92,141,113,.12);background:#fffdf8}
+    .birth-date-icon{width:42px;flex:0 0 42px;text-align:center;font-size:14px;color:#aa8f59;pointer-events:none}
+    .birth-date-value{font-size:14px;font-weight:700;color:#89928a;pointer-events:none;user-select:none}
+    .birth-date-value.has-value{color:#244638}
+    .birth-date-wrap input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0!important;border-radius:12px!important;background:transparent!important;opacity:0;cursor:pointer;z-index:5}
+    @media(max-width:760px) and (hover:none) and (pointer:coarse){.birth-date-wrap{width:auto;flex:1;height:46px}.birth-date-icon{width:38px;flex-basis:38px}}
   `;
   document.head.appendChild(style);
 })();
