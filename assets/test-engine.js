@@ -22,5 +22,16 @@ function showResult(){
  const r=d.types[(type+sum)%d.types.length];
  $('quiz').classList.add('hide');$('result').classList.remove('hide');
  $('result').innerHTML=`<div class="result-k">YOUR TYPE · ${d.cat}</div><h2>${r[0]}</h2><p class="lead">${r[1]}</p><div class="grid"><div><b>강점</b><p>${r[2]}</p></div><div><b>숨겨진 약점</b><p>${r[3]}</p></div><div><b>사람들과 있을 때</b><p>${r[4]}</p></div><div><b>연애할 때</b><p>${r[5]}</p></div><div><b>스트레스가 쌓이면</b><p>${r[6]}</p></div><div><b>의외의 모습</b><p>${r[7]}</p></div></div><div class="tip"><b>오늘의 추천</b><br>${r[8]}</div><div class="share"><button onclick="location.reload()">다시 테스트</button><a href="/">다른 테스트 보기</a></div>`;
+ // 브라우저 제목과 공유 미리보기에 쓰일 텍스트도 결과에 맞춰 갱신합니다.
+ document.title=`${r[0]} 결과 | ${d.title}`;
+ try{
+  const shareText=`${d.title} 결과: ${r[0]}`;
+  if(navigator.share){
+   const shareBtn=document.createElement('button');
+   shareBtn.textContent='결과 공유하기';
+   shareBtn.onclick=()=>navigator.share({title:shareText,text:`${shareText}\n${r[1]}`,url:location.href}).catch(()=>{});
+   $('result').querySelector('.share').prepend(shareBtn);
+  }
+ }catch(e){/* 공유 기능을 지원하지 않는 브라우저에서는 기존 결과 화면만 유지합니다. */}
 }
 $('titleText').textContent=d.title;$('intro').textContent=d.intro;document.title=d.title+' | 운세·심리테스트';render();
