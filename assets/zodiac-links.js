@@ -21,38 +21,45 @@
     // 안내 문구를 생년월일 기준으로 변경합니다.
     if(birthCopy)birthCopy.textContent='생년월일을 입력하면 나의 오늘의 운세를 확인할 수 있어요.';
 
-    // 기존 숫자 입력칸을 날짜 선택 UI로 교체합니다.
-    oldInput.outerHTML='<div class="birth-date-wrap" role="button" tabindex="0" aria-label="생년월일 선택"><span class="birth-date-icon">▣</span><input id="birthDate" type="date" min="1900-01-01" max="'+new Date().toISOString().slice(0,10)+'" aria-label="생년월일"><span class="birth-date-label">생년월일 선택</span></div>';
+    // 기존 연도 입력칸을 깔끔한 커스텀 날짜 선택 UI로 교체합니다.
+    oldInput.outerHTML='<div class="birth-date-wrap" role="button" tabindex="0" aria-label="생년월일 선택"><span class="birth-date-icon" aria-hidden="true"></span><input id="birthDate" type="date" min="1900-01-01" max="'+new Date().toISOString().slice(0,10)+'" aria-label="생년월일"><span class="birth-date-value">생년월일 선택</span><span class="birth-date-arrow" aria-hidden="true"></span></div>';
+
     const wrap=document.querySelector('.birth-date-wrap');
     const input=document.getElementById('birthDate');
-    if(!input||!wrap)return;
+    const valueText=wrap&&wrap.querySelector('.birth-date-value');
+    if(!input||!wrap||!valueText)return;
 
-    // 날짜 입력 자체를 박스 전체로 넓혀 브라우저의 기본 달력 선택기를 직접 호출합니다.
-    // 이렇게 하면 아이콘/글씨/빈 공간을 눌러도 날짜 입력이 확실히 활성화됩니다.
-    input.addEventListener('click',function(){
+    // 날짜 박스 전체를 눌러도 실제 날짜 선택창이 열리도록 합니다.
+    function openDatePicker(){
+      input.focus();
       if(typeof input.showPicker==='function'){
         try{input.showPicker();}catch(e){}
       }
-    });
-
-    // 입력칸이 아닌 박스 영역을 클릭하는 경우에도 날짜 입력을 활성화합니다.
+    }
     wrap.addEventListener('click',function(e){
-      if(e.target!==input){
-        input.focus();
-        if(typeof input.showPicker==='function'){
-          try{input.showPicker();}catch(err){}
-        }
-      }
+      if(e.target!==input)openDatePicker();
+    });
+    wrap.addEventListener('keydown',function(e){
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();openDatePicker();}
     });
 
-    // 키보드 사용자도 Enter/Space로 날짜 선택기를 열 수 있게 합니다.
-    wrap.addEventListener('keydown',function(e){
-      if(e.key==='Enter'||e.key===' '){e.preventDefault();input.focus();if(typeof input.showPicker==='function'){try{input.showPicker();}catch(err){}}}
-    });
+    // 선택된 날짜는 네이티브 입력창 대신 깔끔한 텍스트로 보여줍니다.
+    function updateDateText(value){
+      if(!value){
+        valueText.textContent='생년월일 선택';
+        wrap.classList.remove('has-value');
+        return;
+      }
+      const parts=value.split('-');
+      if(parts.length===3){
+        valueText.textContent=parts[0]+'.'+parts[1]+'.'+parts[2];
+        wrap.classList.add('has-value');
+      }
+    }
 
     // 저장된 생년월일을 다시 불러옵니다.
     const saved=localStorage.getItem('mira_birth_date');
-    if(saved)input.value=saved;
+    if(saved){input.value=saved;updateDateText(saved);}
 
     // 생년월일의 연도를 기준으로 띠를 계산합니다.
     const animals=[['쥐','子'],['소','丑'],['호랑이','寅'],['토끼','卯'],['용','辰'],['뱀','巳'],['말','午'],['양','未'],['원숭이','申'],['닭','酉'],['개','戌'],['돼지','亥']];
@@ -70,14 +77,13 @@
       if(badge)badge.innerHTML='오늘의 '+animal[0]+' 운세 <span class="personal-badge">PERSONAL</span>';
       if(summaryTitle)summaryTitle.textContent=personal>=90?'오늘은 흐름을 적극적으로 잡아보세요.':personal>=84?'차분하게 움직이면 좋은 흐름이 이어져요.':'작은 선택 하나가 오늘의 분위기를 바꿔요.';
       if(score)score.textContent=personal;
-      // 날짜가 선택되면 안내 라벨을 숨겨 선택된 날짜가 보이게 합니다.
-      wrap.classList.toggle('has-value',!!input.value);
     }
 
     // 날짜를 선택하면 바로 저장하고 결과를 갱신합니다.
     input.addEventListener('change',function(){
       if(input.value){
         localStorage.setItem('mira_birth_date',input.value);
+        updateDateText(input.value);
         applyBirthDate(input.value);
       }
     });
@@ -91,11 +97,12 @@
         return;
       }
       localStorage.setItem('mira_birth_date',value);
+      updateDateText(value);
       applyBirthDate(value);
     });
 
     // 저장된 생년월일이 있으면 자동으로 개인 운세를 복원합니다.
-    if(saved)applyBirthDate(saved);else wrap.classList.remove('has-value');
+    if(saved)applyBirthDate(saved);
   }
 
   // DOM이 준비되면 패치를 적용합니다.
@@ -107,20 +114,22 @@
 (function(){
   const style=document.createElement('style');
   style.textContent=`
-    .birth-date-wrap{position:relative;width:230px;height:48px;display:flex;align-items:center;background:#f8f5ed;border:1px solid #d7d0c1;border-radius:12px;transition:.18s ease;overflow:hidden;cursor:pointer}
-    .birth-date-wrap:hover{border-color:#a9bda9;background:#fbf9f3}
-    .birth-date-wrap:focus-within{border-color:#5c8d71;box-shadow:0 0 0 4px rgba(92,141,113,.12);background:#fffdf8}
-    .birth-date-icon{position:relative;z-index:1;width:42px;text-align:center;font-size:15px;color:#aa8f59;pointer-events:none}
-    /* 날짜 input을 박스 전체에 깔아 브라우저 기본 날짜 선택 UI가 확실히 동작하게 합니다. */
-    .birth-date-wrap input{position:absolute;inset:0;z-index:2;width:100%;height:100%;box-sizing:border-box;border:0!important;border-radius:12px!important;background:transparent!important;box-shadow:none!important;padding:0 12px 0 42px!important;font-size:14px!important;font-weight:700;color:#244638;outline:none;cursor:pointer}
-    .birth-date-label{position:absolute;z-index:1;left:43px;top:50%;transform:translateY(-50%);font-size:11px;color:#89928a;pointer-events:none;transition:.15s ease}
-    .birth-date-wrap.has-value .birth-date-label{display:none}
-    .birth-date-wrap input::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.65;padding:8px}
+    .birth-date-wrap{position:relative;width:230px;height:48px;display:flex;align-items:center;box-sizing:border-box;background:#faf7ef;border:1px solid #d8d1c3;border-radius:12px;overflow:hidden;cursor:pointer;transition:border-color .18s ease,box-shadow .18s ease,background .18s ease}
+    .birth-date-wrap:hover{border-color:#b8c8bb;background:#fcfaf5}
+    .birth-date-wrap:focus{outline:none;border-color:#5c8d71;box-shadow:0 0 0 3px rgba(92,141,113,.12)}
+    .birth-date-wrap:focus-within{border-color:#5c8d71;box-shadow:0 0 0 3px rgba(92,141,113,.12)}
+    .birth-date-icon{position:relative;flex:0 0 18px;width:18px;height:17px;margin-left:15px;border:1.7px solid #b29a6b;border-radius:3px;box-sizing:border-box;pointer-events:none}
+    .birth-date-icon:before{content:"";position:absolute;left:-1.7px;right:-1.7px;top:4px;border-top:1.7px solid #b29a6b}
+    .birth-date-icon:after{content:"";position:absolute;left:4px;top:-4px;width:2px;height:5px;background:#b29a6b;border-radius:2px;box-shadow:7px 0 #b29a6b}
+    .birth-date-wrap input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0!important;background:transparent!important;opacity:0;cursor:pointer;z-index:2}
+    .birth-date-value{margin-left:11px;font-size:14px;font-weight:700;line-height:1;color:#7f8981;pointer-events:none;white-space:nowrap}
+    .birth-date-wrap.has-value .birth-date-value{color:#244638}
+    .birth-date-arrow{position:absolute;right:15px;top:50%;width:8px;height:8px;border-right:1.5px solid #777e79;border-bottom:1.5px solid #777e79;transform:translateY(-65%) rotate(45deg);pointer-events:none}
     @media(max-width:760px) and (hover:none) and (pointer:coarse){
       .birth-date-wrap{width:auto;flex:1;height:46px}
-      .birth-date-icon{width:38px}
-      .birth-date-wrap input{padding-left:38px!important}
-      .birth-date-label{left:39px}
+      .birth-date-icon{margin-left:13px}
+      .birth-date-value{margin-left:10px}
+      .birth-date-arrow{right:13px}
     }
   `;
   document.head.appendChild(style);
