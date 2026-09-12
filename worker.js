@@ -1,5 +1,5 @@
 // TCFLiCK 운세·심리테스트 사이트의 Cloudflare Worker입니다.
-// 정적 파일은 ASSETS에서 그대로 제공하고, 필요한 API만 Worker에서 처리합니다.
+// 정적 파일은 ASSETS에서 제공하고, 필요한 API만 Worker에서 처리합니다.
 // 이미지 브리지에는 현재 저장소(mira)만 사용합니다.
 
 const IMAGE_MAP = {
@@ -16,7 +16,7 @@ function assetUrl(name) {
   return encodeURI('/' + name);
 }
 
-// 홈페이지에만 이미지 보정 CSS를 주입합니다. 이미지가 없어도 페이지 자체는 정상 표시됩니다.
+// 홈페이지에만 이미지 보정 스크립트를 주입합니다.
 const IMAGE_SCRIPT = `<script>
 (function(){
   const heroUrl=${JSON.stringify(assetUrl(IMAGE_MAP.hero))};
@@ -82,12 +82,24 @@ export default {
       try{return await generateGeminiImage(request,env);}catch(e){console.error(e);return jsonResponse({error:'이미지 생성 중 서버 오류가 발생했습니다.'},500);}
     }
 
-    // 정적 사이트를 가장 먼저 그대로 제공합니다. ASSETS 오류를 HTML 오류 페이지로 변조하지 않습니다.
-    const response=await env.ASSETS.fetch(request);
+    // 루트 요청은 index.html을 명시적으로 요청해 정적 자산 라우팅 문제를 방지합니다.
+    const assetRequest = url.pathname === '/'
+      ? new Request(new URL('/index.html', request.url), request)
+      : request;
+
+    // 정적 파일은 ASSETS에서 직접 제공합니다.
+    let response;
+    try {
+      response = await env.ASSETS.fetch(assetRequest);
+    } catch (error) {
+      console.error('ASSETS fetch failed:', error);
+      return new Response('MIRA assets unavailable', { status: 503 });
+    }
+
     const type=response.headers.get('content-type')||'';
     if(!type.includes('text/html')) return response;
 
-    // 홈페이지가 정상적으로 반환된 경우에만 이미지 스크립트를 삽입합니다.
+    // HTML 응답일 때만 이미지 보정 스크립트를 삽입합니다.
     const html=await response.text();
     if(response.status!==200 || !html.includes('</head>')) {
       return new Response(html,{status:response.status,statusText:response.statusText,headers:new Headers(response.headers)});
